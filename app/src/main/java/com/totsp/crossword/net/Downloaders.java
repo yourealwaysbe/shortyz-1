@@ -12,7 +12,6 @@ import android.support.v4.app.NotificationCompat;
 
 import com.totsp.crossword.BrowseActivity;
 import com.totsp.crossword.PlayActivity;
-import com.totsp.crossword.gmail.GmailDownloader;
 import com.totsp.crossword.io.IO;
 import com.totsp.crossword.puz.Puzzle;
 import com.totsp.crossword.puz.PuzzleMeta;
@@ -55,17 +54,6 @@ public class Downloaders {
         this.notificationManager = notificationManager;
         this.context = context;
 
-//        if (prefs.getBoolean("downloadGlobe", true)) {
-//            downloaders.add(new OldBostonGlobeDownloader());
-//        }
-//
-//        if (prefs.getBoolean("downloadThinks", true)) {
-//            downloaders.add(new ThinksDownloader());
-//        }
-//        if (prefs.getBoolean("downloadWaPo", true)) {
-//         downloaders.add(new WaPoDownloader());
-//         }
-        
         if (prefs.getBoolean("downloadWsj", true)) {
             downloaders.add(new WSJFridayDownloader());
             downloaders.add(new WSJSaturdayDownloader());
@@ -75,14 +63,6 @@ public class Downloaders {
             downloaders.add(new WaPoPuzzlerDownloader());
         }
 
-//        if (prefs.getBoolean("downloadNYTClassic", true)) {
-//            downloaders.add(new NYTClassicDownloader());
-//        }
-
-//        if (prefs.getBoolean("downloadInkwell", true)) {
-//            downloaders.add(new InkwellDownloader());
-//        }
-
         if (prefs.getBoolean("downloadJonesin", true)) {
             downloaders.add(new JonesinDownloader());
         }
@@ -91,14 +71,6 @@ public class Downloaders {
 //           downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
             downloaders.add(new LATimesDownloader());
         }
-
-//        if (prefs.getBoolean("downloadAvClub", true)) {
-//            downloaders.add(new AVClubDownloader());
-//        }
-
-//        if (prefs.getBoolean("downloadPhilly", true)) {
-//            downloaders.add(new PhillyDownloader());
-//        }
 
         if (prefs.getBoolean("downloadCHE", true)) {
             downloaders.add(new CHEDownloader());
@@ -113,11 +85,6 @@ public class Downloaders {
             downloaders.add(new KFSDownloader("sheffer", "Sheffer Crosswords",
                     "Eugene Sheffer", Downloader.DATE_NO_SUNDAY));
         }
-
-//        if (prefs.getBoolean("downloadPremier", true)) {
-//            downloaders.add(new KFSDownloader("premier", "Premier Crosswords",
-//                    "Frank Longo", Downloader.DATE_SUNDAY));
-//        }
 
         if (prefs.getBoolean("downloadNewsday", true)) {
             downloaders.add(new BrainsOnlyDownloader(
@@ -138,30 +105,6 @@ public class Downloaders {
         if (prefs.getBoolean("downloadLACal", true)) {
             downloaders.add(new LATSundayDownloader());
         }
-
-//        if (prefs.getBoolean("downloadISwear", true)) {
-//            downloaders.add(new ISwearDownloader());
-//        }
-        
-        
-        if (prefs.getBoolean("downloadNYT", false)) {
-            NYTDownloader nyt;
-            if (challengeForCredentials) {
-                nyt = new NYTDownloader(context);
-                nyt.requestCredentialsIfNeeded();
-            } else {
-                nyt = new NYTDownloader(context, notificationManager);
-            }
-            downloaders.add(nyt);
-
-        }
-
-        ShortyzApplication application = (ShortyzApplication) context.getApplicationContext();
-        System.out.println("Doing GMAIL: " + application.getGmailService() != null);
-        if(application.getGmailService() != null){
-            downloaders.add(new GmailDownloader(application.getGmailService()));
-        }
-
 
         this.supressMessages = prefs.getBoolean("supressMessages", false);
     }
@@ -248,7 +191,7 @@ public class Downloaders {
         String contentTitle = "Downloading Puzzles";
 
         NotificationCompat.Builder not =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(context, ShortyzApplication.PUZZLE_DOWNLOAD_CHANNEL_ID)
                         .setSmallIcon(android.R.drawable.stat_sys_download)
                         .setContentTitle(contentTitle)
                         .setWhen(System.currentTimeMillis());
@@ -318,18 +261,6 @@ public class Downloaders {
             for (File file : checkUpdate) {
                 try {
                     IO.meta(file);
-
-                    //                    if ((meta != null) && meta.updatable && (nyt != null) &&
-                    //                            nyt.getName().equals(meta.source)) {
-                    //                        System.out.println("Trying update for " + file);
-                    //
-                    //                        File updated = nyt.update(file);
-                    //
-                    //                        if (updated != null) {
-                    //                            this.postUpdatedNotification(i, nyt.getName(),
-                    //                                updated);
-                    //                        }
-                    //                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -443,7 +374,7 @@ public class Downloaders {
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 notificationIntent, 0);
 
-        Notification not = new NotificationCompat.Builder(context)
+        Notification not = new NotificationCompat.Builder(context, ShortyzApplication.PUZZLE_DOWNLOAD_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentTitle(contentTitle)
                 .setContentText("New puzzles were downloaded.")
@@ -464,7 +395,7 @@ public class Downloaders {
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 notificationIntent, 0);
 
-        Notification not = new NotificationCompat.Builder(context)
+        Notification not = new NotificationCompat.Builder(context, ShortyzApplication.PUZZLE_DOWNLOAD_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentTitle(contentTitle)
                 .setContentText(puzFile.getName())
@@ -476,21 +407,4 @@ public class Downloaders {
             this.notificationManager.notify(i, not);
         }
     }
-
-//    private void postUpdatedNotification(int i, String name, File puzFile) {
-//        String contentTitle = "Updated " + name;
-//        Notification not = new Notification(
-//                android.R.drawable.stat_sys_download_done, contentTitle,
-//                System.currentTimeMillis());
-//        Intent notificationIntent = new Intent(Intent.ACTION_EDIT,
-//                Uri.fromFile(puzFile), context, PlayActivity.class);
-//        PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
-//                notificationIntent, 0);
-//        not.setLatestEventInfo(context, contentTitle, puzFile.getName(),
-//                contentIntent);
-//
-//        if ((this.notificationManager != null) && !supressMessages) {
-//            this.notificationManager.notify(i, not);
-//        }
-//    }
 }

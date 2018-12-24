@@ -10,34 +10,10 @@
 		android:summary="Puzzles which update daily."
 		android:key="selectDaily"
 		>
-		<PreferenceScreen
-			android:title="New York Times"
-			android:summary="Requires subscription."
-			android:key="selectNYTimes">
-			<com.jenzz.materialpreference.CheckBoxPreference
-				android:title="New York Times"
-				android:defaultValue="false"
-				android:key="downloadNYT" />
-			<Preference
-			 	android:title="Get a Subscription" 
-			 	android:key="nytSubscribe"/>
-			<Preference
-				android:title="Clear Account Info"
-				android:key="nytClear" />
-		</PreferenceScreen>
-		<!--<com.jenzz.materialpreference.CheckBoxPreference-->
-			<!--android:title="Washington Post"-->
-			<!--android:defaultValue="true"-->
-			<!--android:key="downloadWaPo" />-->
 		<com.jenzz.materialpreference.CheckBoxPreference
 			android:title="Newsday"
 			android:defaultValue="true"
 			android:key="downloadNewsday" />
-		<!-- CheckBoxPreference
-			android:title="Houston Chronicle"
-			android:defaultValue="true"
-			android:summary="Also known as CrosSynergy"
-			android:key="downloadChron" /-->
  		<CheckBoxPreference
  			android:title="Joseph Crosswords"
  			android:defaultValue="true"
@@ -385,10 +361,6 @@
 
 </com.jenzz.materialpreference.PreferenceCategory>
 
-	<Preference
-		android:title="Clear Gmail Account"
-		android:key="clearGmail" />
-	
 	<PreferenceCategory
 		android:title="About Shortyz">
 	

@@ -57,7 +57,7 @@ Jan 2, 2001"
             android:paddingLeft="10dp"
             android:paddingTop="2dp"
             android:singleLine="true"
-            android:text="New York Times"
+            android:text="Noy Werk Times"
             android:textColor="@color/textColorPrimary"
             android:textSize="25dp" />
 

@@ -1,8 +1,5 @@
 package com.totsp.crossword.view;
 
-import static com.totsp.crossword.shortyz.ShortyzApplication.RENDERER;
-import static com.totsp.crossword.shortyz.ShortyzApplication.BOARD;
-
 import java.lang.StringBuilder;
 
 import android.preference.PreferenceManager;
@@ -14,10 +11,12 @@ import android.view.View;
 import android.content.res.Configuration;
 import java.util.logging.Logger;
 
+import com.totsp.crossword.puz.Playboard;
 import com.totsp.crossword.puz.Playboard.Position;
 import com.totsp.crossword.view.PlayboardRenderer;
 import com.totsp.crossword.puz.Box;
 import com.totsp.crossword.PlayActivity;
+import com.totsp.crossword.shortyz.ShortyzApplication;
 
 public class BoardEditText extends ScrollingImageView {
     private static final Logger LOG = Logger.getLogger(BoardEditText.class.getCanonicalName());
@@ -42,7 +41,7 @@ public class BoardEditText extends ScrollingImageView {
 
     private Position selection = new Position(-1, 0);
     private Box[] boxes;
-    private PlayboardRenderer renderer = RENDERER;
+    private PlayboardRenderer renderer = getRenderer();
     // surely a better way...
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -74,7 +73,7 @@ public class BoardEditText extends ScrollingImageView {
             public void onTap(Point e) {
                 BoardEditText.this.requestFocus();
 
-                int box = RENDERER.findBoxNoScale(e);
+                int box = getRenderer().findBoxNoScale(e);
                 if (boxes != null && box < boxes.length) {
                     selection.across = box;
                 }
@@ -247,7 +246,7 @@ public class BoardEditText extends ScrollingImageView {
 
                     int nextPos = selection.across;
 
-                    while (BOARD.isSkipCompletedLetters() &&
+                    while (getBoard().isSkipCompletedLetters() &&
                            boxes[selection.across].getResponse() != ' ' &&
                            selection.across < boxes.length - 1) {
                         selection.across++;
@@ -305,5 +304,13 @@ public class BoardEditText extends ScrollingImageView {
         }
 
         return newChar;
+    }
+
+    private Playboard getBoard(){
+        return ShortyzApplication.getInstance().getBoard();
+    }
+
+    private PlayboardRenderer getRenderer(){
+        return ShortyzApplication.getInstance().getRenderer();
     }
 }

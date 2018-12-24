@@ -1,8 +1,5 @@
 package com.totsp.crossword;
 
-import static com.totsp.crossword.shortyz.ShortyzApplication.BOARD;
-import static com.totsp.crossword.shortyz.ShortyzApplication.RENDERER;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
@@ -41,6 +38,7 @@ import com.totsp.crossword.shortyz.ShortyzApplication;
 import com.totsp.crossword.view.PlayboardRenderer;
 import com.totsp.crossword.view.ScrollingImageView;
 import com.totsp.crossword.view.ScrollingImageView.ClickListener;
+import com.totsp.crossword.puz.Playboard;
 import com.totsp.crossword.puz.Playboard.Word;
 import com.totsp.crossword.puz.Playboard.Position;
 import com.totsp.crossword.view.ScrollingImageView.Point;
@@ -104,7 +102,7 @@ public class NotesActivity extends ShortyzActivity {
 		utils.finishOnHomeButton(this);
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		this.renderer = new PlayboardRenderer(ShortyzApplication.BOARD, metrics.densityDpi, metrics.widthPixels,
+		this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
 				!prefs.getBoolean("supressHints", false),
 				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
 				ContextCompat.getColor(this, R.color.errorColor));
@@ -117,12 +115,12 @@ public class NotesActivity extends ShortyzActivity {
 					Toast.LENGTH_LONG).show();
 			finish();
 		}
-		if(ShortyzApplication.BOARD == null || ShortyzApplication.BOARD.getPuzzle() == null){
+		if(getBoard() == null || getBoard().getPuzzle() == null){
 			finish();
 			return;
 		}
 		this.timer = new ImaginaryTimer(
-				ShortyzApplication.BOARD.getPuzzle().getTime());
+				getBoard().getPuzzle().getTime());
 
 		Uri u = this.getIntent().getData();
 
@@ -132,7 +130,7 @@ public class NotesActivity extends ShortyzActivity {
 			}
 		}
 
-		puz = ShortyzApplication.BOARD.getPuzzle();
+		puz = getBoard().getPuzzle();
 		timer.start();
 
 		setContentView(R.layout.notes);
@@ -208,10 +206,10 @@ public class NotesActivity extends ShortyzActivity {
 
 
 
-		Clue c = BOARD.getClue();
+		Clue c = getBoard().getClue();
 
 		boolean showCount = prefs.getBoolean("showCount", false);
-		final int curWordLen = BOARD.getCurrentWord().length;
+		final int curWordLen = getBoard().getCurrentWord().length;
 
 		TextView clue = (TextView) this.findViewById(R.id.clueLine);
 		if (clue != null && clue.getVisibility() != View.GONE) {
@@ -224,7 +222,7 @@ public class NotesActivity extends ShortyzActivity {
 			prefs.getInt("clueSize", 12));
 
 		clue.setText("("
-			+ (BOARD.isAcross() ? "across" : "down")
+			+ (getBoard().isAcross() ? "across" : "down")
 			+ ") "
 			+ c.number
 			+ ". "
@@ -241,13 +239,13 @@ public class NotesActivity extends ShortyzActivity {
 			public void onTap(Point e) {
 				imageView.requestFocus();
 
-				Word current = BOARD.getCurrentWord();
+				Word current = getBoard().getCurrentWord();
 				int newAcross = current.start.across;
 				int newDown = current.start.down;
-				int box = RENDERER.findBoxNoScale(e);
+				int box = getRenderer().findBoxNoScale(e);
 
 				if (box < current.length) {
-					if (BOARD.isAcross()) {
+					if (getBoard().isAcross()) {
 						newAcross += box;
 					} else {
 						newDown += box;
@@ -256,14 +254,14 @@ public class NotesActivity extends ShortyzActivity {
 
 				Position newPos = new Position(newAcross, newDown);
 
-				if (!newPos.equals(BOARD.getHighlightLetter())) {
-					BOARD.setHighlightLetter(newPos);
+				if (!newPos.equals(getBoard().getHighlightLetter())) {
+					getBoard().setHighlightLetter(newPos);
 					NotesActivity.this.render();
 				}
 			}
 		});
 
-		Note note = puz.getNote(c.number, BOARD.isAcross());
+		Note note = puz.getNote(c.number, getBoard().isAcross());
 		if (note != null) {
 			EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
 			notesBox.setText(note.getText());
@@ -442,8 +440,8 @@ public class NotesActivity extends ShortyzActivity {
 
 		Note note = new Note(scratch, text, anagramSource, anagramSolution);
 
-		Clue c = BOARD.getClue();
-		puz.setNote(note, c.number, BOARD.isAcross());
+		Clue c = getBoard().getClue();
+		puz.setNote(note, c.number, getBoard().isAcross());
 
 		if (this.prefs.getBoolean("forceKeyboard", false)
 				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
@@ -484,7 +482,7 @@ public class NotesActivity extends ShortyzActivity {
 	}
 
 	private boolean onMiniboardKeyUp(int keyCode, KeyEvent event) {
-		Word w = BOARD.getCurrentWord();
+		Word w = getBoard().getCurrentWord();
 		Position last = new Position(w.start.across
 				+ (w.across ? (w.length - 1) : 0), w.start.down
 				+ ((!w.across) ? (w.length - 1) : 0));
@@ -495,9 +493,9 @@ public class NotesActivity extends ShortyzActivity {
 
 		case KeyEvent.KEYCODE_DPAD_LEFT:
 
-			if (!BOARD.getHighlightLetter().equals(
-					BOARD.getCurrentWord().start)) {
-				BOARD.previousLetter();
+			if (!getBoard().getHighlightLetter().equals(
+					getBoard().getCurrentWord().start)) {
+				getBoard().previousLetter();
 
 				this.render();
 			}
@@ -506,21 +504,21 @@ public class NotesActivity extends ShortyzActivity {
 
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
 
-			if (!BOARD.getHighlightLetter().equals(last)) {
-				BOARD.nextLetter();
+			if (!getBoard().getHighlightLetter().equals(last)) {
+				getBoard().nextLetter();
 				this.render();
 			}
 
 			return true;
 
 		case KeyEvent.KEYCODE_DEL:
-			w = BOARD.getCurrentWord();
-			BOARD.deleteLetter();
+			w = getBoard().getCurrentWord();
+			getBoard().deleteLetter();
 
-			Position p = BOARD.getHighlightLetter();
+			Position p = getBoard().getHighlightLetter();
 
 			if (!w.checkInWord(p.across, p.down)) {
-				BOARD.setHighlightLetter(w.start);
+				getBoard().setHighlightLetter(w.start);
 			}
 
 			this.render();
@@ -530,13 +528,13 @@ public class NotesActivity extends ShortyzActivity {
 		case KeyEvent.KEYCODE_SPACE:
 
 			if (!prefs.getBoolean("spaceChangesDirection", true)) {
-				BOARD.playLetter(' ');
+				getBoard().playLetter(' ');
 
-				Position curr = BOARD.getHighlightLetter();
+				Position curr = getBoard().getHighlightLetter();
 
-				if (!BOARD.getCurrentWord().equals(w)
-						|| (BOARD.getBoxes()[curr.across][curr.down] == null)) {
-					BOARD.setHighlightLetter(last);
+				if (!getBoard().getCurrentWord().equals(w)
+						|| (getBoard().getBoxes()[curr.across][curr.down] == null)) {
+					getBoard().setHighlightLetter(last);
 				}
 
 				this.render();
@@ -550,13 +548,13 @@ public class NotesActivity extends ShortyzActivity {
 						.getDisplayLabel() : ((char) keyCode));
 
 		if (PlayActivity.ALPHA.indexOf(c) != -1) {
-			BOARD.playLetter(c);
+			getBoard().playLetter(c);
 
-			Position p = BOARD.getHighlightLetter();
+			Position p = getBoard().getHighlightLetter();
 
-			if (!BOARD.getCurrentWord().equals(w)
-					|| (BOARD.getBoxes()[p.across][p.down] == null)) {
-				BOARD.setHighlightLetter(last);
+			if (!getBoard().getCurrentWord().equals(w)
+					|| (getBoard().getBoxes()[p.across][p.down] == null)) {
+				getBoard().setHighlightLetter(last);
 			}
 
 			this.render();
@@ -596,14 +594,14 @@ public class NotesActivity extends ShortyzActivity {
 		}
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
-        boolean displayScratchAcross = displayScratch && !BOARD.isAcross();
-        boolean displayScratchDown = displayScratch && BOARD.isAcross();
+        boolean displayScratchAcross = displayScratch && !getBoard().isAcross();
+        boolean displayScratchDown = displayScratch && getBoard().isAcross();
 		this.imageView.setBitmap(renderer.drawWord(displayScratchAcross,
                                                    displayScratchDown));
 	}
 
 	private void copyBoardViewToBoard(final BoardEditText view) {
-		final Box[] curWordBoxes = BOARD.getCurrentWordBoxes();
+		final Box[] curWordBoxes = getBoard().getCurrentWordBoxes();
 		boolean conflicts = false;
 
 		for (int i = 0; i < curWordBoxes.length; i++) {
@@ -651,4 +649,12 @@ public class NotesActivity extends ShortyzActivity {
 		render();
 		afterPlay();
 	}
+
+    private Playboard getBoard(){
+        return ShortyzApplication.getInstance().getBoard();
+    }
+
+    private PlayboardRenderer getRenderer(){
+        return ShortyzApplication.getInstance().getRenderer();
+    }
 }

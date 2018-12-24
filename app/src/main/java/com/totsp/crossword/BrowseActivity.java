@@ -41,6 +41,7 @@ import com.totsp.crossword.net.Downloaders;
 import com.totsp.crossword.net.Scrapers;
 import com.totsp.crossword.puz.Puzzle;
 import com.totsp.crossword.puz.PuzzleMeta;
+import com.totsp.crossword.shortyz.BuildConfig;
 import com.totsp.crossword.shortyz.R;
 import com.totsp.crossword.shortyz.ShortyzApplication;
 import com.totsp.crossword.view.CircleProgressBar;
@@ -194,8 +195,6 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        utils.onActionBarWithoutText(this.gamesItem = menu.add("Sign In")
-                .setIcon(this.playIcon));
         if(utils.isNightModeAvailable()) {
             utils.onActionBarWithoutText(menu.add("Night Mode")
                     .setIcon(R.drawable.night_toggle));
@@ -221,15 +220,6 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
         return true;
     }
 
-    public void onSignInSucceeded(){
-        this.playIcon = R.drawable.ic_play_games_badge_white;
-        if(this.gamesItem != null){
-            this.gamesItem.setIcon( this.playIcon );
-        }
-        this.signedIn = true;
-    }
-
-
     private void setListItemColor(View v, boolean selected){
         if(selected) {
             v.setBackgroundColor(highlightColor);
@@ -249,17 +239,9 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
         }
         if(item.getTitle().equals("Night Mode")){
             this.utils.toggleNightMode(this);
-        } else if(item.getTitle().equals("Sign In")){
-            if(this.signedIn && !(this.mHelper == null || this.mHelper.getGamesClient() == null)){
-                startActivityForResult(this.mHelper.getGamesClient().getAchievementsIntent(), 0);
-            } else {
-                Intent i = new Intent(this, GamesSignIn.class);
-                this.startActivity(i);
-                return true;
-            }
-    	} else if (item.getTitle()
+        }else if (item.getTitle()
                     .equals("Download")) {
-        	showDialog(DOWNLOAD_DIALOG_ID);
+	showDialog(DOWNLOAD_DIALOG_ID);
 
             return true;
         } else if (item.getTitle()
@@ -309,10 +291,6 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
                  .putInt("sort", 0)
                  .apply();
             this.render();
-        } else if("Send Debug Package".equals(item.getTitle())){
-        	Intent i = ShortyzApplication.sendDebug();
-        	if(i != null)
-        		this.startActivity(i);
         }
 
         return false;
@@ -466,9 +444,9 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
             this.startActivity(i);
 
             return;
-        } else if (prefs.getBoolean("release_4.3.9", true)) {
+        } else if (prefs.getBoolean("release_" + BuildConfig.VERSION_NAME, true)) {
             prefs.edit()
-                    .putBoolean("release_4.3.9", false)
+                    .putBoolean("release_"+BuildConfig.VERSION_NAME, false)
                     .apply();
 
             Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/release.html"), this,
@@ -572,7 +550,7 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
             showSDCardHelp();
             return new SeparatedRecyclerViewAdapter(R.layout.puzzle_list_header);
         }
-        
+
 
         String sourceMatch = null;
 
@@ -655,9 +633,9 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
             this.sourceList.addAll(sourcesTemp);
             Collections.sort(this.sourceList);
             this.handler.post(new Runnable(){
-            	public void run(){
-            		((SourceListAdapter) sources.getAdapter()).notifyDataSetInvalidated();
-            	}
+	public void run(){
+		((SourceListAdapter) sources.getAdapter()).notifyDataSetInvalidated();
+	}
             });
         }
 
@@ -796,7 +774,7 @@ public class BrowseActivity extends ShortyzActivity implements RecyclerItemClick
                 public void run() {
                     Downloaders dls = new Downloaders(prefs, nm, BrowseActivity.this);
                     dls.supressMessages(true);
-                    
+
                     Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
                     scrapes.supressMessages(true);
                     scrapes.scrape();
