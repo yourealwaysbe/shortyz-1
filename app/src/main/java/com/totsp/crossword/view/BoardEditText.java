@@ -41,7 +41,8 @@ public class BoardEditText extends ScrollingImageView {
 
     private Position selection = new Position(-1, 0);
     private Box[] boxes;
-    private PlayboardRenderer renderer = getRenderer();
+    private PlayboardRenderer renderer
+        = ShortyzApplication.getInstance().getRenderer();
     // surely a better way...
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -73,7 +74,7 @@ public class BoardEditText extends ScrollingImageView {
             public void onTap(Point e) {
                 BoardEditText.this.requestFocus();
 
-                int box = getRenderer().findBoxNoScale(e);
+                int box = renderer.findBox(e).across;
                 if (boxes != null && box < boxes.length) {
                     selection.across = box;
                 }
@@ -308,9 +309,5 @@ public class BoardEditText extends ScrollingImageView {
 
     private Playboard getBoard(){
         return ShortyzApplication.getInstance().getBoard();
-    }
-
-    private PlayboardRenderer getRenderer(){
-        return ShortyzApplication.getInstance().getRenderer();
     }
 }

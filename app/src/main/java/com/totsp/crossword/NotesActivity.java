@@ -107,6 +107,11 @@ public class NotesActivity extends ShortyzActivity {
 				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
 				ContextCompat.getColor(this, R.color.errorColor));
 
+		final int curWordLen = getBoard().getCurrentWord().length;
+        double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
+        if (scale > 1)
+            this.renderer.setScale((float) 1);
+
 		try {
 			this.configuration = getBaseContext().getResources()
 					.getConfiguration();
@@ -209,7 +214,6 @@ public class NotesActivity extends ShortyzActivity {
 		Clue c = getBoard().getClue();
 
 		boolean showCount = prefs.getBoolean("showCount", false);
-		final int curWordLen = getBoard().getCurrentWord().length;
 
 		TextView clue = (TextView) this.findViewById(R.id.clueLine);
 		if (clue != null && clue.getVisibility() != View.GONE) {
@@ -242,7 +246,7 @@ public class NotesActivity extends ShortyzActivity {
 				Word current = getBoard().getCurrentWord();
 				int newAcross = current.start.across;
 				int newDown = current.start.down;
-				int box = getRenderer().findBoxNoScale(e);
+				int box = renderer.findBox(e).across;
 
 				if (box < current.length) {
 					if (getBoard().isAcross()) {
@@ -652,9 +656,5 @@ public class NotesActivity extends ShortyzActivity {
 
     private Playboard getBoard(){
         return ShortyzApplication.getInstance().getBoard();
-    }
-
-    private PlayboardRenderer getRenderer(){
-        return ShortyzApplication.getInstance().getRenderer();
     }
 }
