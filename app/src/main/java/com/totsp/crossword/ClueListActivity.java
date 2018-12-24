@@ -325,6 +325,12 @@ public class ClueListActivity extends ShortyzActivity {
 		this.render();
 	}
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.render();
+    }
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
@@ -416,14 +422,14 @@ public class ClueListActivity extends ShortyzActivity {
 			}
 
 			this.render();
-			
+
 			if ((puz.getPercentComplete() == 100) && (timer != null)) {
 	            timer.stop();
 	            puz.setTime(timer.getElapsed());
 	            this.timer = null;
 	            Intent i = new Intent(ClueListActivity.this, PuzzleFinishedActivity.class);
 	            this.startActivity(i);
-	            
+
 	        }
 
 			return true;
