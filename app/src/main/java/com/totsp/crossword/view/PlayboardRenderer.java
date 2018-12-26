@@ -357,7 +357,8 @@ public class PlayboardRenderer {
             } else if ((currentWord != null) && currentWord.checkInWord(col, row)) {
                 canvas.drawRect(r, this.currentWordHighlight);
             } else if (this.board.isShowErrors() && !box.isBlank() &&
-                    (box.getSolution() != box.getResponse())) {
+                    (box.hasSolution()  &&
+                     box.getSolution() != box.getResponse())) {
                 box.setCheated(true);
                 canvas.drawRect(r, this.red);
             } else if (this.hintHighlight && box.isCheated()) {
@@ -377,7 +378,9 @@ public class PlayboardRenderer {
 
             thisLetter = this.letterText;
 
-            if (board.isShowErrors() && (box.getSolution() != box.getResponse())) {
+            if (board.isShowErrors() &&
+                (box.hasSolution() &&
+                 box.getSolution() != box.getResponse())) {
                 if (!box.isBlank()){
                     box.setCheated(true);
                 }

@@ -36,23 +36,23 @@ public class Box implements Serializable {
         Box other = (Box) obj;
 
         if (isAcross() != other.isAcross()) {
-        	return false;
+	return false;
         }
 
         if (isCheated() != other.isCheated()) {
-        	return false;
+	return false;
         }
 
         if (getClueNumber() != other.getClueNumber()) {
-        	return false;
+	return false;
         }
 
         if (isDown() != other.isDown()) {
-        	return false;
+	return false;
         }
-        
+
         if (isCircled() != other.isCircled()) {
-        	return false;
+	return false;
         }
 
         if (getResponder() == null) {
@@ -64,7 +64,7 @@ public class Box implements Serializable {
         }
 
         if (getResponse() != other.getResponse()) {
-        	return false;
+	return false;
         }
 
         if (getSolution() != other.getSolution()) {
@@ -154,19 +154,19 @@ public class Box implements Serializable {
     public void setDown(boolean down) {
         this.down = down;
     }
-    
+
     /**
      * @return if the box is circled
      */
     public boolean isCircled() {
-    	return circled;
+	return circled;
     }
-    
+
     /**
      * @param circled the circled to set
      */
     public void setCircled(boolean circled) {
-    	this.circled = circled;
+	this.circled = circled;
     }
 
     /**
@@ -181,6 +181,13 @@ public class Box implements Serializable {
      */
     public void setResponse(char response) {
         this.response = response;
+    }
+
+    /**
+     * True if box has solution (i.e. not '\0')
+     */
+    public boolean hasSolution() {
+        return getSolution() != '\0';
     }
 
     /**
