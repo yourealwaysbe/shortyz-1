@@ -96,7 +96,10 @@ public class AbstractPageScraper {
 	public boolean processFile(File file, String sourceUrl) {
 		try {
 			Puzzle puz = IO.load(file);
-			puz.setUpdatable(true);
+            // MATT: changed this from true to false
+            // I'm not sure what purpose it has
+            // Doesn't seem to be changeable from UI
+			puz.setUpdatable(false);
 			puz.setSource(this.sourceName);
 			puz.setSourceUrl(sourceUrl);
 			puz.setDate(new Date());
