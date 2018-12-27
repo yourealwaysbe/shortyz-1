@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableString;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -1210,7 +1211,43 @@ public class PlayActivity extends ShortyzActivity {
                 .findViewById(R.id.puzzle_info_progress);
         progress.setProgress(this.puz.getPercentComplete());
 
+        addNotes(dialog);
+
         return dialog;
+    }
+
+    private void addNotes(Dialog infoDialog) {
+        TextView view = dialog.findViewById(R.id.puzzle_info_notes);
+
+        final String notes = this.puz.getNotes();
+        String[] split = notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\d))", 2);
+
+        final String text = (split.length > 1) ? split[0].trim() : null;
+
+        String tapShow = getString(R.string.tap_to_show_full_notes);
+        if (text != null && text.length() > 0)
+            view.setText(text + "\n(" + tapShow + ")");
+        else
+            view.setText("(" + tapShow + ")");
+
+        view.setOnClickListener(new OnClickListener() {
+            private boolean showAll = true;
+            private String tapShow = getString(R.string.tap_to_show_full_notes);
+            private String tapHide = getString(R.string.tap_to_hide_full_notes);
+
+            public void onClick(View view) {
+                TextView tv = (TextView) view;
+
+                if (showAll)
+                    tv.setText(notes + "\n(" + tapHide + ")");
+                else if (text == null || text.length() == 0)
+                    tv.setText("(" + tapShow + ")");
+                else
+                    tv.setText(text + "\n(" + tapShow + ")");
+
+                showAll = !showAll;
+            }
+        });
     }
 
     private void render() {

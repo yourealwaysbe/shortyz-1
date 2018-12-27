@@ -12,4 +12,6 @@
     <string name="board_lab">Board:</string>
     <string name="scratch_lab">Scratch:</string>
     <string name="notes_lab">Notes:</string>
+    <string name="tap_to_show_full_notes">Tap to show full notes.</string>
+    <string name="tap_to_hide_full_notes">Tap to hide full notes.</string>
 </resources>

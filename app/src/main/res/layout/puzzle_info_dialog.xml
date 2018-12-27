@@ -48,5 +48,18 @@
   		android:id="@+id/puzzle_info_progress"
   		
   		/>
-  
+
+  <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+    <TextView 
+    android:id="@+id/puzzle_info_notes"
+    android:textSize="20dp"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="Puzzle notes."
+    android:scrollbars="vertical"
+    android:gravity="center_horizontal"/>
+  </ScrollView> 
+ 
 </LinearLayout>
