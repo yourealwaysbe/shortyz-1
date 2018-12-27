@@ -48,6 +48,14 @@
   		android:id="@+id/puzzle_info_progress"
   		
   		/>
+  
+  <TextView 
+    android:id="@+id/puzzle_info_filename"
+    android:textSize="12dp"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical"
+    android:gravity="center_horizontal"/>
 
   <ScrollView
         android:layout_width="fill_parent"
@@ -61,5 +69,5 @@
     android:scrollbars="vertical"
     android:gravity="center_horizontal"/>
   </ScrollView> 
- 
+
 </LinearLayout>

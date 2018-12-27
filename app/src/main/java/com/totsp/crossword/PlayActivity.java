@@ -1211,6 +1211,9 @@ public class PlayActivity extends ShortyzActivity {
                 .findViewById(R.id.puzzle_info_progress);
         progress.setProgress(this.puz.getPercentComplete());
 
+        view = dialog.findViewById(R.id.puzzle_info_filename);
+        view.setText(Uri.fromFile(baseFile).toString());
+
         addNotes(dialog);
 
         return dialog;
