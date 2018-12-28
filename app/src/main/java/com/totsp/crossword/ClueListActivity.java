@@ -382,6 +382,18 @@ public class ClueListActivity extends ShortyzActivity {
         keyboardManager.onPause();
 	}
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        keyboardManager.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        keyboardManager.onDestroy();
+    }
+
 	private void render() {
         keyboardManager.render();
 

@@ -937,6 +937,9 @@ public class PlayActivity extends ShortyzActivity {
 
     @Override
     protected void onPause() {
+        super.onPause();
+        keyboardManager.onPause();
+
         try {
             if ((puz != null) && (baseFile != null)) {
                 if ((puz.getPercentComplete() != 100) && (this.timer != null)) {
@@ -952,9 +955,6 @@ public class PlayActivity extends ShortyzActivity {
         }
 
         this.timer = null;
-
-        keyboardManager.onPause();
-        super.onPause();
     }
 
     @Override
@@ -1000,6 +1000,14 @@ public class PlayActivity extends ShortyzActivity {
         if (this.timer != null) {
             this.timer.stop();
         }
+
+        keyboardManager.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        keyboardManager.onDestroy();
     }
 
     private void setClueSize(int dps) {

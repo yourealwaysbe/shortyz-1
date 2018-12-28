@@ -341,6 +341,18 @@ public class NotesActivity extends ShortyzActivity {
         keyboardManager.onPause();
 	}
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        keyboardManager.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        keyboardManager.onDestroy();
+    }
+
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {

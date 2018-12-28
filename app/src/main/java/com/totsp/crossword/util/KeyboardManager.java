@@ -202,6 +202,20 @@ public class KeyboardManager {
     }
 
     /**
+     * Call this when the activity receives an onStop
+     */
+    public void onStop() {
+        hideKeyboard();
+    }
+
+    /**
+     * Call this when the activity receives an onDestroy
+     */
+    public void onDestroy() {
+        hideKeyboard();
+    }
+
+    /**
      * Show the keyboard
      */
     public void showKeyboard() {
