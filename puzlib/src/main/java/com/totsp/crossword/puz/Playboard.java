@@ -6,10 +6,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
-
+import java.util.logging.Logger;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Playboard implements Serializable {
+    private static final Logger LOG = Logger.getLogger(Playboard.class.getCanonicalName());
+
     private HashMap<Integer, Position> acrossWordStarts = new HashMap<Integer, Position>();
     private HashMap<Integer, Position> downWordStarts = new HashMap<Integer, Position>();
     private MovementStrategy movementStrategy = MovementStrategy.MOVE_NEXT_ON_AXIS;
@@ -223,14 +225,21 @@ public class Playboard implements Serializable {
 
     public Word setHighlightLetter(Position highlightLetter) {
         Word w = this.getCurrentWord();
+        int x = highlightLetter.across;
+        int y = highlightLetter.down;
 
         if (highlightLetter.equals(this.highlightLetter)) {
-            this.toggleDirection();
+            toggleDirection();
         } else {
-            if ((this.boxes.length > highlightLetter.across) && (highlightLetter.across >= 0) &&
-                    (this.boxes[highlightLetter.across].length > highlightLetter.down) && (highlightLetter.down >= 0) &&
-                    (this.boxes[highlightLetter.across][highlightLetter.down] != null)) {
+            if ((boxes.length > x) && (x >= 0) &&
+                (boxes[x].length > y) && (y >= 0) &&
+                (boxes[x][y] != null)) {
                 this.highlightLetter = highlightLetter;
+
+                if ((isAcross() && !boxes[x][y].isPartOfAcross()) ||
+                    (!isAcross() && !boxes[x][y].isPartOfDown())) {
+                    toggleDirection();
+                }
             }
         }
 
@@ -671,7 +680,14 @@ public class Playboard implements Serializable {
 
     public Word toggleDirection() {
         Word w = this.getCurrentWord();
-        this.across = !across;
+        Position cur = getHighlightLetter();
+        int x = cur.across;
+        int y = cur.down;
+
+        if ((across && boxes[x][y].isPartOfDown()) ||
+            (!across && boxes[x][y].isPartOfAcross())) {
+            this.across = !across;
+        }
 
         return w;
     }
