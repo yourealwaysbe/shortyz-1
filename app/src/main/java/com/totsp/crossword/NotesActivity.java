@@ -15,14 +15,9 @@ import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnFocusChangeListener;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
-import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.widget.Toast;
-import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -51,13 +46,12 @@ public class NotesActivity extends ShortyzActivity {
 	protected Configuration configuration;
 	protected File baseFile;
 	protected ImaginaryTimer timer;
-	protected KeyboardView keyboardView = null;
+	protected KeyboardManager keyboardManager;
 	protected Puzzle puz;
 	private ScrollingImageView imageView;
 	private BoardEditText scratchView;
 	private BoardEditText anagramSourceView;
 	private BoardEditText anagramSolView;
-	private boolean useNativeKeyboard = false;
 	private PlayboardRenderer renderer;
 
 	private Random rand = new Random();
@@ -68,22 +62,8 @@ public class NotesActivity extends ShortyzActivity {
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		this.configuration = newConfig;
-		try {
-			if (this.prefs.getBoolean("forceKeyboard", false)
-					|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-					|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-				if (imm != null)
-					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-							InputMethodManager.HIDE_NOT_ALWAYS);
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        keyboardManager.onConfigurationChanged(newConfig);
 	}
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -140,76 +120,8 @@ public class NotesActivity extends ShortyzActivity {
 
 		setContentView(R.layout.notes);
 
-		int keyboardType = "CONDENSED_ARROWS".equals(prefs.getString(
-				"keyboardType", "")) ? R.xml.keyboard_dpad : R.xml.keyboard;
-		Keyboard keyboard = new Keyboard(this, keyboardType);
-		keyboardView = (KeyboardView) this.findViewById(R.id.notesKeyboard);
-		keyboardView.setKeyboard(keyboard);
-		this.useNativeKeyboard = "NATIVE".equals(prefs.getString(
-				"keyboardType", ""));
-
-		if (this.useNativeKeyboard) {
-			keyboardView.setVisibility(View.GONE);
-		}
-
-		keyboardView
-				.setOnKeyboardActionListener(new OnKeyboardActionListener() {
-					private long lastSwipe = 0;
-
-					public void onKey(int primaryCode, int[] keyCodes) {
-						long eventTime = System.currentTimeMillis();
-
-						if ((eventTime - lastSwipe) < 500) {
-							return;
-						}
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						NotesActivity.this.onKeyUp(primaryCode, event);
-					}
-
-					public void onPress(int primaryCode) {}
-
-					public void onRelease(int primaryCode){}
-
-					public void onText(CharSequence text) {}
-
-					public void swipeDown() {}
-
-					public void swipeLeft() {
-						long eventTime = System.currentTimeMillis();
-						lastSwipe = eventTime;
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN,
-								KeyEvent.KEYCODE_DPAD_LEFT, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						NotesActivity.this.onKeyUp(
-								KeyEvent.KEYCODE_DPAD_LEFT, event);
-					}
-
-					public void swipeRight() {
-						long eventTime = System.currentTimeMillis();
-						lastSwipe = eventTime;
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN,
-								KeyEvent.KEYCODE_DPAD_RIGHT, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						NotesActivity.this.onKeyUp(
-								KeyEvent.KEYCODE_DPAD_RIGHT, event);
-					}
-
-					public void swipeUp() {
-						// TODO Auto-generated method stub
-					}
-				});
-
-
+        keyboardManager
+            = new KeyboardManager(this, findViewById(R.id.notesKeyboard));
 
 		Clue c = getBoard().getClue();
 
@@ -406,28 +318,7 @@ public class NotesActivity extends ShortyzActivity {
 			}
 		});
 
-
-		// if not using native keyboard, hide shortyz' when the notesBox is in
-		// focus
-		OnFocusChangeListener hideKbdListener = new OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean gainFocus) {
-				if (!NotesActivity.this.useNativeKeyboard) {
-					if (gainFocus) {
-						NotesActivity.this.keyboardView.setVisibility(View.GONE);
-					} else {
-						NotesActivity.this.keyboardView.setVisibility(View.VISIBLE);
-					}
-				}
-				if (!gainFocus) {
-					InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-				}
-			}
-		};
-
-		EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
-		notesBox.setOnFocusChangeListener(hideKbdListener);
+        keyboardManager.disableForView(this.findViewById(R.id.notesBox));
 
 		this.render();
 	}
@@ -447,12 +338,7 @@ public class NotesActivity extends ShortyzActivity {
 		Clue c = getBoard().getClue();
 		puz.setNote(note, c.number, getBoard().isAcross());
 
-		if (this.prefs.getBoolean("forceKeyboard", false)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-			InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-		}
+        keyboardManager.onPause();
 	}
 
 	@Override
@@ -545,7 +431,9 @@ public class NotesActivity extends ShortyzActivity {
 		}
 
 		char c = Character
-				.toUpperCase(((this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) || this.useNativeKeyboard) ? event
+				.toUpperCase(((configuration.hardKeyboardHidden
+                                   == Configuration.HARDKEYBOARDHIDDEN_NO) ||
+                              keyboardManager.getUseNativeKeyboard()) ? event
 						.getDisplayLabel() : ((char) keyCode));
 
 		if (PlayActivity.ALPHA.indexOf(c) != -1) {
@@ -578,21 +466,15 @@ public class NotesActivity extends ShortyzActivity {
 		}
 	}
 
-	protected void render() {
-		if (this.prefs.getBoolean("forceKeyboard", false)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-			if (this.useNativeKeyboard) {
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        keyboardManager.onResume(findViewById(R.id.notesKeyboard));
+    }
 
-				imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-						InputMethodManager.HIDE_IMPLICIT_ONLY);
-			} else {
-				this.keyboardView.setVisibility(View.VISIBLE);
-			}
-		} else {
-			this.keyboardView.setVisibility(View.GONE);
-		}
+
+	protected void render() {
+        keyboardManager.render();
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
         boolean displayScratchAcross = displayScratch && !getBoard().isAcross();

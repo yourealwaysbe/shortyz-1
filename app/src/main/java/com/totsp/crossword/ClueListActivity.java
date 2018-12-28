@@ -3,9 +3,6 @@ package com.totsp.crossword;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
-import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -14,7 +11,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -43,7 +39,7 @@ public class ClueListActivity extends ShortyzActivity {
 	private Configuration configuration;
 	private File baseFile;
 	private ImaginaryTimer timer;
-	private KeyboardView keyboardView = null;
+	private KeyboardManager keyboardManager;
 	private ListView across;
 	private ListView down;
 	private Puzzle puz;
@@ -56,20 +52,7 @@ public class ClueListActivity extends ShortyzActivity {
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		this.configuration = newConfig;
-		try {
-			if (this.prefs.getBoolean("forceKeyboard", false)
-					|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-					|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-				if (imm != null)
-					imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-							InputMethodManager.HIDE_NOT_ALWAYS);
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        keyboardManager.onConfigurationChanged(newConfig);
 	}
 
     @Override
@@ -124,76 +107,10 @@ public class ClueListActivity extends ShortyzActivity {
 		timer.start();
 		setContentView(R.layout.clue_list);
 
-		int keyboardType = "CONDENSED_ARROWS".equals(prefs.getString(
-				"keyboardType", "")) ? R.xml.keyboard_dpad : R.xml.keyboard;
-		Keyboard keyboard = new Keyboard(this, keyboardType);
-		keyboardView = this.findViewById(R.id.clueKeyboard);
-		keyboardView.setKeyboard(keyboard);
-		this.useNativeKeyboard = "NATIVE".equals(prefs.getString(
-				"keyboardType", ""));
+		keyboardManager
+            = new KeyboardManager(this, findViewById(R.id.clueKeyboard));
 
-		if (this.useNativeKeyboard) {
-			keyboardView.setVisibility(View.GONE);
-		}
-
-		keyboardView
-				.setOnKeyboardActionListener(new OnKeyboardActionListener() {
-					private long lastSwipe = 0;
-
-					public void onKey(int primaryCode, int[] keyCodes) {
-						long eventTime = System.currentTimeMillis();
-
-						if ((eventTime - lastSwipe) < 500) {
-							return;
-						}
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN, primaryCode, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						ClueListActivity.this.onKeyDown(primaryCode, event);
-					}
-
-					public void onPress(int primaryCode) {}
-
-					public void onRelease(int primaryCode){}
-
-					public void onText(CharSequence text) {}
-
-					public void swipeDown() {}
-
-					public void swipeLeft() {
-						long eventTime = System.currentTimeMillis();
-						lastSwipe = eventTime;
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN,
-								KeyEvent.KEYCODE_DPAD_LEFT, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						ClueListActivity.this.onKeyDown(
-								KeyEvent.KEYCODE_DPAD_LEFT, event);
-					}
-
-					public void swipeRight() {
-						long eventTime = System.currentTimeMillis();
-						lastSwipe = eventTime;
-
-						KeyEvent event = new KeyEvent(eventTime, eventTime,
-								KeyEvent.ACTION_DOWN,
-								KeyEvent.KEYCODE_DPAD_RIGHT, 0, 0, 0, 0,
-								KeyEvent.FLAG_SOFT_KEYBOARD
-										| KeyEvent.FLAG_KEEP_TOUCH_MODE);
-						ClueListActivity.this.onKeyDown(
-								KeyEvent.KEYCODE_DPAD_RIGHT, event);
-					}
-
-					public void swipeUp() {
-						// TODO Auto-generated method stub
-					}
-				});
-
-		this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
+        this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
 
 		this.imageView.setContextMenuListener(new ClickListener() {
 			public void onContextMenu(Point e) {
@@ -328,6 +245,7 @@ public class ClueListActivity extends ShortyzActivity {
     @Override
     public void onResume() {
         super.onResume();
+        keyboardManager.onResume(findViewById(R.id.clueKeyboard));
         this.render();
     }
 
@@ -339,6 +257,11 @@ public class ClueListActivity extends ShortyzActivity {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		return super.onKeyUp(keyCode, event);
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		Playboard board = ShortyzApplication.getInstance().getBoard();
 		Word w = board.getCurrentWord();
 		Position last = new Position(w.start.across
@@ -350,9 +273,7 @@ public class ClueListActivity extends ShortyzActivity {
 			return false;
 
 		case KeyEvent.KEYCODE_BACK:
-			System.out.println("BACK!!!");
-			this.setResult(0);
-
+            this.finish();
 			return true;
 
 		case KeyEvent.KEYCODE_DPAD_LEFT:
@@ -408,7 +329,9 @@ public class ClueListActivity extends ShortyzActivity {
 		}
 
 		char c = Character
-				.toUpperCase(((this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) || this.useNativeKeyboard) ? event
+				.toUpperCase(((configuration.hardKeyboardHidden
+                                   == Configuration.HARDKEYBOARDHIDDEN_NO) ||
+                               keyboardManager.getUseNativeKeyboard()) ? event
 						.getDisplayLabel() : ((char) keyCode));
 
 		if (PlayActivity.ALPHA.indexOf(c) != -1) {
@@ -439,18 +362,6 @@ public class ClueListActivity extends ShortyzActivity {
 	}
 
 	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_BACK:
-			this.finish();
-
-			return true;
-		}
-
-		return super.onKeyUp(keyCode, event);
-	}
-
-	@Override
 	protected void onPause() {
 		super.onPause();
 
@@ -468,29 +379,11 @@ public class ClueListActivity extends ShortyzActivity {
 			ioe.printStackTrace();
 		}
 
-		if (this.prefs.getBoolean("forceKeyboard", false)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-			InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-		}
+        keyboardManager.onPause();
 	}
 
 	private void render() {
-		if (this.prefs.getBoolean("forceKeyboard", false)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
-				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-			if (this.useNativeKeyboard) {
-				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-				imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-						InputMethodManager.HIDE_IMPLICIT_ONLY);
-			} else {
-				this.keyboardView.setVisibility(View.VISIBLE);
-			}
-		} else {
-			this.keyboardView.setVisibility(View.GONE);
-		}
+        keyboardManager.render();
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
 		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
