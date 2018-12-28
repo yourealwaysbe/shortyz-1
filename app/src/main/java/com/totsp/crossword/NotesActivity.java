@@ -451,10 +451,7 @@ public class NotesActivity extends ShortyzActivity {
 				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES)
 				|| (this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
 			InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.hideSoftInputFromWindow(this.imageView.getWindowToken(), 0);
-			imm.hideSoftInputFromWindow(this.scratchView.getWindowToken(), 0);
-			imm.hideSoftInputFromWindow(this.anagramSourceView.getWindowToken(), 0);
-			imm.hideSoftInputFromWindow(this.anagramSolView.getWindowToken(), 0);
+			imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 		}
 	}
 

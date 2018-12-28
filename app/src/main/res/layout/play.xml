@@ -33,7 +33,10 @@
 		android:layout_height="fill_parent"
 		android:scrollbars="horizontal|vertical"
         android:background="#000000"
-	/>
+        android:focusable="true"
+        android:focusableInTouchMode="true" >
+        <requestFocus />
+    </com.totsp.crossword.view.ScrollingImageView>
 	
 	
 </RelativeLayout>	
