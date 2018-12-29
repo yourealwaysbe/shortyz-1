@@ -76,12 +76,14 @@ public class ClueListActivity extends ShortyzActivity {
 		utils.finishOnHomeButton(this);
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		this.renderer = new PlayboardRenderer(ShortyzApplication.getInstance().getBoard(), metrics.densityDpi, metrics.widthPixels,
+		this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
 				!prefs.getBoolean("supressHints", false),
 				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
 				ContextCompat.getColor(this, R.color.errorColor));
 
-		try {
+        scaleRendererToCurWord();
+
+        try {
 			this.configuration = getBaseContext().getResources()
 					.getConfiguration();
 		} catch (Exception e) {
@@ -118,10 +120,10 @@ public class ClueListActivity extends ShortyzActivity {
 			}
 
 			public void onTap(Point e) {
-				Word current = ShortyzApplication.getInstance().getBoard().getCurrentWord();
+				Word current = getBoard().getCurrentWord();
 				int newAcross = current.start.across;
 				int newDown = current.start.down;
-				int box = ShortyzApplication.getInstance().getRenderer().findBoxNoScale(e);
+				int box = renderer.findBox(e).across;
 
 				if (box < current.length) {
 					if (tabHost.getCurrentTab() == 0) {
@@ -133,9 +135,8 @@ public class ClueListActivity extends ShortyzActivity {
 
 				Position newPos = new Position(newAcross, newDown);
 
-				if (!newPos.equals(ShortyzApplication.getInstance().getBoard()
-						.getHighlightLetter())) {
-					ShortyzApplication.getInstance().getBoard().setHighlightLetter(newPos);
+				if (!newPos.equals(getBoard().getHighlightLetter())) {
+					getBoard().setHighlightLetter(newPos);
 					ClueListActivity.this.render();
 				}
 			}
@@ -160,80 +161,42 @@ public class ClueListActivity extends ShortyzActivity {
 		ts.setContent(R.id.downList);
 		this.tabHost.addTab(ts);
 
-		this.tabHost.setCurrentTab(ShortyzApplication.getInstance().getBoard().isAcross() ? 0 : 1);
+		this.tabHost.setCurrentTab(getBoard().isAcross() ? 0 : 1);
 
 		this.across = (ListView) this.findViewById(R.id.acrossList);
 		this.down = (ListView) this.findViewById(R.id.downList);
 
 		across.setAdapter(new ArrayAdapter<>(this,
-				android.R.layout.simple_list_item_1, ShortyzApplication.getInstance().getBoard()
-						.getAcrossClues()));
+				android.R.layout.simple_list_item_activated_1,
+                getBoard().getAcrossClues()));
 		across.setFocusableInTouchMode(true);
 		down.setAdapter(new ArrayAdapter<>(this,
-				android.R.layout.simple_list_item_1, ShortyzApplication.getInstance().getBoard()
-						.getDownClues()));
+				android.R.layout.simple_list_item_activated_1,
+                getBoard().getDownClues()));
 		across.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				arg0.setSelected(true);
-				ShortyzApplication.getInstance().getBoard().jumpTo(arg2, true);
-				imageView.scrollTo(0, 0);
-				render();
-
-				if (prefs.getBoolean("snapClue", false)) {
-					across.setSelectionFromTop(arg2, 5);
-					across.setSelection(arg2);
-				}
+                onItemClickSelect(arg0, arg1, arg2, arg3, true, across);
 			}
 		});
 		across.setOnItemSelectedListener(new OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int arg2, long arg3) {
-				Playboard board = ShortyzApplication.getInstance().getBoard();
-				if (!board.isAcross()
-						|| (board.getCurrentClueIndex() != arg2)) {
-					board.jumpTo(arg2, true);
-					imageView.scrollTo(0, 0);
-					render();
-
-					if (prefs.getBoolean("snapClue", false)) {
-						across.setSelectionFromTop(arg2, 5);
-						across.setSelection(arg2);
-					}
-				}
+                onItemClickSelect(arg0, arg1, arg2, arg3, true, across);
 			}
-
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
+			public void onNothingSelected(AdapterView<?> arg0) { }
 		});
 		down.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					final int arg2, long arg3) {
-				ShortyzApplication.getInstance().getBoard().jumpTo(arg2, false);
-				imageView.scrollTo(0, 0);
-				render();
-
-				if (prefs.getBoolean("snapClue", false)) {
-					down.setSelectionFromTop(arg2, 5);
-					down.setSelection(arg2);
-				}
+                onItemClickSelect(arg0, arg1, arg2, arg3, false, down);
 			}
 		});
 
 		down.setOnItemSelectedListener(new OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int arg2, long arg3) {
-				if (ShortyzApplication.getInstance().getBoard().isAcross()
-						|| (ShortyzApplication.getInstance().getBoard().getCurrentClueIndex() != arg2)) {
-					ShortyzApplication.getInstance().getBoard().jumpTo(arg2, false);
-					imageView.scrollTo(0, 0);
-					render();
-
-					if (prefs.getBoolean("snapClue", false)) {
-						down.setSelectionFromTop(arg2, 5);
-						down.setSelection(arg2);
-					}
-				}
+                onItemClickSelect(arg0, arg1, arg2, arg3, false, down);
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {
@@ -262,7 +225,7 @@ public class ClueListActivity extends ShortyzActivity {
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		Playboard board = ShortyzApplication.getInstance().getBoard();
+		Playboard board = getBoard();
 		Word w = board.getCurrentWord();
 		Position last = new Position(w.start.across
 				+ (w.across ? (w.length - 1) : 0), w.start.down
@@ -400,4 +363,52 @@ public class ClueListActivity extends ShortyzActivity {
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
 		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
 	}
+
+    private Playboard getBoard(){
+        return ShortyzApplication.getInstance().getBoard();
+    }
+
+    /**
+     * Scale the current renderer to fit the length of the currently
+     * selected word.
+     */
+    private void scaleRendererToCurWord() {
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int curWordLen = getBoard().getCurrentWord().length;
+        double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
+        if (scale > 1)
+            this.renderer.setScale((float) 1);
+    }
+
+    /**
+     * Callback for on click / select listeners for clues.
+     *
+     * Args as in onItemClick except:
+     *
+     * @param isAcross true if across clues are being selected
+     * @param clueList the clue list clicked on
+     */
+    private void onItemClickSelect(AdapterView<?> parent,
+                                   View view,
+					               int position,
+                                   long id,
+                                   boolean isAcross,
+                                   ListView clueList) {
+        Playboard board = getBoard();
+        if (board.isAcross() != isAcross
+            || (board.getCurrentClueIndex() != position)) {
+            parent.setSelected(true);
+
+            board.jumpTo(position, isAcross);
+            imageView.scrollTo(0, 0);
+            scaleRendererToCurWord();
+            render();
+
+            if (prefs.getBoolean("snapClue", false)) {
+                clueList.setSelectionFromTop(position, 5);
+                clueList.setSelection(position);
+            }
+        }
+    }
 }
