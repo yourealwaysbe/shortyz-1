@@ -357,8 +357,13 @@ public class ClueListActivity extends ShortyzActivity {
         keyboardManager.onDestroy();
     }
 
-	private void render() {
-        keyboardManager.render();
+    private void render() {
+        render(true);
+    }
+
+	private void render(boolean showKeyboard) {
+        if (showKeyboard)
+            keyboardManager.render();
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
 		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
@@ -403,7 +408,7 @@ public class ClueListActivity extends ShortyzActivity {
             board.jumpTo(position, isAcross);
             imageView.scrollTo(0, 0);
             scaleRendererToCurWord();
-            render();
+            render(false);
 
             if (prefs.getBoolean("snapClue", false)) {
                 clueList.setSelectionFromTop(position, 5);
