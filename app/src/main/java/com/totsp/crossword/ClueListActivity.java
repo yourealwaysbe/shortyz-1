@@ -173,30 +173,37 @@ public class ClueListActivity extends ShortyzActivity {
 		down.setAdapter(new ArrayAdapter<>(this,
 				android.R.layout.simple_list_item_activated_1,
                 getBoard().getDownClues()));
+
+        int index = getBoard().getCurrentClueIndex();
+        if (getBoard().isAcross())
+            across.setItemChecked(index, true);
+        else
+            down.setItemChecked(index, true);
+
 		across.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, true, across);
+                onItemClickSelect(arg0, arg1, arg2, arg3, true);
 			}
 		});
 		across.setOnItemSelectedListener(new OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, true, across);
+                onItemClickSelect(arg0, arg1, arg2, arg3, true);
 			}
 			public void onNothingSelected(AdapterView<?> arg0) { }
 		});
 		down.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					final int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, false, down);
+                onItemClickSelect(arg0, arg1, arg2, arg3, false);
 			}
 		});
 
 		down.setOnItemSelectedListener(new OnItemSelectedListener() {
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, false, down);
+                onItemClickSelect(arg0, arg1, arg2, arg3, false);
 			}
 
 			public void onNothingSelected(AdapterView<?> arg0) {
@@ -392,14 +399,12 @@ public class ClueListActivity extends ShortyzActivity {
      * Args as in onItemClick except:
      *
      * @param isAcross true if across clues are being selected
-     * @param clueList the clue list clicked on
      */
     private void onItemClickSelect(AdapterView<?> parent,
                                    View view,
 					               int position,
                                    long id,
-                                   boolean isAcross,
-                                   ListView clueList) {
+                                   boolean isAcross) {
         Playboard board = getBoard();
         if (board.isAcross() != isAcross
             || (board.getCurrentClueIndex() != position)) {
@@ -410,10 +415,16 @@ public class ClueListActivity extends ShortyzActivity {
             scaleRendererToCurWord();
             render(false);
 
+
+            ListView clueList = isAcross ? across : down;
+            ListView otherList = isAcross ? down : across;
+
             if (prefs.getBoolean("snapClue", false)) {
                 clueList.setSelectionFromTop(position, 5);
                 clueList.setSelection(position);
             }
+
+            otherList.clearChoices();
         }
     }
 }
