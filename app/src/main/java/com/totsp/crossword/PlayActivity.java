@@ -301,8 +301,10 @@ public class PlayActivity extends ShortyzActivity {
                             fitToScreen = !fitToScreen;
                         } else {
                             Position p = getRenderer().findBox(e);
-                            Word old = getBoard().setHighlightLetter(p);
-                            PlayActivity.this.render(old);
+                            if (getBoard().isInWord(p)) {
+                                Word old = getBoard().setHighlightLetter(p);
+                                PlayActivity.this.render(old);
+                            }
                         }
 
                         lastTap = System.currentTimeMillis();

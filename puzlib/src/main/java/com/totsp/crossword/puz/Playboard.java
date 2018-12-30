@@ -246,6 +246,17 @@ public class Playboard implements Serializable {
         return w;
     }
 
+    /**
+     * Returns true if the position is part of a word (not blank cell)
+     */
+    public boolean isInWord(Position p) {
+        int x = p.across;
+        int y = p.down;
+        return ((boxes.length > x) && (x >= 0) &&
+                (boxes[x].length > y) && (y >= 0) &&
+                (boxes[x][y] != null));
+    }
+
     public Position getHighlightLetter() {
         return highlightLetter;
     }
