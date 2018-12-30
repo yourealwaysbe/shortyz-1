@@ -137,8 +137,8 @@ public class ClueListActivity extends ShortyzActivity {
 
 				if (!newPos.equals(getBoard().getHighlightLetter())) {
 					getBoard().setHighlightLetter(newPos);
-					ClueListActivity.this.render();
 				}
+                ClueListActivity.this.render(true);
 			}
 		});
 
@@ -209,14 +209,14 @@ public class ClueListActivity extends ShortyzActivity {
 			public void onNothingSelected(AdapterView<?> arg0) {
 			}
 		});
-		this.render();
+		this.render(false);
 	}
 
     @Override
     public void onResume() {
         super.onResume();
         keyboardManager.onResume(findViewById(R.id.clueKeyboard));
-        this.render();
+        this.render(false);
     }
 
 	@Override
@@ -252,7 +252,7 @@ public class ClueListActivity extends ShortyzActivity {
 					board.getCurrentWord().start)) {
 				board.previousLetter();
 
-				this.render();
+				this.render(true);
 			}
 
 			return true;
@@ -261,7 +261,7 @@ public class ClueListActivity extends ShortyzActivity {
 
 			if (!board.getHighlightLetter().equals(last)) {
 				board.nextLetter();
-				this.render();
+				this.render(true);
 			}
 
 			return true;
@@ -276,7 +276,7 @@ public class ClueListActivity extends ShortyzActivity {
 				board.setHighlightLetter(w.start);
 			}
 
-			this.render();
+			this.render(true);
 
 			return true;
 
@@ -292,7 +292,7 @@ public class ClueListActivity extends ShortyzActivity {
 					board.setHighlightLetter(last);
 				}
 
-				this.render();
+				this.render(true);
 
 				return true;
 			}
@@ -314,7 +314,7 @@ public class ClueListActivity extends ShortyzActivity {
 				board.setHighlightLetter(last);
 			}
 
-			this.render();
+			this.render(true);
 
 			if ((puz.getPercentComplete() == 100) && (timer != null)) {
 	            timer.stop();
@@ -364,13 +364,11 @@ public class ClueListActivity extends ShortyzActivity {
         keyboardManager.onDestroy();
     }
 
-    private void render() {
-        render(true);
-    }
-
 	private void render(boolean showKeyboard) {
         if (showKeyboard)
             keyboardManager.render();
+        else
+            keyboardManager.hideKeyboard();
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
 		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
@@ -414,7 +412,6 @@ public class ClueListActivity extends ShortyzActivity {
             imageView.scrollTo(0, 0);
             scaleRendererToCurWord();
             render(false);
-
 
             ListView clueList = isAcross ? across : down;
             ListView otherList = isAcross ? down : across;

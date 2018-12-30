@@ -1134,7 +1134,15 @@ public class PlayActivity extends ShortyzActivity {
     }
 
     private void render(Word previous, boolean rescale) {
-        keyboardManager.render();
+        // only show keyboard if double click a word
+        // hide if it's a new word
+        Position newPos = getBoard().getHighlightLetter();
+        if ((previous != null) &&
+            previous.checkInWord(newPos.across, newPos.down)) {
+            keyboardManager.render();
+        } else {
+            keyboardManager.hideKeyboard();
+        }
 
         Clue c = getBoard().getClue();
         getBoard().toggleDirection();

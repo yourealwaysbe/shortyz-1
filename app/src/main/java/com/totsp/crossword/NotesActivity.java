@@ -172,8 +172,8 @@ public class NotesActivity extends ShortyzActivity {
 
 				if (!newPos.equals(getBoard().getHighlightLetter())) {
 					getBoard().setHighlightLetter(newPos);
-					NotesActivity.this.render();
 				}
+                NotesActivity.this.render();
 			}
 		});
 

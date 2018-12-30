@@ -191,7 +191,6 @@ public class KeyboardManager {
      */
     public void onConfigurationChanged(Configuration newConfig) {
         this.configuration = newConfig;
-        showKeyboard();
     }
 
     /**
@@ -265,19 +264,24 @@ public class KeyboardManager {
     }
 
     /**
-     * Hide the keyboard
+     * Hide the keyboard unless the user always wants it
      */
     public void hideKeyboard() {
+        if (prefs.getBoolean("forceKeyboard", false))
+            return;
+
         if ((configuration.hardKeyboardHidden
                  == Configuration.HARDKEYBOARDHIDDEN_YES) ||
             (configuration.hardKeyboardHidden
                  == Configuration.HARDKEYBOARDHIDDEN_UNDEFINED)) {
-            InputMethodManager imm
-                = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(
-                    activity.getCurrentFocus().getWindowToken(),
-                    0);
+            View focus = activity.getCurrentFocus();
+            if (focus != null) {
+                InputMethodManager imm
+                    = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+            }
         }
+        keyboardView.setVisibility(View.GONE);
     }
 
 }
