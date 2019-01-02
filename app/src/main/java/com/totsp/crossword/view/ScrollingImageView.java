@@ -33,7 +33,7 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         gestureDetector = new GestureDetector(this);
         gestureDetector.setIsLongpressEnabled(true);
         imageView = new ImageView(context);
-        
+
 
         if (android.os.Build.VERSION.SDK_INT >= 8) {
             try {
@@ -65,15 +65,15 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
 //            if (imageView != null) {
 //                this.removeView(imageView);
 //            }
-//            
-            
-        	FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(bitmap.getWidth(), bitmap.getHeight());
+//
+
+	FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(bitmap.getWidth(), bitmap.getHeight());
             imageView.setImageBitmap(bitmap);
             if(!haveAdded){
 	            this.addView(imageView, params);
 	            haveAdded = true;
             } else {
-            	imageView.setLayoutParams(params);
+	imageView.setLayoutParams(params);
             }
         } else {
             imageView.setImageBitmap(bitmap);
@@ -115,11 +115,11 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
     public void setScaleListener(ScaleListener scaleListener) {
         this.scaleListener = scaleListener;
     }
-    
+
     private float currentScale = 1.0f;
-    
+
     public void setCurrentScale(float scale){
-    	this.currentScale = scale;
+	this.currentScale = scale;
     }
 
     public boolean isVisible(Point p) {
@@ -212,6 +212,8 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
                     }
                 }
             }
+        } else {
+            this.scrollTo(0, this.getScrollY());
         }
 
         int scrollHeight = imageView.getHeight() - this.getHeight();
@@ -231,6 +233,8 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
                     }
                 }
             }
+        } else {
+            this.scrollTo(this.getScrollX(), 0);
         }
 
         return true;
@@ -297,13 +301,13 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
     public void scrollTo(int x, int y) {
         super.scrollTo(x, y);
 
-        //    	if(x ==0 && y ==0 ){
-        //    		try{
-        //    			throw new RuntimeException();
-        //    		} catch(Exception e){
-        //    			e.printStackTrace();
-        //    		}
-        //    	}
+        //	if(x ==0 && y ==0 ){
+        //		try{
+        //			throw new RuntimeException();
+        //		} catch(Exception e){
+        //			e.printStackTrace();
+        //		}
+        //	}
     }
 
     public void zoom(float scale, int x, int y) {
@@ -320,10 +324,10 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         }
 
         if(scale * this.currentScale > maxScale ){
-        	return;
-        } 
+	return;
+        }
         if(scale * this.currentScale < minScale){
-        	return;
+	return;
         }
         int h = imageView.getHeight();
         int w = imageView.getWidth();
@@ -393,10 +397,10 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
 
             return (int) Math.round(d);
         }
-        
+
         @Override
         public String toString(){
-        	return "["+x+", "+y+"]";
+	return "["+x+", "+y+"]";
         }
     }
 
