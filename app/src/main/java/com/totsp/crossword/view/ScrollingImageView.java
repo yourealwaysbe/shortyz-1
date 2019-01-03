@@ -194,48 +194,7 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         this.longTouchTimer.cancel();
         this.longTouched = false;
 
-        int scrollWidth = imageView.getWidth() - this.getWidth();
-
-        if ((imageView.getWidth()) > this.getWidth()) {
-            if ((this.getScrollX() >= 0) && (this.getScrollX() <= scrollWidth) && (scrollWidth > 0)) {
-                int moveX = (int) distanceX;
-
-                if (((moveX + this.getScrollX()) >= 0) &&
-                        ((Math.abs(moveX) + Math.abs(this.getScrollX())) <= scrollWidth)) {
-                    this.scrollBy(moveX, 0);
-                } else {
-                    if (distanceX >= 0) {
-                        int xScroll = scrollWidth - Math.max(Math.abs(moveX), Math.abs(this.getScrollX()));
-                        this.scrollBy(xScroll, 0);
-                    } else {
-                        this.scrollBy(-Math.min(Math.abs(moveX), Math.abs(this.getScrollX())), 0);
-                    }
-                }
-            }
-        } else {
-            this.scrollTo(0, this.getScrollY());
-        }
-
-        int scrollHeight = imageView.getHeight() - this.getHeight();
-
-        if ((imageView.getHeight()) > this.getHeight()) {
-            if ((this.getScrollY() >= 0) && (this.getScrollY() <= scrollHeight) && (scrollHeight > 0)) {
-                int moveY = (int) distanceY;
-
-                if (((moveY + this.getScrollY()) >= 0) &&
-                        ((Math.abs(moveY) + Math.abs(this.getScrollY())) <= scrollHeight)) {
-                    this.scrollBy(0, moveY);
-                } else {
-                    if (distanceY >= 0) {
-                        this.scrollBy(0, scrollHeight - Math.max(Math.abs(moveY), Math.abs(this.getScrollY())));
-                    } else {
-                        this.scrollBy(0, -Math.min(Math.abs(moveY), Math.abs(this.getScrollY())));
-                    }
-                }
-            }
-        } else {
-            this.scrollTo(this.getScrollX(), 0);
-        }
+        this.scrollBy((int) distanceX, (int) distanceY);
 
         return true;
     }
@@ -267,47 +226,41 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
     }
 
     public void scrollBy(int x, int y) {
-        int scrollWidth = imageView.getWidth() - this.getWidth();
-        int scrollHeight = imageView.getHeight() - this.getHeight();
+        int curX = this.getScrollX();
+        int curY = this.getScrollY();
+        int newX = curX + x;
+        int newY = curY + y;
 
-        if ((this.getScrollX() + x) < 0) {
-            x = 0;
-        } else if ((this.getScrollX() + x) > scrollWidth) {
-            x = scrollWidth;
-        }
+        int screenWidth = this.getWidth();
+        int screenHeight = this.getHeight();
+        int boardWidth = this.imageView.getWidth();
+        int boardHeight= this.imageView.getHeight();
 
-        if ((this.getScrollY() + y) < 0) {
-            y = 0;
-        } else if ((this.getScrollY() + y) > scrollHeight) {
-            y = scrollHeight;
-        }
+        // don't allow space between right/bot edge of screen and
+        // board (careful of negatives, since co-ords are neg)
+        // only adjust if we're scrolling up and just stay put if there
+        // was already a gap
+        int newRight = newX - boardWidth;
+        if (x > 0 && -newRight < screenWidth)
+            newX = Math.max(-(screenWidth - boardWidth), curX);
 
-        //System.out.println("scrollBy(" + x + "," + y + ")");
-        super.scrollTo(this.getScrollX() + x, this.getScrollY() + y);
+        int newBot = newY - boardHeight;
+        if (y > 0 && -newBot < screenHeight)
+            newY = Math.max(-(screenHeight - boardHeight), curY);
 
-        if (this.getScrollX() < 0) {
-            this.scrollTo(0, this.getScrollY());
-        } else if (this.getScrollX() > (this.imageView.getWidth() - this.getWidth())) {
-            this.scrollTo(this.imageView.getWidth() - this.getWidth(), this.getScrollY());
-        }
+        // don't allow space between left/top edge of screen and board
+        // by doing second this is prioritised over bot/right
+        // fix even if scrolling down to stop flipping from one edge to
+        // the other (i.e. never allow a gap top/left, but sometime
+        // allow bot/right if needed)
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
 
-        if (this.getScrollY() < 0) {
-            this.scrollTo(this.getScrollX(), 0);
-        } else if (this.getScrollY() > (this.imageView.getHeight() - this.getHeight())) {
-            this.scrollTo(this.getScrollX(), this.imageView.getHeight() - this.getHeight());
-        }
+        super.scrollTo(newX, newY);
     }
 
     public void scrollTo(int x, int y) {
         super.scrollTo(x, y);
-
-        //	if(x ==0 && y ==0 ){
-        //		try{
-        //			throw new RuntimeException();
-        //		} catch(Exception e){
-        //			e.printStackTrace();
-        //		}
-        //	}
     }
 
     public void zoom(float scale, int x, int y) {
