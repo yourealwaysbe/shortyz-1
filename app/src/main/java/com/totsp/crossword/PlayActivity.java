@@ -583,6 +583,24 @@ public class PlayActivity extends ShortyzActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add("Clues").setIcon(android.R.drawable.ic_menu_agenda);
+        menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
+
+        Menu zoom = menu.addSubMenu("Zoom");
+        zoom.add(createSpannableForMenu("Zoom In")).setTitleCondensed("Zoom In");
+
+        if (getRenderer() != null && getRenderer().getScale() < getRenderer().getDeviceMaxScale())
+            zoom.add(createSpannableForMenu("Zoom In Max")).setTitleCondensed("Zoom In Max");
+
+        zoom.add(createSpannableForMenu("Zoom Out")).setTitleCondensed("Zoom Out");
+        zoom.add(createSpannableForMenu("Fit to Screen")).setTitleCondensed("Fit to Screen");
+        zoom.add(createSpannableForMenu("Zoom Reset")).setTitleCondensed("Zoom Reset");
+
+        Menu clueSize = menu.addSubMenu("Clue Text Size");
+        clueSize.add(createSpannableForMenu("Small")).setTitleCondensed("Small");
+        clueSize.add(createSpannableForMenu("Medium")).setTitleCondensed("Medium");
+        clueSize.add(createSpannableForMenu("Large")).setTitleCondensed("Large");
+
         if (puz != null && !puz.isUpdatable()) {
             MenuItem showItem = menu.add(
                     this.showErrors ? "Hide Errors" : "Show Errors").setIcon(
@@ -607,21 +625,6 @@ public class PlayActivity extends ShortyzActivity {
                     .setEnabled(false);
         }
 
-        menu.add("Clues").setIcon(android.R.drawable.ic_menu_agenda);
-        menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
-        Menu clueSize = menu.addSubMenu("Clue Text Size");
-        clueSize.add(createSpannableForMenu("Small")).setTitleCondensed("Small");
-        clueSize.add(createSpannableForMenu("Medium")).setTitleCondensed("Medium");
-        clueSize.add(createSpannableForMenu("Large")).setTitleCondensed("Large");
-        Menu zoom = menu.addSubMenu("Zoom");
-        zoom.add(createSpannableForMenu("Zoom In")).setTitleCondensed("Zoom In");
-
-        if (getRenderer() != null && getRenderer().getScale() < getRenderer().getDeviceMaxScale())
-            zoom.add(createSpannableForMenu("Zoom In Max")).setTitleCondensed("Zoom In Max");
-
-        zoom.add(createSpannableForMenu("Zoom Out")).setTitleCondensed("Zoom Out");
-        zoom.add(createSpannableForMenu("Fit to Screen")).setTitleCondensed("Fit to Screen");
-        zoom.add(createSpannableForMenu("Zoom Reset")).setTitleCondensed("Zoom Reset");
         menu.add("Info").setIcon(android.R.drawable.ic_menu_info_details);
         menu.add("Help").setIcon(android.R.drawable.ic_menu_help);
         menu.add("Settings").setIcon(android.R.drawable.ic_menu_preferences);
