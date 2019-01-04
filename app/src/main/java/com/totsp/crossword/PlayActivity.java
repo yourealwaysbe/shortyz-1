@@ -16,8 +16,6 @@ import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -272,7 +270,10 @@ public class PlayActivity extends ShortyzActivity {
                                 getRenderer().draw(w,
                                                    displayScratch,
                                                    displayScratch);
-                                PlayActivity.this.openContextMenu(boardView);
+
+                                Intent i = new Intent(PlayActivity.this,
+                                                      NotesActivity.class);
+                                PlayActivity.this.startActivityForResult(i, 0);
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
@@ -558,27 +559,6 @@ public class PlayActivity extends ShortyzActivity {
 
     private static String neverNull(String val) {
         return val == null ? "" : val.trim();
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view,
-                                    ContextMenuInfo info) {
-        // System.out.println("CCM " + view);
-//        if (view == boardView) {
-//            Menu clueSize = menu.addSubMenu("Clue Text Size");
-//            clueSize.add("Small");
-//            clueSize.add("Medium");
-//            clueSize.add("Large");
-//
-//            menu.add("Zoom In");
-//
-//            if (getRenderer().getScale() < getRenderer().getDeviceMaxScale())
-//                menu.add("Zoom In Max");
-//
-//            menu.add("Zoom Out");
-//            menu.add("Fit to Screen");
-//            menu.add("Zoom Reset");
-//        }
     }
 
     @Override
