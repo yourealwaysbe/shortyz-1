@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -180,6 +181,17 @@ public class ClueListActivity extends ShortyzActivity {
         else
             down.setItemChecked(index, true);
 
+		across.setOnItemLongClickListener(new OnItemLongClickListener() {
+			public boolean onItemLongClick(AdapterView<?> parent,
+                                           View view,
+                                           int pos,
+					                       long id) {
+                onItemClickSelect(parent, view, pos, id, true);
+                Intent i = new Intent(ClueListActivity.this, NotesActivity.class);
+                ClueListActivity.this.startActivityForResult(i, 0);
+                return true;
+			}
+		});
 		across.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
@@ -192,6 +204,17 @@ public class ClueListActivity extends ShortyzActivity {
                 onItemClickSelect(arg0, arg1, arg2, arg3, true);
 			}
 			public void onNothingSelected(AdapterView<?> arg0) { }
+		});
+		down.setOnItemLongClickListener(new OnItemLongClickListener() {
+			public boolean onItemLongClick(AdapterView<?> parent,
+                                           View view,
+                                           int pos,
+					                       long id) {
+                onItemClickSelect(parent, view, pos, id, false);
+                Intent i = new Intent(ClueListActivity.this, NotesActivity.class);
+                ClueListActivity.this.startActivityForResult(i, 0);
+                return true;
+			}
 		});
 		down.setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
@@ -421,6 +444,7 @@ public class ClueListActivity extends ShortyzActivity {
                 clueList.setSelection(position);
             }
 
+            clueList.setItemChecked(position, true);
             otherList.clearChoices();
         }
     }
