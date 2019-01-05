@@ -168,11 +168,13 @@ public class ClueListActivity extends ShortyzActivity {
 		this.down = (ListView) this.findViewById(R.id.downList);
 
 		across.setAdapter(new ArrayAdapter<>(this,
-				android.R.layout.simple_list_item_single_choice,
+				//android.R.layout.simple_list_item_single_choice,
+                R.layout.clue_list_item,
                 getBoard().getAcrossClues()));
 		across.setFocusableInTouchMode(true);
 		down.setAdapter(new ArrayAdapter<>(this,
-				android.R.layout.simple_list_item_single_choice,
+				//android.R.layout.simple_list_item_single_choice,
+                R.layout.clue_list_item,
                 getBoard().getDownClues()));
 
         int index = getBoard().getCurrentClueIndex();
