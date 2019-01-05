@@ -26,6 +26,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -271,9 +272,7 @@ public class PlayActivity extends ShortyzActivity {
                                                    displayScratch,
                                                    displayScratch);
 
-                                Intent i = new Intent(PlayActivity.this,
-                                                      NotesActivity.class);
-                                PlayActivity.this.startActivityForResult(i, 0);
+                                launchNotes();
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
@@ -428,6 +427,18 @@ public class PlayActivity extends ShortyzActivity {
                         render();
                     }
                 });
+                across.setOnItemLongClickListener(new OnItemLongClickListener() {
+                    public boolean onItemLongClick(AdapterView<?> parent,
+                                                   View view,
+                                                   int pos,
+                                                   long id) {
+                        parent.setSelected(true);
+                        getBoard().jumpTo(pos, true);
+                        render();
+                        launchNotes();
+                        return true;
+                    }
+                });
             }
 
             across.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -450,6 +461,18 @@ public class PlayActivity extends ShortyzActivity {
                                             final int arg2, long arg3) {
                         getBoard().jumpTo(arg2, false);
                         render();
+                    }
+                });
+                down.setOnItemLongClickListener(new OnItemLongClickListener() {
+                    public boolean onItemLongClick(AdapterView<?> parent,
+                                                   View view,
+                                                   int pos,
+                                                   long id) {
+                        parent.setSelected(true);
+                        getBoard().jumpTo(pos, true);
+                        render();
+                        launchNotes();
+                        return true;
                     }
                 });
             }
@@ -490,16 +513,21 @@ public class PlayActivity extends ShortyzActivity {
             allClues.setAdapter(this.allCluesAdapter);
 
             allClues.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> arg0, View arg1,
-                                        int clickIndex, long arg3) {
-                    boolean across = clickIndex <= getBoard().getAcrossClues().length + 1;
-                    int index = clickIndex - 1;
-                    if (index > getBoard().getAcrossClues().length) {
-                        index = index - getBoard().getAcrossClues().length - 1;
-                    }
-                    arg0.setSelected(true);
-                    getBoard().jumpTo(index, across);
-                    render();
+                public void onItemClick(AdapterView<?> parent,
+                                        View view,
+                                        int clickIndex,
+                                        long id) {
+                    onItemClickSelect(parent, view, clickIndex, id);
+                }
+            });
+            allClues.setOnItemLongClickListener(new OnItemLongClickListener() {
+                public boolean onItemLongClick(AdapterView<?> parent,
+                                               View view,
+                                               int pos,
+                                               long id) {
+                    onItemClickSelect(parent, view, pos, id);
+                    launchNotes();
+                    return true;
                 }
             });
             allClues.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -869,8 +897,7 @@ public class PlayActivity extends ShortyzActivity {
 
             return true;
         } else if (item.getTitle().toString().equals("Notes")) {
-            Intent i = new Intent(PlayActivity.this, NotesActivity.class);
-            PlayActivity.this.startActivityForResult(i, 0);
+            launchNotes();
             return true;
         } else if (item.getTitle().toString().equals("Help")) {
             Intent i = new Intent(Intent.ACTION_VIEW,
@@ -1261,5 +1288,28 @@ public class PlayActivity extends ShortyzActivity {
 
         }
         this.boardView.requestFocus();
+    }
+
+
+    /**
+     * For across/down/allClues onItemClick and onItemLongClick
+     */
+    private void onItemClickSelect(AdapterView<?> parent,
+                                   View view,
+                                   int clickIndex,
+                                   long id) {
+        boolean across = clickIndex <= getBoard().getAcrossClues().length + 1;
+        int index = clickIndex - 1;
+        if (index > getBoard().getAcrossClues().length) {
+            index = index - getBoard().getAcrossClues().length - 1;
+        }
+        parent.setSelected(true);
+        getBoard().jumpTo(index, across);
+        render();
+    }
+
+    private void launchNotes() {
+        Intent i = new Intent(this, NotesActivity.class);
+        this.startActivityForResult(i, 0);
     }
 }

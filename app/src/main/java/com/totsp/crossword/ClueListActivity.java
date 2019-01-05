@@ -62,8 +62,7 @@ public class ClueListActivity extends ShortyzActivity {
             finish();
             return true;
         } else if (item.getTitle().toString().equals("Notes")) {
-            Intent i = new Intent(ClueListActivity.this, NotesActivity.class);
-            ClueListActivity.this.startActivityForResult(i, 0);
+            launchNotes();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -117,7 +116,8 @@ public class ClueListActivity extends ShortyzActivity {
 
 		this.imageView.setContextMenuListener(new ClickListener() {
 			public void onContextMenu(Point e) {
-				// TODO Auto-generated method stub
+                onTap(e);
+                launchNotes();
 			}
 
 			public void onTap(Point e) {
@@ -189,8 +189,7 @@ public class ClueListActivity extends ShortyzActivity {
                                            int pos,
 					                       long id) {
                 onItemClickSelect(parent, view, pos, id, true);
-                Intent i = new Intent(ClueListActivity.this, NotesActivity.class);
-                ClueListActivity.this.startActivityForResult(i, 0);
+                launchNotes();
                 return true;
 			}
 		});
@@ -213,8 +212,7 @@ public class ClueListActivity extends ShortyzActivity {
                                            int pos,
 					                       long id) {
                 onItemClickSelect(parent, view, pos, id, false);
-                Intent i = new Intent(ClueListActivity.this, NotesActivity.class);
-                ClueListActivity.this.startActivityForResult(i, 0);
+                launchNotes();
                 return true;
 			}
 		});
@@ -449,5 +447,10 @@ public class ClueListActivity extends ShortyzActivity {
             clueList.setItemChecked(position, true);
             otherList.clearChoices();
         }
+    }
+
+    private void launchNotes() {
+        Intent i = new Intent(this, NotesActivity.class);
+        ClueListActivity.this.startActivityForResult(i, 0);
     }
 }
