@@ -446,6 +446,9 @@ public class ClueListActivity extends ShortyzActivity {
 
             clueList.setItemChecked(position, true);
             otherList.clearChoices();
+        } else {
+            // show keyboard when clicked selected clue
+            render(true);
         }
     }
 
