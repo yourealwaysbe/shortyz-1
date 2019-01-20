@@ -4,6 +4,7 @@
     <color name="accent">#c00</color>
     <color name="textColorPrimary">@color/textColorPrimaryNight</color>
     <color name="textColorSecondary">#900</color>
+    <color name="textColorFilled">#900</color>
     <color name="accentText">#500</color>
     <color name="transparent">#00000000</color>
     <color name="background_light">#000</color>

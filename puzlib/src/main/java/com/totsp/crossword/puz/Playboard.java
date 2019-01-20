@@ -299,6 +299,33 @@ public class Playboard implements Serializable {
         return skipCompletedLetters;
     }
 
+    public boolean isFilled(int clueIndex, boolean isAcross) {
+        int number = (isAcross ?
+                      puzzle.getAcrossCluesLookup()[clueIndex] :
+                      puzzle.getDownCluesLookup()[clueIndex]);
+
+        Position start = (isAcross ?
+                          this.acrossWordStarts.get(number) :
+                          this.downWordStarts.get(number));
+
+        if(start == null)
+            return false;
+
+        int range = this.getWordRange(start, isAcross);
+        int across = start.across;
+        int down = start.down;
+
+        for (int i = 0; i < range; i++) {
+            int newAcross = isAcross ? across + i : across;
+            int newDown = isAcross ? down : down + i;
+
+            if (this.boxes[newAcross][newDown].isBlank())
+                return false;
+        }
+
+        return true;
+    }
+
     public Box[] getWordBoxes(int number, boolean isAcross) {
         Position start = isAcross ? this.acrossWordStarts.get(number) : this.downWordStarts.get(number);
         if(start == null) {

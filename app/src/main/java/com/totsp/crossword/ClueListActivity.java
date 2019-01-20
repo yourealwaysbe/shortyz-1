@@ -8,9 +8,11 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -19,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.totsp.crossword.io.IO;
@@ -167,15 +170,37 @@ public class ClueListActivity extends ShortyzActivity {
 		this.across = (ListView) this.findViewById(R.id.acrossList);
 		this.down = (ListView) this.findViewById(R.id.downList);
 
-		across.setAdapter(new ArrayAdapter<>(this,
+		across.setAdapter(new ArrayAdapter(this,
 				//android.R.layout.simple_list_item_single_choice,
                 R.layout.clue_list_item,
-                getBoard().getAcrossClues()));
+                getBoard().getAcrossClues()) {
+            @Override
+            public View getView(int position,
+                                View convertView,
+                                ViewGroup parent) {
+                return getClueListView(position,
+                                       convertView,
+                                       parent,
+                                       (Playboard.Clue) getItem(position),
+                                       true);
+            }
+        });
 		across.setFocusableInTouchMode(true);
-		down.setAdapter(new ArrayAdapter<>(this,
+		down.setAdapter(new ArrayAdapter(this,
 				//android.R.layout.simple_list_item_single_choice,
                 R.layout.clue_list_item,
-                getBoard().getDownClues()));
+                getBoard().getDownClues()) {
+            @Override
+            public View getView(int position,
+                                View convertView,
+                                ViewGroup parent) {
+                return getClueListView(position,
+                                       convertView,
+                                       parent,
+                                       (Playboard.Clue) getItem(position),
+                                       false);
+            }
+        });
 
         int index = getBoard().getCurrentClueIndex();
         if (getBoard().isAcross())
@@ -456,4 +481,38 @@ public class ClueListActivity extends ShortyzActivity {
         Intent i = new Intent(this, NotesActivity.class);
         ClueListActivity.this.startActivityForResult(i, 0);
     }
+
+    /**
+     * Get the right view for a clue list item
+     *
+     * @param clue the clue at the position
+     * @param across if is across
+     */
+    public View getClueListView(int position,
+                                View convertView,
+                                ViewGroup parent,
+                                Playboard.Clue clue,
+                                boolean across) {
+        LayoutInflater inflater
+            = LayoutInflater.from(this);
+
+        View view;
+        TextView tv;
+        if (getBoard().isFilled(position, across)) {
+            view = inflater.inflate(R.layout.clue_list_item_filled,
+                                    parent,
+                                    false);
+            tv = (TextView) view.findViewById(R.id.clue_text_view_filled);
+        } else {
+            view = inflater.inflate(R.layout.clue_list_item,
+                                    parent,
+                                    false);
+            tv = (TextView) view.findViewById(R.id.clue_text_view);
+        }
+
+        tv.setText(clue.toString());
+
+        return view;
+    }
+
 }
