@@ -420,6 +420,9 @@ public class ClueListActivity extends ShortyzActivity {
 
 		boolean displayScratch = prefs.getBoolean("displayScratch", false);
 		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
+        // in case we're retuning from notes and something was filled in
+        this.across.invalidateViews();
+        this.down.invalidateViews();
 	}
 
     private Playboard getBoard(){
