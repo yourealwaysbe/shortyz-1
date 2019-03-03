@@ -482,8 +482,8 @@ public class NotesActivity extends ShortyzActivity {
     protected void onResume() {
         super.onResume();
         keyboardManager.onResume(findViewById(R.id.notesKeyboard));
+        this.render();
     }
-
 
 	protected void render() {
         keyboardManager.render();
