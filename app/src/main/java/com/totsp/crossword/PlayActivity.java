@@ -1103,7 +1103,7 @@ public class PlayActivity extends ShortyzActivity {
         TextView view = dialog.findViewById(R.id.puzzle_info_notes);
 
         final String notes = this.puz.getNotes();
-        String[] split = notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\d))", 2);
+        String[] split = notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\s*\\d))", 2);
 
         final String text = (split.length > 1) ? split[0].trim() : null;
 
