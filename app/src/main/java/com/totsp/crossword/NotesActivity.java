@@ -80,17 +80,6 @@ public class NotesActivity extends ShortyzActivity {
 		super.onCreate(icicle);
 		utils.holographic(this);
 		utils.finishOnHomeButton(this);
-		DisplayMetrics metrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
-				!prefs.getBoolean("supressHints", false),
-				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
-				ContextCompat.getColor(this, R.color.errorColor));
-
-		final int curWordLen = getBoard().getCurrentWord().length;
-        double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
-        if (scale > 1)
-            this.renderer.setScale((float) 1);
 
 		try {
 			this.configuration = getBaseContext().getResources()
@@ -104,6 +93,19 @@ public class NotesActivity extends ShortyzActivity {
 			finish();
 			return;
 		}
+
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
+				!prefs.getBoolean("supressHints", false),
+				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
+				ContextCompat.getColor(this, R.color.errorColor));
+
+		final int curWordLen = getBoard().getCurrentWord().length;
+        double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
+        if (scale > 1)
+            this.renderer.setScale((float) 1);
+
 		this.timer = new ImaginaryTimer(
 				getBoard().getPuzzle().getTime());
 
