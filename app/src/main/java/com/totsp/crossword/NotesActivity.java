@@ -346,13 +346,15 @@ public class NotesActivity extends ShortyzActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        keyboardManager.onStop();
+        if (keyboardManager != null)
+            keyboardManager.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        keyboardManager.onDestroy();
+        if (keyboardManager != null)
+            keyboardManager.onDestroy();
     }
 
 	@Override
