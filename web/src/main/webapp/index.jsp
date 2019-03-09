@@ -2,7 +2,7 @@
 <html>
 
     <head>
-        <title>Shortyz Web</title>
+        <title>Forkyz Web</title>
 
         <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -18,7 +18,7 @@
 
     <body>
        
-        <h1>Shortyz</h1>
+        <h1>Forkyz</h1>
         <iframe id="__gwt_historyFrame" style="width:0;height:0;border:0"></iframe>
         <script src="basic/basic.nocache.js" type="text/javascript"></script>
     </body>

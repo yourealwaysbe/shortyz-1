@@ -2,7 +2,7 @@
 <html>
 
     <head>
-        <title>Shortyz for Facebook</title>
+        <title>Forkyz for Facebook</title>
         
         <!-- 
         userId: <%=session.getAttribute("user.id")%>
@@ -27,10 +27,10 @@
     </head>
 
     <body id="body">
-        <div class="android"><a href="http://www.kebernet.net/Home/projects/shortyz">Get Shortyz for Android!</a></div>
+        <div class="android"><a href="http://www.kebernet.net/Home/projects/forkyz">Get Forkyz for Android!</a></div>
         <script type="text/javascript"><!--
             google_ad_client = "pub-3082613281475517";
-            /* shortyz leader ad */
+            /* forkyz leader ad */
             google_ad_slot = "7670643750";
             google_ad_width = 728;
             google_ad_height = 90;
@@ -74,7 +74,7 @@
                 </tr>
         </table>
 
-        <script src="shortyz/shortyz.nocache.js" type="text/javascript"></script>
+        <script src="forkyz/forkyz.nocache.js" type="text/javascript"></script>
 <% } %>
     </body>
 </html>

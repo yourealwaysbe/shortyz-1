@@ -51,7 +51,7 @@
 	</LinearLayout>
 	
 
-	<com.totsp.crossword.view.ScrollingImageView
+	<app.crossword.yourealwaysbe.view.ScrollingImageView
 		android:id="@+id/board" android:layout_alignParentTop="true"
 		android:layout_above="@id/cluesLinear"
 		android:layout_alignParentRight="true"

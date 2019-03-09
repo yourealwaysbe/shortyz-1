@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Shortyz</string>
+    <string name="app_name">Forkyz</string>
     <string name="puzzle_select">Select a puzzle:</string>
     <string name="action_settings">Settings</string>
     <string name="skip_button">Skip</string>

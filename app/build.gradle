@@ -114,7 +114,7 @@ tasks.assembleChrome.dependsOn "assembleRelease"
 
 task packageChrome(type: Zip) {
     from "build/chrome"
-    archiveName "shortyz-chrome.zip"
+    archiveName "forkyz-chrome.zip"
 }
 tasks.packageChrome.dependsOn assembleChrome
 

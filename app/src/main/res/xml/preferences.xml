@@ -160,7 +160,7 @@
 
 	<com.jenzz.materialpreference.CheckBoxPreference
 		android:title="Download new puzzles in background"
-		android:summary="Periodically download new puzzles in the background, even when Shortyz is not in use."
+		android:summary="Periodically download new puzzles in the background, even when Forkyz is not in use."
 		android:key="backgroundDownload"
 		android:defaultValue="false"
 		/>
@@ -246,7 +246,7 @@
 	<com.jenzz.materialpreference.CheckBoxPreference
 		android:title="Scroll To Clue"
 		android:defaultValue="false"
-		android:summary="Toggles the auto-scrolling to the selected clue in the clues list mode. (Works like Shortyz 1)"
+		android:summary="Toggles the auto-scrolling to the selected clue in the clues list mode. (Works like Forkyz 1)"
 		android:key="snapClue"
 	/>
 	
@@ -362,7 +362,7 @@
 </com.jenzz.materialpreference.PreferenceCategory>
 
 	<PreferenceCategory
-		android:title="About Shortyz">
+		android:title="About Forkyz">
 	
 	<Preference
 	 	android:title="Release Notes" 

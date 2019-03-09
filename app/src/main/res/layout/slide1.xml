@@ -33,7 +33,7 @@
             android:textColor="#ffffff"
             android:paddingRight="32dp"
             android:textSize="28sp"
-            android:text="Shortyz Crosswords"/>
+            android:text="Forkyz Crosswords"/>
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -52,7 +52,7 @@
                 android:paddingRight="64dp"
                 android:textSize="16sp"
                 android:background="#CC000000"
-                android:text="Shortyz is a crossword puzzle client that lets you download puzzles from around the internet, or play them from your personal sources!\n\n Let's get you started!"/>
+                android:text="Forkyz is a crossword puzzle client that lets you download puzzles from around the internet, or play them from your personal sources!\n\n Let's get you started!"/>
 
             <!--<ImageView-->
                 <!--android:layout_width="wrap_content"-->

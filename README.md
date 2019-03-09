@@ -1,38 +1,47 @@
-Shortyz Crosswords 
-==================
-[![Build Status](https://travis-ci.org/kebernet/shortyz.svg?branch=master)](https://travis-ci.org/kebernet/shortyz)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/kebernet/shortyz.svg?columns=all)](https://waffle.io/kebernet/shortyz)
+# Forkyz Crosswords 
 
-Shortyz is a crossword puzzle application for Android that downloads a number of
-free puzzles, and with a paid subscription, the New York Times.
+Forkyz is an unofficial fork of [Shortyz](https://github.com/kebernet/shortyz/)
+implementing my own customisations.
 
-Downloading
------------
+## Main Changes
 
-Several services host Shortyz APKs:
+Additions:
 
-* [Google Play Store](https://play.google.com/store/apps/details?id=com.totsp.crossword.shortyz&hl=en)
-* [F-Droid](https://f-droid.org/repository/browse/?fdid=com.totsp.crossword.shortyz) (out of date)
-* [Shortyz home page](http://www.kebernet.net/Home/projects/shortyz)
+* Introduction of Notes screen for storing ideas and solving anagrams.
+* Notes can be displayed on the game board.
+* Automatically scale input box size on Clues List and Notes to fit the entire
+  word on screen.
+* Less intrusive keyboard pop-ups.
+* Highlight selected clue and grey-out completed clues in Clues List.
+* Reorganisation of game menu.
 
-Compilation
------------
+Removals:
 
-See [issue #46](https://github.com/kebernet/shortyz/issues/46).
+* No Google email or games integration.
+* No crashlytics.
+* No New York Times.
 
-Project Structure
------------------
+The latter is for no reason other than i didn't want to maintain it. It could
+be put back.
+
+## Compilation
+
+Gradle should compile fine.
+
+    $ ./gradlew assembleRelease
+
+You will then need to handle signing/installing the apk. Hopefully this is standard.
+
+## Project Structure
 
   * ./app The Android App.
   * ./puzzlib A platform independent Java library for dealing with Across Lite and other puzzle formats
   * ./web A GWT/AppEngine web app for Shortyz that has fallen into disrepair.
   * ./gfx Art assets related to the Play Store publishing
 
-
-
 License
 -------
 
-Copyright (C) 2010-2016 Robert Cooper
+Copyright (C) 2010-2016 Robert Cooper (and 2018- Yourealwaysbe)
 
 Licensed under the GNU General Public License, Version 3

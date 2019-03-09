@@ -24,7 +24,7 @@
         android:layout_below="@+id/clueLine"
     />
 
-    <com.totsp.crossword.view.ScrollingImageView
+    <app.crossword.yourealwaysbe.view.ScrollingImageView
         android:id="@+id/miniboard"
         android:layout_width="fill_parent"
         android:layout_height="0.3in"
@@ -32,7 +32,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true" >
         <requestFocus />
-    </com.totsp.crossword.view.ScrollingImageView>
+    </app.crossword.yourealwaysbe.view.ScrollingImageView>
 
 
     <ScrollView
@@ -55,7 +55,7 @@
                 android:inputType="text"
             />
 
-            <com.totsp.crossword.view.BoardEditText
+            <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/scratchMiniboard"
                 android:layout_width="fill_parent"
                 android:layout_height="0.3in"
@@ -88,7 +88,7 @@
                 android:layout_below="@+id/notesBox"
             />
 
-            <com.totsp.crossword.view.BoardEditText
+            <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSource"
                 android:layout_width="fill_parent"
                 android:layout_below="@+id/anagramSourceLab"
@@ -105,7 +105,7 @@
                 android:layout_below="@+id/notesBox"
             />
 
-            <com.totsp.crossword.view.BoardEditText
+            <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSolution"
                 android:layout_width="fill_parent"
                 android:layout_below="@+id/anagramSolutionLab"

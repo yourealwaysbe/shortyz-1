@@ -41,8 +41,8 @@
     ],
     "enableExternalDirectory": false,
     "formFactor": "tablet",
-    "name": "Shortyz",
+    "name": "Forkyz",
     "orientation": "landscape",
-    "packageName": "com.totsp.crossword.shortyz"
+    "packageName": "app.crossword.yourealwaysbe.forkyz"
   }
 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    <display-name>Shortyz Web</display-name>
+    <display-name>Forkyz Web</display-name>
     <filter>
         <description>Grabs the facebook info where available.</description>
         <filter-name>FacebookSessionFilter</filter-name>
-        <filter-class>com.totsp.crossword.web.server.FacebookSessionFilter</filter-class>
+        <filter-class>app.crossword.yourealwaysbe.web.server.FacebookSessionFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>FacebookSessionFilter</filter-name>
@@ -14,11 +14,11 @@
     </filter-mapping>
     <servlet>
         <servlet-name>PuzzleService</servlet-name>
-        <servlet-class>com.totsp.crossword.web.server.PuzzleServlet</servlet-class>
+        <servlet-class>app.crossword.yourealwaysbe.web.server.PuzzleServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>RefreshPuzzleListTask</servlet-name>
-        <servlet-class>com.totsp.crossword.web.server.RefreshPuzzleList</servlet-class>
+        <servlet-class>app.crossword.yourealwaysbe.web.server.RefreshPuzzleList</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>PuzzleService</servlet-name>

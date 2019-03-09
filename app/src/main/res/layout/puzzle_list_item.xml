@@ -28,7 +28,7 @@ Jan 2, 2001"
         android:textColor="@color/textColorSecondary"
         android:textSize="10dp" />
 
-    <com.totsp.crossword.view.CircleProgressBar
+    <app.crossword.yourealwaysbe.view.CircleProgressBar
         android:id="@+id/puzzle_progress"
         android:layout_width="56dp"
         android:layout_height="56dp"
