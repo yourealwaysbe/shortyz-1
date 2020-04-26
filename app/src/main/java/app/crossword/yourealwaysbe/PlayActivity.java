@@ -1102,7 +1102,12 @@ public class PlayActivity extends ForkyzActivity {
     private void addNotes(Dialog infoDialog) {
         TextView view = dialog.findViewById(R.id.puzzle_info_notes);
 
-        final String notes = this.puz.getNotes();
+        String puzNotes = this.puz.getNotes();
+        if (puzNotes == null)
+            puzNotes = "";
+
+        final String notes = puzNotes;
+
         String[] split = notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\s*\\d))", 2);
 
         final String text = (split.length > 1) ? split[0].trim() : null;
