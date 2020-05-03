@@ -36,7 +36,7 @@ public class Playboard implements Serializable {
 
     public Playboard(Puzzle puzzle) {
         this.puzzle = puzzle;
-        this.highlightLetter = new Position(0, 0);
+        this.highlightLetter = this.puzzle.getPosition();
         this.boxes = new Box[puzzle.getBoxes()[0].length][puzzle.getBoxes().length];
 
         for (int x = 0; x < puzzle.getBoxes().length; x++) {
@@ -64,6 +64,9 @@ public class Playboard implements Serializable {
 
     public void setAcross(boolean across) {
         this.across = across;
+        if (this.puzzle != null) {
+            this.puzzle.setAcross(across);
+        }
     }
 
     public boolean isAcross() {
@@ -92,7 +95,7 @@ public class Playboard implements Serializable {
         try {
             Position start = this.getCurrentWordStart();
             c.number = this.getBoxes()[start.across][start.down].getClueNumber();
-            c.hint = this.across ? this.puzzle.findAcrossClue(c.number) : this.puzzle.findDownClue(c.number);
+            c.hint = this.isAcross() ? this.puzzle.findAcrossClue(c.number) : this.puzzle.findDownClue(c.number);
         } catch (Exception e) {
         }
 
@@ -120,7 +123,7 @@ public class Playboard implements Serializable {
     public Word getCurrentWord() {
         Word w = new Word();
         w.start = this.getCurrentWordStart();
-        w.across = this.across;
+        w.across = this.isAcross();
         w.length = this.getWordRange();
 
         return w;
@@ -235,6 +238,10 @@ public class Playboard implements Serializable {
                 (boxes[x].length > y) && (y >= 0) &&
                 (boxes[x][y] != null)) {
                 this.highlightLetter = highlightLetter;
+
+                if (this.puzzle != null) {
+                    this.puzzle.setPosition(highlightLetter);
+                }
 
                 if ((isAcross() && !boxes[x][y].isPartOfAcross()) ||
                     (!isAcross() && !boxes[x][y].isPartOfDown())) {
@@ -420,12 +427,12 @@ public class Playboard implements Serializable {
     public void jumpTo(int clueIndex, boolean across) {
         try {
             if (across) {
-                this.highlightLetter = (this.acrossWordStarts.get(this.puzzle.getAcrossCluesLookup()[clueIndex]));
+                this.setHighlightLetter(this.acrossWordStarts.get(this.puzzle.getAcrossCluesLookup()[clueIndex]));
             } else {
-                this.highlightLetter = (this.downWordStarts.get(this.puzzle.getDownCluesLookup()[clueIndex]));
+                this.setHighlightLetter(this.downWordStarts.get(this.puzzle.getDownCluesLookup()[clueIndex]));
             }
 
-            this.across = across;
+            this.setAcross(across);
         } catch (Exception e) {
         }
     }
@@ -694,7 +701,7 @@ public class Playboard implements Serializable {
         ArrayList<Position> changes = new ArrayList<Position>();
         Position oldHighlight = this.highlightLetter;
         Word w = this.getCurrentWord();
-        this.highlightLetter = w.start;
+        this.setHighlightLetter(w.start);
 
         for (int i = 0; i < w.length; i++) {
             Position p = revealLetter();
@@ -706,7 +713,7 @@ public class Playboard implements Serializable {
             nextLetter(false);
         }
 
-        this.highlightLetter = oldHighlight;
+        this.setHighlightLetter(oldHighlight);
 
         return changes;
     }
@@ -724,7 +731,7 @@ public class Playboard implements Serializable {
 
         if ((across && boxes[x][y].isPartOfDown()) ||
             (!across && boxes[x][y].isPartOfAcross())) {
-            this.across = !across;
+            this.setAcross(!this.isAcross());
         }
 
         return w;
