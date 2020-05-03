@@ -201,15 +201,15 @@ public class Puzzle implements Serializable{
     public byte[] initializeUnscrambleData() {
     	unscrambleKey = new int[4];
     	unscrambleTmp = new byte[9];
-    	
+
     	byte[] solution = getSolutionDown();
     	unscrambleBuf = new byte[solution.length];
-    	
+
     	return solution;
     }
-	
-  
-	
+
+
+
 	private byte[] getSolutionDown() {
 		StringBuilder ans = new StringBuilder();
 		for (int x = 0; x < width; x++) {
@@ -221,7 +221,7 @@ public class Puzzle implements Serializable{
 		}
 		return ans.toString().getBytes();
 	}
-	
+
 	public void setUnscrambledSolution(byte[] solution) {
 		int i = 0;
 		for (int x = 0; x < width; x++) {
@@ -317,10 +317,10 @@ public class Puzzle implements Serializable{
         }
         return (correct * 100) / (total);
     }
-    
+
     public int getPercentFilled() {
-    	int total = 0;
-    	int filled = 0;
+        int total = 0;
+        int filled = 0;
 
         for (int x = 0; x < boxes.length; x++) {
             for (int y = 0; y < boxes[x].length; y++) {
@@ -384,7 +384,7 @@ public class Puzzle implements Serializable{
     public boolean isUpdatable() {
         return updatable;
     }
-    
+
     public void setVersion(String version) {
     	this.version = version;
     }
@@ -392,43 +392,43 @@ public class Puzzle implements Serializable{
      public String getVersion() {
     	 return version;
      }
-    
+
     public void setGEXT(boolean hasGEXT) {
     	this.hasGEXT = hasGEXT;
     }
-    
+
     public boolean getGEXT() {
     	return hasGEXT;
     }
-    
+
     public void setPosition(Position position) {
     	this.position = position;
     }
-    
+
     public Position getPosition() {
     	return position;
     }
-    
+
     public void setAcross(boolean across) {
     	this.across = across;
     }
-    
+
     public boolean getAcross() {
     	return across;
     }
-    
+
     public void setScrambled(boolean scrambled) {
     	this.scrambled = scrambled;
     }
-    
+
     public boolean isScrambled() {
     	return scrambled;
     }
-    
+
     public void setSolutionChecksum(short checksum) {
     	this.solutionChecksum = checksum;
     }
-    
+
     public short getSolutionChecksum() {
     	return solutionChecksum;
     }
@@ -631,7 +631,7 @@ public class Puzzle implements Serializable{
         if (width != other.width) {
             return false;
         }
-        
+
         if (version == null) {
 	        if (other.version != null) {
 	            return false;
@@ -639,11 +639,11 @@ public class Puzzle implements Serializable{
         } else if (!version.equals(other.version)) {
             return false;
         }
-        
+
         if (scrambled != other.scrambled) {
         	return false;
         }
-        
+
         if (solutionChecksum != other.solutionChecksum) {
         	return false;
         }
