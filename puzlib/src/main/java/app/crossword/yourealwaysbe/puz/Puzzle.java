@@ -178,7 +178,6 @@ public class Puzzle implements Serializable{
     }
 
     public void setBoxesList(Box[] value) {
-        System.out.println("Setting list " + value.length);
         this.boxesList = value;
     }
 
@@ -448,8 +447,6 @@ public class Puzzle implements Serializable{
     }
 
     public Box[][] buildBoxes() {
-        System.out.println("Building boxes " + this.height + "x" + this.width);
-
         int i = 0;
         boxes = new Box[this.height][this.width];
 
@@ -533,16 +530,12 @@ public class Puzzle implements Serializable{
         Puzzle other = (Puzzle) obj;
 
         if (!Arrays.equals(acrossClues, other.acrossClues)) {
-            System.out.println("acrossClues");
-
             //            for(int i=0; i < acrossClues.length; i++)
             //            	System.out.println((acrossClues[i].equals(other.acrossClues[i]))+"["+acrossClues[i]+"]==["+other.acrossClues[i]+"]");
             return false;
         }
 
         if (!Arrays.equals(acrossCluesLookup, other.acrossCluesLookup)) {
-            System.out.println("acrossCluesLookup");
-
             return false;
         }
 
@@ -551,8 +544,6 @@ public class Puzzle implements Serializable{
                 return false;
             }
         } else if (!author.equals(other.author)) {
-            System.out.println("author");
-
             return false;
         }
 
@@ -569,15 +560,11 @@ public class Puzzle implements Serializable{
         }
 
         if (!boxEq) {
-            System.out.println("boxes");
-
             return false;
         }
 
         if (copyright == null) {
             if (other.copyright != null) {
-                System.out.println("copyright");
-
                 return false;
             }
         } else if (!copyright.equals(other.copyright)) {
@@ -585,20 +572,14 @@ public class Puzzle implements Serializable{
         }
 
         if (!Arrays.equals(downClues, other.downClues)) {
-            System.out.println("downClues");
-
             return false;
         }
 
         if (!Arrays.equals(downCluesLookup, other.downCluesLookup)) {
-            System.out.println("downCluesLookup");
-
             return false;
         }
 
         if (height != other.height) {
-            System.out.println("height");
-
             return false;
         }
 
@@ -607,14 +588,10 @@ public class Puzzle implements Serializable{
                 return false;
             }
         } else if (!notes.equals(other.notes)) {
-            System.out.println("notes");
-
             return false;
         }
 
         if (getNumberOfClues() != other.getNumberOfClues()) {
-            System.out.println("numberOfClues");
-
             return false;
         }
 
@@ -623,8 +600,6 @@ public class Puzzle implements Serializable{
                 return false;
             }
         } else if (!title.equals(other.title)) {
-            System.out.println("title");
-
             return false;
         }
 
