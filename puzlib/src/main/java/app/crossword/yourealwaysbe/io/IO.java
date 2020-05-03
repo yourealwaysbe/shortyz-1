@@ -240,11 +240,15 @@ public class IO {
 	public static PuzzleMeta meta(File baseFile) throws IOException {
 		File metaFile = new File(baseFile.getParentFile(), baseFile.getName()
 				.substring(0, baseFile.getName().lastIndexOf(".")) + ".forkyz");
-		FileInputStream fis = new FileInputStream(metaFile);
-		PuzzleMeta m = IO.readMeta(new DataInputStream(fis));
-		fis.close();
+		if (metaFile.isFile()) {
+			FileInputStream fis = new FileInputStream(metaFile);
+			PuzzleMeta m = IO.readMeta(new DataInputStream(fis));
+			fis.close();
 
-		return m;
+			return m;
+		} else {
+			return null;
+		}
 	}
 
 	public static void readCustom(Puzzle puz, DataInputStream is)
