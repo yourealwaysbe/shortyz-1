@@ -34,8 +34,12 @@ public class FileHandle implements Comparable<FileHandle> {
         return (meta == null) ? new Date(file.lastModified()) : meta.date;
     }
 
-    int getProgress() {
+    int getComplete() {
         return (meta == null) ? 0 : (meta.updatable ? (-1) : meta.percentComplete);
+    }
+
+    int getFilled() {
+        return (meta == null) ? 0 : (meta.updatable ? (-1) : meta.percentFilled);
     }
 
     String getSource() {

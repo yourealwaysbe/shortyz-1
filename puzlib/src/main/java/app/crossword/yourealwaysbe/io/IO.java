@@ -4,6 +4,7 @@ import app.crossword.yourealwaysbe.io.versions.IOVersion;
 import app.crossword.yourealwaysbe.io.versions.IOVersion1;
 import app.crossword.yourealwaysbe.io.versions.IOVersion2;
 import app.crossword.yourealwaysbe.io.versions.IOVersion3;
+import app.crossword.yourealwaysbe.io.versions.IOVersion4;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
@@ -267,6 +268,11 @@ public class IO {
 
 				break;
 
+			case 4:
+				v = new IOVersion4();
+
+				break;
+
 			default:
 				throw new IOException("UnknownVersion " + version);
 		}
@@ -334,6 +340,11 @@ public class IO {
 
 			case 3:
 				v = new IOVersion3();
+
+				break;
+
+            case 4:
+				v = new IOVersion4();
 
 				break;
 
@@ -584,9 +595,9 @@ public class IO {
 
 	public static void writeCustom(Puzzle puz, DataOutputStream os)
 			throws IOException {
-		os.write(3);
+		os.write(4);
 
-		IOVersion v = new IOVersion3();
+		IOVersion v = new IOVersion4();
 		v.write(puz, os);
 	}
 

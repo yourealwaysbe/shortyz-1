@@ -31,6 +31,7 @@ public class IOVersion3 extends IOVersion2 {
 		meta.title = IO.readNullTerminatedString(dis);
 		meta.date = new Date( dis.readLong() );
 		meta.percentComplete = dis.readInt();
+		meta.percentFilled = meta.percentComplete;
 		meta.updatable = dis.read() == 1;
 		meta.sourceUrl = IO.readNullTerminatedString(dis);
 		int x = dis.readInt();

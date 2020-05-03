@@ -23,7 +23,8 @@ public class CircleProgressBar extends View {
     private static final int RED = Color.rgb(255, 74, 77);
     private int height;
     private int width;
-    private int percentComplete;
+    private int percentFilled;
+    private boolean complete;
     private DisplayMetrics metrics;
     private float circleStroke;
     private float circleFine;
@@ -57,29 +58,35 @@ public class CircleProgressBar extends View {
         }
     }
 
-    public void setPercentComplete(int percentComplete) {
-        this.percentComplete = percentComplete;
+    public void setPercentFilled(int percentFilled) {
+        this.percentFilled = percentFilled;
         this.invalidate();
     }
 
-    public int getPercentComplete() {
-        return percentComplete;
+    public int getPercentFilled() {
+        return percentFilled;
     }
 
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+        this.invalidate();
+    }
+
+    public boolean getComplete() {
+        return complete;
+    }
     @Override
     protected void onMeasure(int widthSpecId, int heightSpecId) {
         this.height = View.MeasureSpec.getSize(heightSpecId);
         this.width = View.MeasureSpec.getSize(widthSpecId);
         setMeasuredDimension(this.width, this.height);
     }
-
     @Override
     protected void onDraw(Canvas canvas) {
         float halfWidth = width / 2;
         float halfHeight = height / 2;
         float halfStroke = circleStroke / 2;
         float textSize = halfWidth * 0.75f;
-
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
@@ -89,25 +96,25 @@ public class CircleProgressBar extends View {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(textSize);
 
-        if (this.percentComplete < 0) {
-            paint.setColor(RED);
-            paint.setStrokeWidth(circleStroke);
-            canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawText("?", halfWidth, halfWidth + textSize / 3f, paint);
-        } else if (this.percentComplete == 0) {
-//            paint.setStrokeWidth(circleFine);
-//            canvas.drawCircle(halfWidth, halfHeight, halfWidth - metrics.density * 4f, paint);
-            paint.setTypeface(icons4);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawText("W", halfWidth, halfWidth + textSize / 2.5f, paint);
-        } else if (this.percentComplete == 100) {
+        if (this.complete) {
             paint.setColor(GREEN);
             paint.setStrokeWidth(circleStroke);
             canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
             paint.setTypeface(icons1);
             paint.setStyle(Paint.Style.FILL);
             canvas.drawText("4", halfWidth, halfHeight + textSize / 2f, paint);
+        } else if (this.percentFilled < 0) {
+            paint.setColor(RED);
+            paint.setStrokeWidth(circleStroke);
+            canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawText("?", halfWidth, halfWidth + textSize / 3f, paint);
+        } else if (this.percentFilled == 0) {
+//            paint.setStrokeWidth(circleFine);
+//            canvas.drawCircle(halfWidth, halfHeight, halfWidth - metrics.density * 4f, paint);
+            paint.setTypeface(icons4);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawText("W", halfWidth, halfWidth + textSize / 2.5f, paint);
         } else {
             paint.setColor(ORANGE);
             paint.setStrokeWidth(circleFine);
@@ -116,13 +123,11 @@ public class CircleProgressBar extends View {
 
             RectF rect = new RectF(0 + circleStroke ,0 + circleStroke ,
                     width - circleStroke , width - circleStroke);
-            canvas.drawArc(rect, -90,  360F * percentComplete / 100F, false, paint);
+            canvas.drawArc(rect, -90,  360F * percentFilled / 100F, false, paint);
             paint.setStyle(Paint.Style.FILL);
             textSize = halfWidth * 0.5f;
             paint.setTextSize(textSize);
-            canvas.drawText(percentComplete+"%", halfWidth, halfHeight + textSize / 3f, paint);
+            canvas.drawText(percentFilled+"%", halfWidth, halfHeight + textSize / 3f, paint);
         }
-
-
     }
 }

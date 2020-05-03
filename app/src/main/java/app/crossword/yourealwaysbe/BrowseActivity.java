@@ -517,9 +517,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     CircleProgressBar bar = (CircleProgressBar) lastOpenedView.findViewById(R.id.puzzle_progress);
 
                     if (lastOpenedHandle.meta.updatable) {
-                        bar.setPercentComplete(-1);
+                        bar.setPercentFilled(-1);
                     } else {
-                        bar.setPercentComplete(lastOpenedHandle.getProgress());
+                        bar.setPercentFilled(lastOpenedHandle.getFilled());
+                        bar.setComplete(lastOpenedHandle.getComplete() == 100);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -700,7 +701,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         ArrayList<FileHandle> toDelete = new ArrayList<FileHandle>();
 
         for (FileHandle h : getFileHandlesFromDirectory(this.crosswordsFolder)) {
-            if ((h.getProgress() == 100) || (h.getDate()
+            if ((h.getComplete() == 100) || (h.getDate()
                                                   .getTime() < maxAge)) {
                 if (deleteOnCleanup) {
                     toDelete.add(h);
@@ -975,7 +976,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             CircleProgressBar bar = (CircleProgressBar) view.findViewById(R.id.puzzle_progress);
 
-            bar.setPercentComplete(handle.getProgress());
+            bar.setPercentFilled(handle.getFilled());
+            bar.setComplete(handle.getComplete() == 100);
 
             TextView caption = (TextView) view.findViewById(R.id.puzzle_caption);
 
