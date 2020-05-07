@@ -37,6 +37,7 @@ public class Playboard implements Serializable {
     public Playboard(Puzzle puzzle) {
         this.puzzle = puzzle;
         this.highlightLetter = this.puzzle.getPosition();
+        this.across = this.puzzle.getAcross();
         this.boxes = new Box[puzzle.getBoxes()[0].length][puzzle.getBoxes().length];
 
         for (int x = 0; x < puzzle.getBoxes().length; x++) {
