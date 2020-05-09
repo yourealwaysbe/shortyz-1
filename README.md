@@ -1,4 +1,4 @@
-# Forkyz Crosswords 
+# Forkyz Crosswords
 
 Forkyz is an unofficial fork of [Shortyz](https://github.com/kebernet/shortyz/)
 implementing my own customisations.
@@ -7,6 +7,10 @@ implementing my own customisations.
 
 Additions:
 
+* Download of daily Guardian Cryptics.
+* Progress measures number of filled boxes instead of correctly filled
+  boxes (no cheating).
+* Memory of last highlighted clue (implementation completed).
 * Introduction of Notes screen for storing ideas and solving anagrams.
 * Notes can be displayed on the game board.
 * Automatically scale input box size on Clues List and Notes to fit the entire
