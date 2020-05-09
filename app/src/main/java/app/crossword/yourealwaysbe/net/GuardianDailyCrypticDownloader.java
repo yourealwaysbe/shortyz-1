@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Period;
 import java.util.Date;
@@ -107,19 +108,40 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         long daysDiff = diff.toDays();
         int yearsDiff = Period.between(BASE_CW_DATE, localDate).getYears();
 
-        long cwNumOffset = daysDiff;
+        int direction = BASE_CW_DATE.isBefore(localDate) ? 1 : -1;
+        long absDays = Math.abs(daysDiff);
 
+        long cwNumOffset = absDays;
         // no Sundays
-        cwNumOffset -= (daysDiff / 7);
-
+        cwNumOffset -= (absDays / 7);
         // no Christmas
-        cwNumOffset -= yearsDiff;
-        if (localDate.isAfter(BASE_CW_DATE))
-            cwNumOffset -= 1;
+        cwNumOffset -= countNonSundayChristmas(BASE_CW_DATE, localDate);
 
-        long cwNum = BASE_CW_NUMBER + cwNumOffset;
+        long cwNum = BASE_CW_NUMBER + direction * cwNumOffset;
 
         return Long.toString(cwNum);
+    }
+
+    private static int countNonSundayChristmas(LocalDate d1, LocalDate d2) {
+        LocalDate lower = d1;
+        LocalDate upper = d2;
+        if (upper.isBefore(lower)) {
+            lower = d2;
+            upper = d1;
+        }
+
+        LocalDate christmas = LocalDate.of(lower.getYear(), 12, 25);
+        if (lower.isAfter(christmas))
+            christmas = christmas.plusYears(1);
+
+        int count = 0;
+        while (christmas.isBefore(upper)) {
+            if (DayOfWeek.from(christmas) != DayOfWeek.SUNDAY)
+                count += 1;
+            christmas = christmas.plusYears(1);
+        }
+
+        return count;
     }
 
     private static JSONObject getCrosswordJSON(URL url)
@@ -137,7 +159,6 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         }
         return null;
     }
-
 
     private static Puzzle readPuzzleFromJSON(JSONObject json) throws JSONException {
         Puzzle puz = new Puzzle();
