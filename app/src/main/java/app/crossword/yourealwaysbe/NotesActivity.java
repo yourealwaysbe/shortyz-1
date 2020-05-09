@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.net.Uri;
 import android.widget.EditText;
@@ -123,7 +124,7 @@ public class NotesActivity extends ForkyzActivity {
 		setContentView(R.layout.notes);
 
         keyboardManager
-            = new KeyboardManager(this, findViewById(R.id.notesKeyboard));
+            = new KeyboardManager(this, (KeyboardView) findViewById(R.id.notesKeyboard));
 
 		Clue c = getBoard().getClue();
 
@@ -485,7 +486,7 @@ public class NotesActivity extends ForkyzActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        keyboardManager.onResume(findViewById(R.id.notesKeyboard));
+        keyboardManager.onResume((KeyboardView) findViewById(R.id.notesKeyboard));
         this.render();
     }
 

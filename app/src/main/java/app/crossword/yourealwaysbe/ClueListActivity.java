@@ -3,6 +3,7 @@ package app.crossword.yourealwaysbe;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -113,7 +114,7 @@ public class ClueListActivity extends ForkyzActivity {
 		setContentView(R.layout.clue_list);
 
 		keyboardManager
-            = new KeyboardManager(this, findViewById(R.id.clueKeyboard));
+            = new KeyboardManager(this, (KeyboardView) findViewById(R.id.clueKeyboard));
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
 
@@ -263,7 +264,7 @@ public class ClueListActivity extends ForkyzActivity {
     @Override
     public void onResume() {
         super.onResume();
-        keyboardManager.onResume(findViewById(R.id.clueKeyboard));
+        keyboardManager.onResume((KeyboardView) findViewById(R.id.clueKeyboard));
         this.render(false);
     }
 

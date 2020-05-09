@@ -52,10 +52,11 @@ public class KeyboardManager {
                                 .getResources()
                                 .getConfiguration();
 
+        final Activity finalActivity = activity;
         View.OnKeyListener onKeyListener = new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return keyEvent.getAction() == KeyEvent.ACTION_UP && activity.onKeyUp(i, keyEvent);
+                return keyEvent.getAction() == KeyEvent.ACTION_UP && finalActivity.onKeyUp(i, keyEvent);
             }
         };
 
@@ -69,6 +70,8 @@ public class KeyboardManager {
             keyboardView.setVisibility(View.GONE);
         }
         keyboardView.setOnKeyListener(onKeyListener);
+
+        final KeyboardView finalKeyboardView = keyboardView;
         keyboardView
                 .setOnKeyboardActionListener(new OnKeyboardActionListener() {
                     private long lastSwipe = 0;
@@ -76,7 +79,7 @@ public class KeyboardManager {
                     public void onKey(int primaryCode, int[] keyCodes) {
                         long eventTime = System.currentTimeMillis();
 
-                        if (keyboardView.getVisibility() == View.GONE ||
+                        if (finalKeyboardView.getVisibility() == View.GONE ||
                             (eventTime - lastSwipe) < 500) {
                             return;
                         }
@@ -85,7 +88,7 @@ public class KeyboardManager {
                                 KeyEvent.ACTION_UP, primaryCode, 0, 0, 0,
                                 0, KeyEvent.FLAG_SOFT_KEYBOARD
                                 | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-                        activity.onKeyUp(primaryCode, event);
+                        finalActivity.onKeyUp(primaryCode, event);
                     }
 
                     public void onPress(int primaryCode) {
@@ -106,7 +109,7 @@ public class KeyboardManager {
                                 KeyEvent.KEYCODE_DPAD_DOWN, 0, 0, 0, 0,
                                 KeyEvent.FLAG_SOFT_KEYBOARD
                                         | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-                        activity.onKeyUp(KeyEvent.KEYCODE_DPAD_DOWN, event);
+                        finalActivity.onKeyUp(KeyEvent.KEYCODE_DPAD_DOWN, event);
                     }
 
                     public void swipeLeft() {
@@ -118,7 +121,7 @@ public class KeyboardManager {
                                 KeyEvent.KEYCODE_DPAD_LEFT, 0, 0, 0, 0,
                                 KeyEvent.FLAG_SOFT_KEYBOARD
                                         | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-                        activity.onKeyUp(KeyEvent.KEYCODE_DPAD_LEFT, event);
+                        finalActivity.onKeyUp(KeyEvent.KEYCODE_DPAD_LEFT, event);
                     }
 
                     public void swipeRight() {
@@ -130,7 +133,7 @@ public class KeyboardManager {
                                 KeyEvent.KEYCODE_DPAD_RIGHT, 0, 0, 0, 0,
                                 KeyEvent.FLAG_SOFT_KEYBOARD
                                         | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-                        activity.onKeyUp(KeyEvent.KEYCODE_DPAD_RIGHT, event);
+                        finalActivity.onKeyUp(KeyEvent.KEYCODE_DPAD_RIGHT, event);
                     }
 
                     public void swipeUp() {
@@ -142,7 +145,7 @@ public class KeyboardManager {
                                 KeyEvent.KEYCODE_DPAD_UP, 0, 0, 0, 0,
                                 KeyEvent.FLAG_SOFT_KEYBOARD
                                         | KeyEvent.FLAG_KEEP_TOUCH_MODE);
-                        activity.onKeyUp(KeyEvent.KEYCODE_DPAD_UP, event);
+                        finalActivity.onKeyUp(KeyEvent.KEYCODE_DPAD_UP, event);
                     }
                 });
     }
@@ -168,11 +171,12 @@ public class KeyboardManager {
             keyboardView.setVisibility(View.GONE);
         }
 
+        final KeyboardView finalKeyboardView = keyboardView;
         handler.post(new Runnable() {
             @Override
             public void run() {
-                keyboardView.invalidate();
-                keyboardView.invalidateAllKeys();
+                finalKeyboardView.invalidate();
+                finalKeyboardView.invalidateAllKeys();
             }
         });
     }

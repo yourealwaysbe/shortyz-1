@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -234,7 +235,7 @@ public class PlayActivity extends ForkyzActivity {
             setContentView(R.layout.play);
 
             keyboardManager
-                = new KeyboardManager(this, findViewById(R.id.playKeyboard));
+                = new KeyboardManager(this, (KeyboardView) findViewById(R.id.playKeyboard));
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
@@ -986,7 +987,7 @@ public class PlayActivity extends ForkyzActivity {
                 .getBoolean("skipFilled", false));
         getBoard().setMovementStrategy(this.getMovementStrategy());
 
-        keyboardManager.onResume(findViewById(R.id.playKeyboard));
+        keyboardManager.onResume((KeyboardView) findViewById(R.id.playKeyboard));
 
         this.showCount = prefs.getBoolean("showCount", false);
         this.onConfigurationChanged(this.configuration);
