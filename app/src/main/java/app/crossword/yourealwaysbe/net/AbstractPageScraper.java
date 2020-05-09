@@ -146,7 +146,7 @@ public class AbstractPageScraper {
 					try {
 						File file = download(url, filename);
 
-						if (this.processFile(file, url)) {
+						if (file != null && this.processFile(file, url)) {
 							scrapedFiles.add(file);
 							System.out.println("SCRAPED.");
 						}
