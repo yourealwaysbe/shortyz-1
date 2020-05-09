@@ -39,8 +39,8 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 public class GuardianDailyCrypticDownloader extends AbstractDownloader {
     private static final String NAME = "Guardian Daily Cryptic";
 
-    private static final int BASE_CW_NUMBER = 28012;
-    private static final LocalDate BASE_CW_DATE = LocalDate.of(2019, 12, 24);
+    private static final int BASE_CW_NUMBER = 28112;
+    private static final LocalDate BASE_CW_DATE = LocalDate.of(2020, 4, 20);
 
     private static final int CW_WIDTH = 15;
     private static final int CW_HEIGHT = 15;
@@ -112,8 +112,10 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         long absDays = Math.abs(daysDiff);
 
         long cwNumOffset = absDays;
-        // no Sundays
+        // no Sundays (base day is Monday so negative gets one more)
         cwNumOffset -= (absDays / 7);
+        if (direction < 0 && absDays % 7 != 0)
+            cwNumOffset -= 1;
         // no Christmas
         cwNumOffset -= countNonSundayChristmas(BASE_CW_DATE, localDate);
 
