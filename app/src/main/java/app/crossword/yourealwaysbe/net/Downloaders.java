@@ -54,6 +54,10 @@ public class Downloaders {
         this.notificationManager = notificationManager;
         this.context = context;
 
+        if (prefs.getBoolean("downloadGuardianDailyCryptic", true)) {
+            downloaders.add(new GuardianDailyCrypticDownloader());
+        }
+
         if (prefs.getBoolean("downloadWsj", true)) {
             downloaders.add(new WSJFridayDownloader());
             downloaders.add(new WSJSaturdayDownloader());

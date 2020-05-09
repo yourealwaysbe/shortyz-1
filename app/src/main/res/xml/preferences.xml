@@ -11,6 +11,11 @@
 		android:key="selectDaily"
 		>
 		<com.jenzz.materialpreference.CheckBoxPreference
+			android:title="Guardian Daily Cryptic"
+ 			android:summary="Updates Monday-Friday"
+			android:defaultValue="true"
+			android:key="downloadGuardianDailyCryptic" />
+		<com.jenzz.materialpreference.CheckBoxPreference
 			android:title="Newsday"
 			android:defaultValue="true"
 			android:key="downloadNewsday" />
