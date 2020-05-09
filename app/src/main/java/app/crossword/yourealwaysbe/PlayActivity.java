@@ -1014,13 +1014,15 @@ public class PlayActivity extends ForkyzActivity {
             this.timer.stop();
         }
 
-        keyboardManager.onStop();
+        if (keyboardManager != null)
+            keyboardManager.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        keyboardManager.onDestroy();
+        if (keyboardManager != null)
+            keyboardManager.onDestroy();
     }
 
     private void setClueSize(int dps) {
