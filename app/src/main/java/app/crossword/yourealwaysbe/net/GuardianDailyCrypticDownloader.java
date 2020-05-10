@@ -246,195 +246,24 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return rawClues;
     }
 
-    ////////////////////////////////////////////////////////////////////////
-    // Overthought algorithm for counting number of non-sunday
-    // christmasses.
-    //
-    // XS = xmas sunday
-    //
-    // non-XS = num christmasses - num XS
-    //
-    // 1) Between lower and upper date, refine to lower xmas year and
-    // upper xmas year. Call LY and UY. E.g. 2005-5-4 to 2011-11-29
-    // would become 2005 to 2010 as those are the (inclusive) years with
-    // counted christmases
-    //
-    // 2) num christmasses is UY - LY + 1. Let this number be NY (num years)
-    //
-    // 3) calc num XS using algorithm below.
-    //
-    // To calc num XS:
-    //
-    // Days repeat on a 400 year cycle (see Doomsday algorithm). Call
-    // them QC (quad century). In any 400 year period, there are 58 XS.
-    //
-    // Calculate the number of QCs in the date range, then remove them
-    // from the time period
-    //
-    //      numQCs = NY div 400
-    //      UY' = UY - 400*numQCs (eliminate cycles)
-    //
-    // Now LY - UY' is < 400 years. Let numXCs' be the number of XCs
-    // between LY and UY', the total number of XCs is then
-    //
-    //      numXCs = numQCs * 58 + numXCs'
-    //
-    // We can calculate numXCs' as follows. Take the following time line
-    //
-    //      QC1___LY___QC?___UY'___QC2
-    //
-    // I.e. QC marks the years divisible by 400. There may or may not
-    // be one between LY and UY'. Let
-    //
-    //      periodXCs = 58 if there is no QC?
-    //                = 116 if there is a QC?
-    //
-    // The XCs between QC1 and LY do not count, nor do the XCs between
-    // UY' and QC2. We calculate the number of XCs in the period and
-    // remove the ones that aren't there.
-    //
-    // The number of XCs between UY' and QC2 is 58 less the number between
-    // QC? and UY'. Note QC? will be QC1 if QC? does not exist. What we
-    // need now is function for computing the number of XCs between a QC
-    // and an offset of years. Call this offsetXCs(offset). Let
-    //
-    //      offL = LY - QC1 - 1 (the minus one is because everything is inclusive)
-    //      offU = UY' - QC? + 1
-    //
-    // We have
-    //
-    //      numXCs' = periodXCs - offsetXCs(offL) - (58 - offsetXCs(offU))
-    //
-    // To define offsetXCs(offset) we need the following table which you
-    // can calculate with some experimentation and reasoning.
-    //
-    // offset | first XC | cycle       | total
-    // ---------------------------------------
-    // 0      | +5       | 6, 5, 6, 11 | 14
-    // 100    | +1       | 6, 5, 6, 11 | 15
-    // 200    | +3       | 5, 6, 11, 6 | 15
-    // 300    | +4       | 6, 11, 6, 5 | 14
-    //
-    // So 2005 is the first XC from 2000, then the offsets are 6, 5, 6,
-    // 11. I.e. 2005, 2011, 2016, 2022, 2033, 2039... Note these cycles
-    // are 28 years long.
-    //
-    // If the offset is 250, we first take away 200 and have 14 + 15
-    // XCs. 50 years remain. The cycle starts after 3 years, so we have
-    // 47 years from the start of a cycle.
-    //
-    // We calculate the number of 28-year cycles as 47 div 28.
-    //
-    // 47 % 28 leaves 19 years, which gets us through two XCs in the
-    // cycle (5 then 6, 11 is too far). So the number between 200 and
-    // 250 is 4 (from cycle) + 2 (from remaining). We get numXCs' = 14 +
-    // 15 + 4 + 2 = 25.
-
     /**
-     * Count number of Christmasses not on Sunday between lower and
-     * upper inclusive
+     * Counts number of Christmasses that aren't Sunday between dates
+     * (inclusive)
      *
      * Assumes lower <= upper
      */
     private static int countNonSundayChristmas(LocalDate lower, LocalDate upper) {
-        // calc lower and upper bound christmas years (inclusive)
-        int lowerYear = lower.getYear();
-        if (lower.getMonth() == Month.DECEMBER && lower.getDayOfMonth() > 25)
-            lowerYear += 1;
-
-        int upperYear = upper.getYear();
-        if (upper.getMonth() != Month.DECEMBER || upper.getDayOfMonth() < 25)
-            upperYear -= 1;
-
-        if (lowerYear > upperYear) {
-            return 0;
-        } else {
-            int numChristmasses =  upperYear - lowerYear + 1;
-            int numSunChristmas = countSundayChristmasses(lowerYear, upperYear);
-            return numChristmasses - numSunChristmas;
-        }
-    }
-
-    /**
-     * Count number of Christmasses on Sunday between lowerYear and
-     * upperYear inclusive. Assumes upperYear >= lowerYear.
-     */
-    private static int countSundayChristmasses(int lowerYear, int upperYear) {
-        int numYears = upperYear - lowerYear;
-
-        int numQCs = numYears / 400;
-        int shortUpperYear = upperYear - numQCs * 400;
-
-        // calc how many 400 year cycles lowerYear to shortUpperYear
-        // spans
-        int numPeriods = 1;
-        if (lowerYear / 400 != shortUpperYear / 400)
-            numPeriods += 1;
-
-        // calc Christmas sundays outside of time range using offset
-        // algorithm
-        int lowerOffset = lowerYear % 400 - 1;
-        int upperOffset = shortUpperYear % 400;
-
-        // 58 sunday christmasses in a period
-        return 58 * numQCs +
-               (numPeriods * 58
-                   - offsetSundayChristmasses(lowerOffset)
-                   - (58 - offsetSundayChristmasses(upperOffset)));
-    }
-
-    /**
-     * Count number of Christmasses on Sunday between offsetYear and
-     * largest multiple of 400 below it.
-     *
-     * Essentially uses a lookup table in the comments of the source
-     * code (above)
-     */
-    private static int offsetSundayChristmasses(int offsetYear) {
-        // offset | first XC | cycle       | total
-        // ---------------------------------------
-        // 0      | +5       | 6, 5, 6, 11 | 14
-        // 100    | +1       | 6, 5, 6, 11 | 15
-        // 200    | +3       | 5, 6, 11, 6 | 15
-        // 300    | +4       | 6, 11, 6, 5 | 14
-
-        if (offsetYear < 100) {
-            return centuryOffsetCount(offsetYear, 5, new int[] { 6, 5, 6, 11 });
-        } else if (offsetYear < 200) {
-            return 14 + centuryOffsetCount(offsetYear - 100,
-                                           1, new int[] { 6, 5, 6, 11 });
-        } else if (offsetYear < 300) {
-            return 14 + 15 +
-                   centuryOffsetCount(offsetYear - 200,
-                                      3, new int[] { 5, 6, 11, 6 });
-
-        } else {
-            return 14 + 15 + 15 +
-                   centuryOffsetCount(offsetYear - 300,
-                                      4, new int[] { 6, 11, 6, 5 });
-
-        }
-    }
-
-    /**
-     * Calc number of christmas sundays in 100 year period given first
-     * year and cycle of years.
-     *
-     * This is complicated, see source code comments! xcCycle should
-     * span 28 years.
-     */
-    private static int centuryOffsetCount(int offset, int firstXC, int[] xcCycle) {
-        int yearsInCycle = offset - firstXC;
-        int numCycles = yearsInCycle / 28;
-        int remaining = yearsInCycle % 28;
+        LocalDate christmas = LocalDate.of(lower.getYear(), 12, 25);
+        if (lower.isAfter(christmas))
+            christmas = christmas.plusYears(1);
 
         int count = 0;
-        int i = 0;
-        while (remaining >= 0) {
-            count += 1;
-            remaining -= xcCycle[i++];
+        while (!christmas.isAfter(upper)) {
+            if (DayOfWeek.from(christmas) != DayOfWeek.SUNDAY)
+                count += 1;
+            christmas = christmas.plusYears(1);
         }
 
-        return numCycles * 4 + count;
+        return count;
     }
 }
