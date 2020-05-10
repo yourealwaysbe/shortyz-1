@@ -128,6 +128,8 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             cwNumOffset -= 1;
         // no Christmas
         cwNumOffset -= countNonSundayChristmas(lower, upper);
+        // no Boxing day pre 2010
+        cwNumOffset -= countNonSundayBoxing(lower, LocalDate.of(2009, 12, 26));
 
         long cwNum = BASE_CW_NUMBER + direction * cwNumOffset;
 
@@ -248,22 +250,53 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
 
     /**
      * Counts number of Christmasses that aren't Sunday between dates
-     * (inclusive)
+     * (inclusive).
      *
-     * Assumes lower <= upper
+     * Returns 0 if upper below lower
      */
     private static int countNonSundayChristmas(LocalDate lower, LocalDate upper) {
-        LocalDate christmas = LocalDate.of(lower.getYear(), 12, 25);
-        if (lower.isAfter(christmas))
-            christmas = christmas.plusYears(1);
+        return countNonSundaySpecial(lower, upper, 12, 25);
+    }
+
+    /**
+     * Counts number of Boxing Days that aren't Sunday between dates
+     * (inclusive)
+     *
+     * Returns 0 if upper below lower
+     */
+    private static int countNonSundayBoxing(LocalDate lower, LocalDate upper) {
+        return countNonSundaySpecial(lower, upper, 12, 26);
+    }
+
+    /**
+     * Counts number of special days that aren't Sunday between dates
+     * (inclusive)
+     *
+     * @param lower start date inclusive
+     * @param upper end date inclusive
+     * @param month month of special date (1-12)
+     * @param day day of special date (1-31)
+     * @return number of non-sunday occurences, or 0 if upper &lt; lower
+     */
+    private static int countNonSundaySpecial(LocalDate lower,
+                                             LocalDate upper,
+                                             int month,
+                                             int day) {
+        if (upper.isBefore(lower))
+            return 0;
+
+        LocalDate special = LocalDate.of(lower.getYear(), month, day);
+        if (lower.isAfter(special))
+            special = special.plusYears(1);
 
         int count = 0;
-        while (!christmas.isAfter(upper)) {
-            if (DayOfWeek.from(christmas) != DayOfWeek.SUNDAY)
+        while (!special.isAfter(upper)) {
+            if (DayOfWeek.from(special) != DayOfWeek.SUNDAY)
                 count += 1;
-            christmas = christmas.plusYears(1);
+            special = special.plusYears(1);
         }
 
         return count;
     }
+
 }
