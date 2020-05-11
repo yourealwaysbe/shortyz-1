@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:windowSoftInputMode="stateAlwaysHidden">
 
-    <TextView android:id="@+id/clueLine" 
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" 
-        android:textSize="12dip" 
-        android:minLines="2"
-        android:maxLines="4"
-        android:textColor="#FFFFFF"
-        android:background="#2C2C2C"
-    />
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+        <TextView android:id="@+id/clueLine" 
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" 
+            android:textSize="12dip" 
+            android:minLines="2"
+            android:maxLines="4"
+            android:textColor="#FFFFFF"
+            android:background="#2C2C2C"
+        />
+        <app.crossword.yourealwaysbe.view.ScrollingImageView
+            android:id="@+id/board"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.0"
+            android:scrollbars="horizontal|vertical"
+            android:background="#000000"
+            android:focusable="true"
+            android:focusableInTouchMode="true" >
+            <requestFocus />
+        </app.crossword.yourealwaysbe.view.ScrollingImageView>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/historyList"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+        />
+    </LinearLayout>
     <android.inputmethodservice.KeyboardView
         android:id="@+id/playKeyboard"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:keyTextColor="@color/textColorPrimary"
@@ -23,18 +45,5 @@
         android:background="@color/background_light"
         android:shadowRadius="0.0"
         android:keyPreviewLayout="@layout/key_preview"
-        />
     />
-    <app.crossword.yourealwaysbe.view.ScrollingImageView
-        android:id="@+id/board"
-        android:layout_below="@id/clueLine"
-        android:layout_above="@id/playKeyboard"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:scrollbars="horizontal|vertical"
-        android:background="#000000"
-        android:focusable="true"
-        android:focusableInTouchMode="true" >
-        <requestFocus />
-    </app.crossword.yourealwaysbe.view.ScrollingImageView>
-</RelativeLayout>
+</FrameLayout>

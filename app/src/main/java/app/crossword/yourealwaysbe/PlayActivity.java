@@ -12,6 +12,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
@@ -52,6 +56,7 @@ import app.crossword.yourealwaysbe.view.SeparatedListAdapter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -62,9 +67,11 @@ public class PlayActivity extends ForkyzActivity {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
+    private static final int HISTORY_LEN = 5;
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
+
     @SuppressWarnings("rawtypes")
     private AdapterView across;
     @SuppressWarnings("rawtypes")
@@ -74,6 +81,9 @@ public class PlayActivity extends ForkyzActivity {
     private ClueListAdapter acrossAdapter;
     private ClueListAdapter downAdapter;
     private SeparatedListAdapter allCluesAdapter;
+    private RecyclerView historyView;
+    private HistoryListAdapter historyAdapter;
+    private LinkedList<HistoryItem> historyList;
     private Configuration configuration;
     private Dialog dialog;
     private File baseFile;
@@ -402,6 +412,20 @@ public class PlayActivity extends ForkyzActivity {
             getBoard().toggleShowErrors();
         }
 
+        this.historyList = new LinkedList<HistoryItem>();
+        this.historyAdapter = new HistoryListAdapter(this.historyList);
+        this.historyView = (RecyclerView) this.findViewById(R.id.historyList);
+        if (this.historyView != null) {
+            RecyclerView.LayoutManager layoutManager
+                = new LinearLayoutManager(getApplicationContext());
+            this.historyView.setLayoutManager(layoutManager);
+            this.historyView.setItemAnimator(new DefaultItemAnimator());
+            this.historyView.setAdapter(this.historyAdapter);
+            this.historyView.addItemDecoration(
+                new DividerItemDecoration(getApplicationContext(),
+                                          DividerItemDecoration.VERTICAL)
+            );
+        }
 
         this.render(true);
 
@@ -550,6 +574,7 @@ public class PlayActivity extends ForkyzActivity {
                 }
             });
         }
+
         if (!prefs.getBoolean(SHOW_TIMER, false)) {
             if (ForkyzApplication.isLandscape(metrics)) {
                 if (ForkyzApplication.isMiniTabletish(metrics) && allClues != null) {
@@ -1231,6 +1256,8 @@ public class PlayActivity extends ForkyzActivity {
                         + (this.showCount ? ("  ["
                         + getBoard().getCurrentWord().length + "]") : ""));
 
+        updateHistory(c, getBoard().isAcross());
+
         if (this.allClues != null) {
             if (getBoard().isAcross()) {
                 ClueListAdapter cla = (ClueListAdapter) this.allCluesAdapter.sections
@@ -1298,6 +1325,21 @@ public class PlayActivity extends ForkyzActivity {
         this.boardView.requestFocus();
     }
 
+    private void updateHistory(Clue currentClue, boolean across) {
+        if (historyList == null)
+            return;
+
+        HistoryItem item = new HistoryItem(currentClue, across);
+        // if a new item, not equal to most recent
+        if (historyList.isEmpty() ||
+            !item.equals(historyList.getFirst())) {
+            historyList.remove(item);
+            historyList.addFirst(item);
+            while (historyList.size() > HISTORY_LEN)
+                historyList.removeLast();
+            historyAdapter.notifyDataSetChanged();
+        }
+    }
 
     /**
      * For across/down/allClues onItemClick and onItemLongClick
