@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tabhost"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"/>
+
+        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@android:id/tabcontent"
+            android:layout_below="@android:id/tabs"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">$
+
+            <ListView android:id="@+id/downClueTab"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:choiceMode="singleChoice"/>
+
+            <ListView android:id="@+id/acrossClueTab"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:choiceMode="singleChoice"/>
+
+            <android.support.v7.widget.RecyclerView
+                 android:id="@+id/historyTab"
+                 android:layout_width="fill_parent"
+                 android:layout_height="fill_parent"/>
+
+        </FrameLayout>
+    </RelativeLayout>
+</TabHost>
+

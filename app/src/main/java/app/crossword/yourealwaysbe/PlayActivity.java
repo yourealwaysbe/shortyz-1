@@ -47,6 +47,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.view.ClueTabs;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
@@ -84,6 +85,7 @@ public class PlayActivity extends ForkyzActivity {
     private RecyclerView historyView;
     private HistoryListAdapter historyAdapter;
     private LinkedList<HistoryItem> historyList;
+    private ClueTabs clueTabs;
     private Configuration configuration;
     private Dialog dialog;
     private File baseFile;
@@ -249,7 +251,7 @@ public class PlayActivity extends ForkyzActivity {
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
-                clue.setVisibility(View.GONE);
+                //clue.setVisibility(View.GONE);
                 View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
                 if (custom != null) {
                     clue = custom.findViewById(R.id.clueLine);
@@ -412,20 +414,22 @@ public class PlayActivity extends ForkyzActivity {
             getBoard().toggleShowErrors();
         }
 
-        this.historyList = new LinkedList<HistoryItem>();
-        this.historyAdapter = new HistoryListAdapter(this.historyList);
-        this.historyView = (RecyclerView) this.findViewById(R.id.historyList);
-        if (this.historyView != null) {
-            RecyclerView.LayoutManager layoutManager
-                = new LinearLayoutManager(getApplicationContext());
-            this.historyView.setLayoutManager(layoutManager);
-            this.historyView.setItemAnimator(new DefaultItemAnimator());
-            this.historyView.setAdapter(this.historyAdapter);
-            this.historyView.addItemDecoration(
-                new DividerItemDecoration(getApplicationContext(),
-                                          DividerItemDecoration.VERTICAL)
-            );
-        }
+        this.clueTabs = this.findViewById(R.id.playClueTab);
+        this.clueTabs.setBoard(getBoard());
+        // this.historyList = new LinkedList<HistoryItem>();
+        // this.historyAdapter = new HistoryListAdapter(this.historyList);
+        // this.historyView = (RecyclerView) this.findViewById(R.id.historyList);
+        // if (this.historyView != null) {
+        //     RecyclerView.LayoutManager layoutManager
+        //         = new LinearLayoutManager(getApplicationContext());
+        //     this.historyView.setLayoutManager(layoutManager);
+        //     this.historyView.setItemAnimator(new DefaultItemAnimator());
+        //     this.historyView.setAdapter(this.historyAdapter);
+        //     this.historyView.addItemDecoration(
+        //         new DividerItemDecoration(getApplicationContext(),
+        //                                   DividerItemDecoration.VERTICAL)
+        //     );
+        // }
 
         this.render(true);
 
@@ -1326,19 +1330,19 @@ public class PlayActivity extends ForkyzActivity {
     }
 
     private void updateHistory(Clue currentClue, boolean across) {
-        if (historyList == null)
-            return;
+        // if (historyList == null)
+        //     return;
 
-        HistoryItem item = new HistoryItem(currentClue, across);
-        // if a new item, not equal to most recent
-        if (historyList.isEmpty() ||
-            !item.equals(historyList.getFirst())) {
-            historyList.remove(item);
-            historyList.addFirst(item);
-            while (historyList.size() > HISTORY_LEN)
-                historyList.removeLast();
-            historyAdapter.notifyDataSetChanged();
-        }
+        // HistoryItem item = new HistoryItem(currentClue, across);
+        // // if a new item, not equal to most recent
+        // if (historyList.isEmpty() ||
+        //     !item.equals(historyList.getFirst())) {
+        //     historyList.remove(item);
+        //     historyList.addFirst(item);
+        //     while (historyList.size() > HISTORY_LEN)
+        //         historyList.removeLast();
+        //     historyAdapter.notifyDataSetChanged();
+        // }
     }
 
     /**
