@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
+import android.support.constraint.ConstraintSet;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -251,7 +252,10 @@ public class PlayActivity extends ForkyzActivity {
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
-                //clue.setVisibility(View.GONE);
+                ConstraintSet set = new ConstraintSet();
+                set.setVisibility(clue.getId(), ConstraintSet.GONE);
+                set.applyTo(this.findViewById(R.id.playConstraintLayout));
+
                 View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
                 if (custom != null) {
                     clue = custom.findViewById(R.id.clueLine);
