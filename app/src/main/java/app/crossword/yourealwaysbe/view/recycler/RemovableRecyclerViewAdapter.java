@@ -1,6 +1,6 @@
 package app.crossword.yourealwaysbe.view.recycler;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by rcooper on 7/24/15.

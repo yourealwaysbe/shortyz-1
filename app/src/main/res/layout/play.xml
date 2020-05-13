@@ -5,15 +5,15 @@
     android:layout_height="match_parent"
     android:windowSoftInputMode="stateAlwaysHidden">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/playConstraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView android:id="@+id/clueLine" 
+        <TextView android:id="@+id/clueLine"
             android:layout_width="0dp"
-            android:layout_height="wrap_content" 
-            android:textSize="12dip" 
+            android:layout_height="wrap_content"
+            android:textSize="12dip"
             android:minLines="2"
             android:maxLines="4"
             android:textColor="#FFFFFF"
@@ -27,7 +27,6 @@
             android:id="@+id/board"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1.0"
             android:scrollbars="horizontal|vertical"
             android:background="#000000"
             android:focusable="true"
@@ -51,7 +50,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
         />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <android.inputmethodservice.KeyboardView
         android:id="@+id/playKeyboard"
         android:layout_gravity="bottom"

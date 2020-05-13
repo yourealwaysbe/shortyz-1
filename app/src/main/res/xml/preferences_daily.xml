@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:title="Daily Crosswords"
+    android:summary="Puzzles which update daily."
+    android:key="selectDaily"
+    >
+    <androidx.preference.CheckBoxPreference
+        android:title="Guardian Daily Cryptic"
+         android:summary="Updates Monday-Friday"
+        android:defaultValue="true"
+        android:key="downloadGuardianDailyCryptic" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Newsday"
+        android:defaultValue="true"
+        android:key="downloadNewsday" />
+     <androidx.preference.CheckBoxPreference
+         android:title="Joseph Crosswords"
+         android:defaultValue="true"
+         android:summary="Updates Monday-Saturday"
+         android:key="downloadJoseph" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Los Angeles Times"
+        android:defaultValue="true"
+        android:key="downloadLat" />
+     <androidx.preference.CheckBoxPreference
+         android:title="Sheffer Crosswords"
+         android:defaultValue="true"
+         android:summary="Updates Monday-Saturday"
+         android:key="downloadSheffer" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Thinks.com"
+        android:defaultValue="true"
+        android:key="downloadThinks" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Universal Crossword"
+        android:defaultValue="true"
+        android:key="downloadUniversal" />
+    <androidx.preference.CheckBoxPreference
+        android:title="USA Today"
+        android:defaultValue="true"
+        android:summary="Updates Monday-Saturday"
+        android:key="downloadUSAToday" />
+</androidx.preference.PreferenceScreen>

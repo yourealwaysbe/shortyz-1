@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:title="Background Download Options"
+    android:summary="Configure background downloads."
+    android:dependency="backgroundDownload"
+    android:key="backgroundDownloadOptions">
+    <androidx.preference.CheckBoxPreference
+        android:title="Download over Wifi only"
+        android:defaultValue="true"
+        android:disableDependentsState="true"
+        android:summaryOn="Only schedule background downloads when Wifi is available."
+        android:summaryOff="Schedule background downloads even when not on Wifi"
+        android:key="backgroundDownloadRequireUnmetered" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Download when roaming"
+        android:defaultValue="false"
+        android:dependency="backgroundDownloadRequireUnmetered"
+        android:summaryOn="Schedule background downloads when roaming"
+        android:summaryOff="Do not schedule background downloads when roaming"
+        android:key="backgroundDownloadAllowRoaming" />
+    <androidx.preference.CheckBoxPreference
+        android:title="Download while charging only"
+        android:defaultValue="false"
+        android:summaryOn="Only schedule background downloads when charging"
+        android:summaryOff="Schedule background downloads when on battery"
+        android:key="backgroundDownloadRequireCharging" />
+</androidx.preference.PreferenceScreen>

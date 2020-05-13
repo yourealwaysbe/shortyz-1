@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import app.crossword.yourealwaysbe.BrowseActivity;
 import app.crossword.yourealwaysbe.PlayActivity;
@@ -34,9 +34,9 @@ import java.util.logging.Logger;
 public class Downloaders {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private Context context;
-    private List<Downloader> downloaders = new LinkedList<Downloader>();
     private NotificationManager notificationManager;
     private boolean supressMessages;
+    private SharedPreferences prefs;
 
     public Downloaders(SharedPreferences prefs,
                        NotificationManager notificationManager,
@@ -51,65 +51,9 @@ public class Downloaders {
                        NotificationManager notificationManager,
                        Context context,
                        boolean challengeForCredentials) {
+        this.prefs = prefs;
         this.notificationManager = notificationManager;
         this.context = context;
-
-        if (prefs.getBoolean("downloadGuardianDailyCryptic", true)) {
-            downloaders.add(new GuardianDailyCrypticDownloader());
-        }
-
-        if (prefs.getBoolean("downloadWsj", true)) {
-            downloaders.add(new WSJFridayDownloader());
-            downloaders.add(new WSJSaturdayDownloader());
-        }
-
-        if (prefs.getBoolean("downloadWaPoPuzzler", true)) {
-            downloaders.add(new WaPoPuzzlerDownloader());
-        }
-
-        if (prefs.getBoolean("downloadJonesin", true)) {
-            downloaders.add(new JonesinDownloader());
-        }
-
-        if (prefs.getBoolean("downloadLat", true)) {
-//           downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
-            downloaders.add(new LATimesDownloader());
-        }
-
-        if (prefs.getBoolean("downloadCHE", true)) {
-            downloaders.add(new CHEDownloader());
-        }
-
-        if (prefs.getBoolean("downloadJoseph", true)) {
-            downloaders.add(new KFSDownloader("joseph", "Joseph Crosswords",
-                    "Thomas Joseph", Downloader.DATE_NO_SUNDAY));
-        }
-
-        if (prefs.getBoolean("downloadSheffer", true)) {
-            downloaders.add(new KFSDownloader("sheffer", "Sheffer Crosswords",
-                    "Eugene Sheffer", Downloader.DATE_NO_SUNDAY));
-        }
-
-        if (prefs.getBoolean("downloadNewsday", true)) {
-            downloaders.add(new BrainsOnlyDownloader(
-                    "http://brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=",
-                    "Newsday"));
-        }
-
-        if (prefs.getBoolean("downloadUSAToday", true)) {
-            downloaders.add(new UclickDownloader("usaon", "USA Today",
-                    "USA Today", Downloader.DATE_NO_SUNDAY));
-        }
-
-        if (prefs.getBoolean("downloadUniversal", true)) {
-            downloaders.add(new UclickDownloader("fcx", "Universal Crossword",
-                    "uclick LLC", Downloader.DATE_DAILY));
-        }
-
-        if (prefs.getBoolean("downloadLACal", true)) {
-            downloaders.add(new LATSundayDownloader());
-        }
-
         this.supressMessages = prefs.getBoolean("supressMessages", false);
     }
 
@@ -129,7 +73,7 @@ public class Downloaders {
         int dayOfWeek = date.getDay();
         List<Downloader> retVal = new LinkedList<Downloader>();
 
-        for (Downloader d : downloaders) {
+        for (Downloader d : getDownloadersFromPrefs()) {
             // TODO: Downloader.getGoodThrough() should account for the day of week.
             if (Arrays.binarySearch(d.getDownloadDates(), dayOfWeek) >= 0) {
                 if(date.getTime() >= d.getGoodFrom().getTime() && date.getTime() <= d.getGoodThrough().getTime()) {
@@ -157,7 +101,7 @@ public class Downloaders {
         }
 
         if (downloaders.size() == 0) {
-            downloaders.addAll(this.downloaders);
+            downloaders.addAll(getDownloadersFromPrefs());
         }
 
         HashMap<Downloader, Date> puzzlesToDownload = new HashMap<Downloader, Date>();
@@ -410,5 +354,67 @@ public class Downloaders {
         if (this.notificationManager != null) {
             this.notificationManager.notify(i, not);
         }
+    }
+
+    private List<Downloader> getDownloadersFromPrefs() {
+        List downloaders = new LinkedList<Downloader>();
+
+        if (prefs.getBoolean("downloadGuardianDailyCryptic", true)) {
+            downloaders.add(new GuardianDailyCrypticDownloader());
+        }
+
+        if (prefs.getBoolean("downloadWsj", true)) {
+            downloaders.add(new WSJFridayDownloader());
+            downloaders.add(new WSJSaturdayDownloader());
+        }
+
+        if (prefs.getBoolean("downloadWaPoPuzzler", true)) {
+            downloaders.add(new WaPoPuzzlerDownloader());
+        }
+
+        if (prefs.getBoolean("downloadJonesin", true)) {
+            downloaders.add(new JonesinDownloader());
+        }
+
+        if (prefs.getBoolean("downloadLat", true)) {
+//           downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
+            downloaders.add(new LATimesDownloader());
+        }
+
+        if (prefs.getBoolean("downloadCHE", true)) {
+            downloaders.add(new CHEDownloader());
+        }
+
+        if (prefs.getBoolean("downloadJoseph", true)) {
+            downloaders.add(new KFSDownloader("joseph", "Joseph Crosswords",
+                    "Thomas Joseph", Downloader.DATE_NO_SUNDAY));
+        }
+
+        if (prefs.getBoolean("downloadSheffer", true)) {
+            downloaders.add(new KFSDownloader("sheffer", "Sheffer Crosswords",
+                    "Eugene Sheffer", Downloader.DATE_NO_SUNDAY));
+        }
+
+        if (prefs.getBoolean("downloadNewsday", true)) {
+            downloaders.add(new BrainsOnlyDownloader(
+                    "http://brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=",
+                    "Newsday"));
+        }
+
+        if (prefs.getBoolean("downloadUSAToday", true)) {
+            downloaders.add(new UclickDownloader("usaon", "USA Today",
+                    "USA Today", Downloader.DATE_NO_SUNDAY));
+        }
+
+        if (prefs.getBoolean("downloadUniversal", true)) {
+            downloaders.add(new UclickDownloader("fcx", "Universal Crossword",
+                    "uclick LLC", Downloader.DATE_DAILY));
+        }
+
+        if (prefs.getBoolean("downloadLACal", true)) {
+            downloaders.add(new LATSundayDownloader());
+        }
+
+        return downloaders;
     }
 }

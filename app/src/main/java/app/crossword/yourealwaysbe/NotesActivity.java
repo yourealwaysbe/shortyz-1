@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.util.TypedValue;
 import android.view.MenuItem;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;

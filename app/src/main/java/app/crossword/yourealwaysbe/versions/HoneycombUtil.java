@@ -2,9 +2,9 @@ package app.crossword.yourealwaysbe.versions;
 
 import android.annotation.TargetApi;
 import android.content.res.Configuration;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;

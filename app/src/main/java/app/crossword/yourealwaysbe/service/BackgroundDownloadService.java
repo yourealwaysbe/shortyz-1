@@ -14,7 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.net.Downloaders;
 
