@@ -51,7 +51,7 @@ public class ClueTabs extends TabHost {
         downTab.setContent(R.id.downClueTab);
 
         TabSpec historyTab  = newTabSpec("TAB3");
-        historyTab.setIndicator("Recent");
+        historyTab.setIndicator("History");
         historyTab.setContent(R.id.historyTab);
 
         addTab(acrossTab);
