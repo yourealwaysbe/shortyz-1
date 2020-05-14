@@ -34,6 +34,7 @@
             app:layout_constraintTop_toBottomOf="@id/clueLine"
             app:layout_constraintBottom_toTopOf="@id/playClueTab"
             app:layout_constraintDimensionRatio="H,1:1.01"
+            app:layout_constraintVertical_weight="100"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="0dp"
