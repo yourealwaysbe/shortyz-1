@@ -9,23 +9,26 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.CheckedTextView;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ClueTabs extends LinearLayout {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
-    private ListView acrossView;
-    private ListView downView;
+    private RecyclerView acrossView;
+    private RecyclerView downView;
     private RecyclerView historyView;
     private Playboard board;
     private Context context;
@@ -86,75 +89,112 @@ public class ClueTabs extends LinearLayout {
         }
     }
 
-    public class ClueListHolder extends RecyclerView.ViewHolder {
-        private ListView clueList;
+    private static class ClueListHolder extends RecyclerView.ViewHolder {
+        private RecyclerView clueList;
+        private ClueListAdapter clueListAdapter;
         private Playboard board;
         private boolean across;
 
         public ClueListHolder(View view) {
             super(view);
+            Context context = itemView.getContext();
             clueList = view.findViewById(R.id.tabClueList);
+
+            RecyclerView.LayoutManager layoutManager
+                 = new LinearLayoutManager(context);
+             clueList.setLayoutManager(layoutManager);
+             clueList.setItemAnimator(new DefaultItemAnimator());
+             clueList.addItemDecoration(
+                 new DividerItemDecoration(context,
+                                           DividerItemDecoration.VERTICAL)
+             );
         }
 
         public void setContents(Playboard board, boolean across) {
             this.board = board;
             this.across = across;
 
-            Clue[] clues = across ?
-                           board.getAcrossClues() :
-                           board.getDownClues();
+            List<Clue> clues = Arrays.asList(across ?
+                                             board.getAcrossClues() :
+                                             board.getDownClues());
 
-            clueList.setAdapter(
-                new ArrayAdapter(context,
-                                 //android.R.layout.simple_list_item_single_choice,
-                                 R.layout.clue_list_item,
-                                 clues) {
-                    @Override
-                    public View getView(int position,
-                                        View convertView,
-                                        ViewGroup parent) {
-                        return getClueListView(position,
-                                               convertView,
-                                               parent,
-                                               (Clue) getItem(position),
-                                               true);
-                    }
-            });
-
-            clueList.invalidateViews();
+            clueListAdapter = new ClueListAdapter(clues, across, board);
+            clueList.setAdapter(clueListAdapter);
+            clueListAdapter.notifyDataSetChanged();
         }
 
-        /**
-         * Get the right view for a clue list item
-         *
-         * @param clue the clue at the position
-         * @param across if is across
-         */
-        public View getClueListView(int position,
-                                    View convertView,
-                                    ViewGroup parent,
-                                    Clue clue,
-                                    boolean across) {
-            LayoutInflater inflater = LayoutInflater.from(context);
+    }
 
-            View view;
-            TextView tv;
-            if (board != null && board.isFilled(position, across)) {
-                view = inflater.inflate(R.layout.clue_list_item_filled,
-                                        parent,
-                                        false);
-                tv = (TextView) view.findViewById(R.id.clue_text_view_filled);
-            } else {
-                view = inflater.inflate(R.layout.clue_list_item,
-                                        parent,
-                                        false);
-                tv = (TextView) view.findViewById(R.id.clue_text_view);
-            }
+    private static class ClueListAdapter
+           extends RecyclerView.Adapter<ClueViewHolder> {
 
-            tv.setText(clue.toString());
+        private List<Clue> clueList;
+        private boolean across;
+        private Playboard board;
 
-            return view;
+        public ClueListAdapter(List<Clue> clueList,
+                               boolean across,
+                               Playboard board) {
+            this.clueList = clueList;
+            this.across = across;
+            this.board = board;
+        }
+
+        @Override
+        public ClueViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View clueView = LayoutInflater.from(parent.getContext())
+                                          .inflate(R.layout.clue_list_item,
+                                                   parent,
+                                                   false);
+
+            return new ClueViewHolder(clueView, board);
+        }
+
+        @Override
+        public void onBindViewHolder(ClueViewHolder holder, int position) {
+            // plus one because first item not shown (it is current clue)
+            Clue clue = clueList.get(position);
+            holder.setClue(clue, across, position);
+        }
+
+        @Override
+        public int getItemCount() {
+            return clueList.size();
         }
     }
+
+    private static class ClueViewHolder extends RecyclerView.ViewHolder {
+        private CheckedTextView clueView;
+        private Playboard board;
+
+        public ClueViewHolder(View view, Playboard board) {
+            super(view);
+            this.clueView = view.findViewById(R.id.clue_text_view);
+            this.board = board;
+        }
+
+        private void setClue(Clue clue, boolean across, int position) {
+            clueView.setText(clue.number + ". " + clue.hint);
+
+            int color = R.color.textColorPrimary;
+            if (board != null && board.isFilled(position, across)) {
+                color = R.color.textColorFilled;
+            }
+
+            clueView.setTextColor(itemView.getContext()
+                                          .getResources()
+                                          .getColor(color,
+                                                    itemView.getContext()
+                                                            .getTheme()));
+
+            if (board != null) {
+                Clue selectedClue = board.getClue();
+                clueView.setChecked(board.isAcross() == across &&
+                                    selectedClue.number == clue.number);
+            }
+        }
+    }
+
+
 }
 
