@@ -23,8 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
         />
-        <app.crossword.yourealwaysbe.view.ScrollingImageView
-            android:id="@+id/board"
+        <app.crossword.yourealwaysbe.view.ScrollingImageView android:id="@+id/board"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scrollbars="horizontal|vertical"
@@ -37,8 +36,6 @@
             app:layout_constraintVertical_weight="100"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="0dp"
-            android:layout_marginBottom="0dp"
         >
             <requestFocus />
         </app.crossword.yourealwaysbe.view.ScrollingImageView>
