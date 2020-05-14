@@ -1,40 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tabhost"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-        <TabWidget
-            android:id="@android:id/tabs"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:focusable="false"/>
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/clueTabsTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
-        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@android:id/tabcontent"
-            android:layout_below="@android:id/tabs"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">$
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/clueTabsPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
-            <ListView android:id="@+id/downClueTab"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:choiceMode="singleChoice"/>
-
-            <ListView android:id="@+id/acrossClueTab"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:choiceMode="singleChoice"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                 android:id="@+id/historyTab"
-                 android:layout_width="fill_parent"
-                 android:layout_height="fill_parent"/>
-
-        </FrameLayout>
-    </RelativeLayout>
-</TabHost>
+</LinearLayout>
 
