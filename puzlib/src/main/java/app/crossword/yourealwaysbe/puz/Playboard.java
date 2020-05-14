@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -16,6 +17,7 @@ public class Playboard implements Serializable {
     private HashMap<Integer, Position> downWordStarts = new HashMap<Integer, Position>();
     private MovementStrategy movementStrategy = MovementStrategy.MOVE_NEXT_ON_AXIS;
     private Position highlightLetter = new Position(0, 0);
+    private LinkedList<HistoryItem> historyList = new LinkedList<>();
     private Puzzle puzzle;
     private String responder;
     private Box[][] boxes;
@@ -253,7 +255,13 @@ public class Playboard implements Serializable {
             }
         }
 
+        updateHistory();
+
         return w;
+    }
+
+    public List<HistoryItem> getHistory() {
+        return historyList;
     }
 
     /**
@@ -850,6 +858,16 @@ public class Playboard implements Serializable {
             hash = (29 * hash) + this.length;
 
             return hash;
+        }
+    }
+
+    private void updateHistory() {
+        HistoryItem item = new HistoryItem(getClue(), isAcross());
+        // if a new item, not equal to most recent
+        if (historyList.isEmpty() ||
+            !item.equals(historyList.getFirst())) {
+            historyList.remove(item);
+            historyList.addFirst(item);
         }
     }
 }

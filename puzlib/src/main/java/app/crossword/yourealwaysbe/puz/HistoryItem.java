@@ -1,4 +1,4 @@
-package app.crossword.yourealwaysbe;
+package app.crossword.yourealwaysbe.puz;
 
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 

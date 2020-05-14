@@ -1,6 +1,6 @@
 package app.crossword.yourealwaysbe;
 
-import app.crossword.yourealwaysbe.HistoryItem;
+import app.crossword.yourealwaysbe.puz.HistoryItem;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 

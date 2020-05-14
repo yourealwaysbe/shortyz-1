@@ -85,7 +85,7 @@ public class PlayActivity extends ForkyzActivity {
     private SeparatedListAdapter allCluesAdapter;
     private RecyclerView historyView;
     private HistoryListAdapter historyAdapter;
-    private LinkedList<HistoryItem> historyList;
+    //private LinkedList<HistoryItem> historyList;
     private ClueTabs clueTabs;
     private Configuration configuration;
     private Dialog dialog;
