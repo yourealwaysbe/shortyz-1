@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.CheckedTextView;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,14 +25,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class ClueTabs extends LinearLayout {
+public class ClueTabs extends LinearLayout
+                      implements Playboard.PlayboardListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
-    private RecyclerView acrossView;
-    private RecyclerView downView;
-    private RecyclerView historyView;
+    private ViewPager2 viewPager;
     private Playboard board;
     private Context context;
+    private boolean listening = false;
 
     public ClueTabs(Context context, AttributeSet as) {
         super(context, as);
@@ -43,8 +44,10 @@ public class ClueTabs extends LinearLayout {
         if (board == null)
             return;
 
+        this.board = board;
+
         TabLayout tabLayout = findViewById(R.id.clueTabsTabLayout);
-        ViewPager2 viewPager = findViewById(R.id.clueTabsPager);
+        viewPager = findViewById(R.id.clueTabsPager);
 
         viewPager.setAdapter(new ClueTabsPagerAdapter(board));
 
@@ -57,6 +60,28 @@ public class ClueTabs extends LinearLayout {
                 }
             }
         ).attach();
+
+        listenBoard();
+    }
+
+    public void listenBoard() {
+        if (board != null && !listening) {
+            board.addListener(this);
+            listening = true;
+        }
+    }
+
+    public void unlistenBoard() {
+        if (board != null && listening) {
+            board.removeListener(this);
+            listening = false;
+        }
+    }
+
+    public void onPlayboardChange() {
+        if (viewPager != null) {
+            viewPager.getAdapter().notifyDataSetChanged();
+        }
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {
@@ -111,18 +136,19 @@ public class ClueTabs extends LinearLayout {
         }
 
         public void setContents(Playboard board, boolean across) {
-            this.board = board;
-            this.across = across;
+            if (this.board != board || this.across != across) {
+                this.board = board;
+                this.across = across;
 
-            List<Clue> clues = Arrays.asList(across ?
-                                             board.getAcrossClues() :
-                                             board.getDownClues());
+                List<Clue> clues = Arrays.asList(across ?
+                                                 board.getAcrossClues() :
+                                                 board.getDownClues());
 
-            clueListAdapter = new ClueListAdapter(clues, across, board);
-            clueList.setAdapter(clueListAdapter);
+                clueListAdapter = new ClueListAdapter(clues, across, board);
+                clueList.setAdapter(clueListAdapter);
+            }
             clueListAdapter.notifyDataSetChanged();
         }
-
     }
 
     private static class ClueListAdapter

@@ -1001,6 +1001,9 @@ public class PlayActivity extends ForkyzActivity {
         }
 
         this.timer = null;
+
+        if (clueTabs != null)
+            clueTabs.unlistenBoard();
     }
 
     @Override
@@ -1035,6 +1038,9 @@ public class PlayActivity extends ForkyzActivity {
         if (runTimer) {
             this.handler.post(this.updateTimeTask);
         }
+
+        if (clueTabs != null)
+            clueTabs.listenBoard();
 
         render();
     }
