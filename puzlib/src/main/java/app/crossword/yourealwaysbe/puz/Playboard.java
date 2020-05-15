@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -25,6 +26,8 @@ public class Playboard implements Serializable {
     private boolean showErrors;
     private boolean skipCompletedLetters;
     private boolean preserveCorrectLettersInShowErrors;
+    private Vector<PlayboardListener> listeners = new Vector<>();
+    private int notificationDisabledDepth = 0;
 
     public Playboard(Puzzle puzzle, MovementStrategy movementStrategy, boolean preserveCorrectLettersInShowErrors){
         this(puzzle, movementStrategy);
@@ -68,9 +71,13 @@ public class Playboard implements Serializable {
     }
 
     public void setAcross(boolean across) {
+        boolean changed = (this.across != across);
         this.across = across;
         if (this.puzzle != null) {
             this.puzzle.setAcross(across);
+        }
+        if (changed) {
+            notifyChange();
         }
     }
 
@@ -236,6 +243,8 @@ public class Playboard implements Serializable {
         int x = highlightLetter.across;
         int y = highlightLetter.down;
 
+        pushNotificationDisabled();
+
         if (highlightLetter.equals(this.highlightLetter)) {
             toggleDirection();
         } else {
@@ -255,7 +264,9 @@ public class Playboard implements Serializable {
             }
         }
 
-        updateHistory();
+        popNotificationDisabled();
+
+        notifyChange();
 
         return w;
     }
@@ -302,7 +313,10 @@ public class Playboard implements Serializable {
     }
 
     public void setShowErrors(boolean showErrors) {
+        boolean changed = (this.showErrors != showErrors);
         this.showErrors = showErrors;
+        if (changed)
+            notifyChange();
     }
 
     public boolean isShowErrors() {
@@ -421,6 +435,8 @@ public class Playboard implements Serializable {
         Box currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
         Word wordToReturn = this.getCurrentWord();
 
+        pushNotificationDisabled();
+
         if (currentBox.isBlank()) {
             wordToReturn = this.previousLetter();
             currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
@@ -432,11 +448,17 @@ public class Playboard implements Serializable {
             currentBox.setResponse(' ');
         }
 
+        popNotificationDisabled();
+
+        notifyChange();
+
         return wordToReturn;
     }
 
     public void jumpTo(int clueIndex, boolean across) {
         try {
+            pushNotificationDisabled();
+
             if (across) {
                 this.setHighlightLetter(this.acrossWordStarts.get(this.puzzle.getAcrossCluesLookup()[clueIndex]));
             } else {
@@ -444,6 +466,10 @@ public class Playboard implements Serializable {
             }
 
             this.setAcross(across);
+
+            popNotificationDisabled();
+
+            notifyChange();
         } catch (Exception e) {
         }
     }
@@ -596,7 +622,9 @@ public class Playboard implements Serializable {
         Position newPos = new Position(newAcross, newDown);
 
         if (!newPos.equals(p)) {
+            pushNotificationDisabled();
             this.setHighlightLetter(newPos);
+            popNotificationDisabled();
         }
 
         this.nextLetter();
@@ -615,10 +643,15 @@ public class Playboard implements Serializable {
             // Prohibit replacing correct letters
             return this.getCurrentWord();
         } else {
+            pushNotificationDisabled();
             b.setResponse(letter);
             b.setResponder(this.responder);
+            Word next = this.nextLetter();
+            popNotificationDisabled();
 
-            return this.nextLetter();
+            notifyChange();
+
+            return next;
         }
     }
 
@@ -640,8 +673,10 @@ public class Playboard implements Serializable {
             newDown = previous.start.down - 1;
         }
 
+        pushNotificationDisabled();
         this.setHighlightLetter(new Position(newAcross, newDown));
         this.previousLetter();
+        popNotificationDisabled();
 
         Word current = this.getCurrentWord();
         this.setHighlightLetter(new Position(current.start.across, current.start.down));
@@ -655,6 +690,8 @@ public class Playboard implements Serializable {
         if ((b != null) && (b.getSolution() != b.getResponse())) {
             b.setCheated(true);
             b.setResponse(b.getSolution());
+
+            notifyChange();
 
             return this.highlightLetter;
         }
@@ -687,6 +724,8 @@ public class Playboard implements Serializable {
             }
         }
 
+        notifyChange();
+
         return changes;
     }
 
@@ -705,6 +744,8 @@ public class Playboard implements Serializable {
             }
         }
 
+        notifyChange();
+
         return changes;
     }
 
@@ -712,6 +753,9 @@ public class Playboard implements Serializable {
         ArrayList<Position> changes = new ArrayList<Position>();
         Position oldHighlight = this.highlightLetter;
         Word w = this.getCurrentWord();
+
+        pushNotificationDisabled();
+
         this.setHighlightLetter(w.start);
 
         for (int i = 0; i < w.length; i++) {
@@ -723,6 +767,8 @@ public class Playboard implements Serializable {
 
             nextLetter(false);
         }
+
+        popNotificationDisabled();
 
         this.setHighlightLetter(oldHighlight);
 
@@ -750,6 +796,31 @@ public class Playboard implements Serializable {
 
     public void toggleShowErrors() {
         this.showErrors = !this.showErrors;
+    }
+
+    public void addListener(PlayboardListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(PlayboardListener listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyChange() {
+        if (notificationDisabledDepth == 0) {
+            updateHistory();
+            for (PlayboardListener listener : listeners)
+                listener.onPlayboardChange();
+        }
+    }
+
+    private void pushNotificationDisabled() {
+        notificationDisabledDepth += 1;
+    }
+
+    private void popNotificationDisabled() {
+        if (notificationDisabledDepth > 0)
+            notificationDisabledDepth -= 1;
     }
 
     public static class Clue implements Serializable {
@@ -869,5 +940,15 @@ public class Playboard implements Serializable {
             historyList.remove(item);
             historyList.addFirst(item);
         }
+    }
+
+    /**
+     * Playboard listeners will be updated when the highlighted letter
+     * changes or the contents of a box changes.
+     *
+     * TODO: what about notes in scratch?
+     */
+    public interface PlayboardListener {
+        public void onPlayboardChange();
     }
 }
