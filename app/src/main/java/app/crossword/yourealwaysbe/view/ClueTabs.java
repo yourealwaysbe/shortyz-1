@@ -192,14 +192,32 @@ public class ClueTabs extends LinearLayout
     private static class ClueViewHolder extends RecyclerView.ViewHolder {
         private CheckedTextView clueView;
         private Playboard board;
+        private Clue clue;
+        private boolean across;
+        private int position;
 
         public ClueViewHolder(View view, Playboard board) {
             super(view);
             this.clueView = view.findViewById(R.id.clue_text_view);
             this.board = board;
+
+            this.clueView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    LOG.info("Clicked");
+                    onClueClicked();
+                }
+            });
         }
 
         private void setClue(Clue clue, boolean across, int position) {
+            if (clue == null)
+                return;
+
+            this.clue = clue;
+            this.position = position;
+            this.across = across;
+
             clueView.setText(clue.number + ". " + clue.hint);
 
             int color = R.color.textColorPrimary;
@@ -219,6 +237,15 @@ public class ClueTabs extends LinearLayout
                                     selectedClue.number == clue.number);
             }
         }
+
+        private void onClueClicked() {
+            if (board != null) {
+                board.jumpTo(position, across);
+            } else {
+                // TODO show keyboard when clicked selected clue
+            }
+        }
+
     }
 
 
