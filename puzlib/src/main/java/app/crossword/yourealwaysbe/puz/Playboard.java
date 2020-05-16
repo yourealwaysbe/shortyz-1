@@ -65,6 +65,8 @@ public class Playboard implements Serializable {
         if (this.boxes[0][0] == null) {
             this.moveRight(false);
         }
+
+        updateHistory();
     }
 
     public void setPreserveCorrectLettersInShowErrors(boolean value){
