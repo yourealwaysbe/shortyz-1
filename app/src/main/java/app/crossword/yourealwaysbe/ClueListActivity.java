@@ -14,24 +14,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TabHost;
-import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Playboard;
+import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.view.ClueTabs;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
@@ -40,18 +34,18 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import java.io.File;
 import java.io.IOException;
 
-public class ClueListActivity extends ForkyzActivity {
+public class ClueListActivity extends ForkyzActivity
+                              implements ClueTabs.ClueTabsListener,
+                                         Playboard.PlayboardListener {
     private Configuration configuration;
     private File baseFile;
     private ImaginaryTimer timer;
     private KeyboardManager keyboardManager;
-    private ListView across;
-    private ListView down;
     private Puzzle puz;
     private ScrollingImageView imageView;
-    private TabHost tabHost;
     private boolean useNativeKeyboard = false;
     private PlayboardRenderer renderer;
+    private ClueTabs clueTabs;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -125,13 +119,20 @@ public class ClueListActivity extends ForkyzActivity {
             }
 
             public void onTap(Point e) {
-                Word current = getBoard().getCurrentWord();
+                Playboard board = getBoard();
+
+                if (board == null)
+                    return;
+
+                Word current = board.getCurrentWord();
+                boolean across = board.isAcross();
+
                 int newAcross = current.start.across;
                 int newDown = current.start.down;
                 int box = renderer.findBox(e).across;
 
                 if (box < current.length) {
-                    if (tabHost.getCurrentTab() == 0) {
+                    if (across) {
                         newAcross += box;
                     } else {
                         newDown += box;
@@ -140,132 +141,33 @@ public class ClueListActivity extends ForkyzActivity {
 
                 Position newPos = new Position(newAcross, newDown);
 
-                if (!newPos.equals(getBoard().getHighlightLetter())) {
-                    getBoard().setHighlightLetter(newPos);
+                if (!newPos.equals(board.getHighlightLetter())) {
+                    board.setHighlightLetter(newPos);
                 }
-                ClueListActivity.this.render(true);
+
+                displayKeyboard();
             }
         });
 
-        this.tabHost = this.findViewById(R.id.tabhost);
-        this.tabHost.setup();
+        this.clueTabs = this.findViewById(R.id.clueListClueTabs);
+        this.clueTabs.setBoard(getBoard());
 
-        TabSpec ts = tabHost.newTabSpec("TAB1");
-
-        ts.setIndicator("Across",
-                ContextCompat.getDrawable(this, R.drawable.across));
-
-        ts.setContent(R.id.acrossList);
-
-        this.tabHost.addTab(ts);
-
-        ts = this.tabHost.newTabSpec("TAB2");
-
-        ts.setIndicator("Down", ContextCompat.getDrawable(this, R.drawable.down));
-
-        ts.setContent(R.id.downList);
-        this.tabHost.addTab(ts);
-
-        this.tabHost.setCurrentTab(getBoard().isAcross() ? 0 : 1);
-
-        this.across = (ListView) this.findViewById(R.id.acrossList);
-        this.down = (ListView) this.findViewById(R.id.downList);
-
-        across.setAdapter(new ArrayAdapter(this,
-                //android.R.layout.simple_list_item_single_choice,
-                R.layout.clue_list_item,
-                getBoard().getAcrossClues()) {
-            @Override
-            public View getView(int position,
-                                View convertView,
-                                ViewGroup parent) {
-                return getClueListView(position,
-                                       convertView,
-                                       parent,
-                                       (Playboard.Clue) getItem(position),
-                                       true);
-            }
-        });
-        across.setFocusableInTouchMode(true);
-        down.setAdapter(new ArrayAdapter(this,
-                //android.R.layout.simple_list_item_single_choice,
-                R.layout.clue_list_item,
-                getBoard().getDownClues()) {
-            @Override
-            public View getView(int position,
-                                View convertView,
-                                ViewGroup parent) {
-                return getClueListView(position,
-                                       convertView,
-                                       parent,
-                                       (Playboard.Clue) getItem(position),
-                                       false);
-            }
-        });
-
-        int index = getBoard().getCurrentClueIndex();
-        if (getBoard().isAcross())
-            across.setItemChecked(index, true);
-        else
-            down.setItemChecked(index, true);
-
-        across.setOnItemLongClickListener(new OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> parent,
-                                           View view,
-                                           int pos,
-                                           long id) {
-                onItemClickSelect(parent, view, pos, id, true);
-                launchNotes();
-                return true;
-            }
-        });
-        across.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                    long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, true);
-            }
-        });
-        across.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                    int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, true);
-            }
-            public void onNothingSelected(AdapterView<?> arg0) { }
-        });
-        down.setOnItemLongClickListener(new OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> parent,
-                                           View view,
-                                           int pos,
-                                           long id) {
-                onItemClickSelect(parent, view, pos, id, false);
-                launchNotes();
-                return true;
-            }
-        });
-        down.setOnItemClickListener(new OnItemClickListener() {
-            public void onItemClick(AdapterView<?> arg0, View arg1,
-                    final int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, false);
-            }
-        });
-
-        down.setOnItemSelectedListener(new OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                    int arg2, long arg3) {
-                onItemClickSelect(arg0, arg1, arg2, arg3, false);
-            }
-
-            public void onNothingSelected(AdapterView<?> arg0) {
-            }
-        });
-        this.render(false);
+        this.render();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         keyboardManager.onResume((KeyboardView) findViewById(R.id.clueKeyboard));
-        this.render(false);
+
+        Playboard board = getBoard();
+        if (board != null)
+            board.addListener(this);
+
+        if (clueTabs != null)
+            clueTabs.addListener(this);
+
+        this.render();
     }
 
     @Override
@@ -278,6 +180,31 @@ public class ClueListActivity extends ForkyzActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         return super.onKeyUp(keyCode, event);
     }
+
+    @Override
+    public void onPlayboardChange(Word currentWord, Word previousWord) {
+        this.render();
+    }
+
+    @Override
+    public void onClueTabsClick(Clue clue, int index, boolean across) {
+        Playboard board = getBoard();
+        if (board != null) {
+            Word old = board.getCurrentWord();
+            board.jumpTo(index, across);
+            displayKeyboard(old);
+        }
+    }
+
+    @Override
+    public void onClueTabsLongClick(Clue clue, int index, boolean across) {
+        Playboard board = getBoard();
+        if (board != null) {
+            board.jumpTo(index, across);
+            launchNotes();
+        }
+    }
+
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -300,8 +227,6 @@ public class ClueListActivity extends ForkyzActivity {
             if (!board.getHighlightLetter().equals(
                     board.getCurrentWord().start)) {
                 board.previousLetter();
-
-                this.render(true);
             }
 
             return true;
@@ -310,7 +235,6 @@ public class ClueListActivity extends ForkyzActivity {
 
             if (!board.getHighlightLetter().equals(last)) {
                 board.nextLetter();
-                this.render(true);
             }
 
             return true;
@@ -325,8 +249,6 @@ public class ClueListActivity extends ForkyzActivity {
                 board.setHighlightLetter(w.start);
             }
 
-            this.render(true);
-
             return true;
 
         case KeyEvent.KEYCODE_SPACE:
@@ -340,8 +262,6 @@ public class ClueListActivity extends ForkyzActivity {
                         || (board.getBoxes()[curr.across][curr.down] == null)) {
                     board.setHighlightLetter(last);
                 }
-
-                this.render(true);
 
                 return true;
             }
@@ -362,8 +282,6 @@ public class ClueListActivity extends ForkyzActivity {
                     || (board.getBoxes()[p.across][p.down] == null)) {
                 board.setHighlightLetter(last);
             }
-
-            this.render(true);
 
             if ((puz.getPercentComplete() == 100) && (timer != null)) {
                 timer.stop();
@@ -399,6 +317,13 @@ public class ClueListActivity extends ForkyzActivity {
         }
 
         keyboardManager.onPause();
+
+        Playboard board = getBoard();
+        if (board != null)
+            board.removeListener(this);
+
+        if (clueTabs != null)
+            clueTabs.removeListener(this);
     }
 
     @Override
@@ -413,17 +338,29 @@ public class ClueListActivity extends ForkyzActivity {
         keyboardManager.onDestroy();
     }
 
-    private void render(boolean showKeyboard) {
-        if (showKeyboard)
-            keyboardManager.render();
-        else
-            keyboardManager.hideKeyboard();
+    private void displayKeyboard() {
+        keyboardManager.render();
+    }
 
+    private void displayKeyboard(Word previousWord) {
+        // only show keyboard if double click a word
+        // hide if it's a new word
+        Playboard board = getBoard();
+        if (board != null) {
+            Position newPos = board.getHighlightLetter();
+            if ((previousWord != null) &&
+                previousWord.checkInWord(newPos.across, newPos.down)) {
+                keyboardManager.render();
+            } else {
+                keyboardManager.hideKeyboard();
+            }
+        }
+    }
+
+    private void render() {
+        scaleRendererToCurWord();
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
-        // in case we're retuning from notes and something was filled in
-        this.across.invalidateViews();
-        this.down.invalidateViews();
     }
 
     private Playboard getBoard(){
@@ -443,80 +380,8 @@ public class ClueListActivity extends ForkyzActivity {
             this.renderer.setScale((float) 1);
     }
 
-    /**
-     * Callback for on click / select listeners for clues.
-     *
-     * Args as in onItemClick except:
-     *
-     * @param isAcross true if across clues are being selected
-     */
-    private void onItemClickSelect(AdapterView<?> parent,
-                                   View view,
-                                   int position,
-                                   long id,
-                                   boolean isAcross) {
-        Playboard board = getBoard();
-        if (board.isAcross() != isAcross
-            || (board.getCurrentClueIndex() != position)) {
-            parent.setSelected(true);
-
-            board.jumpTo(position, isAcross);
-            imageView.scrollTo(0, 0);
-            scaleRendererToCurWord();
-            render(false);
-
-            ListView clueList = isAcross ? across : down;
-            ListView otherList = isAcross ? down : across;
-
-            if (prefs.getBoolean("snapClue", false)) {
-                clueList.setSelectionFromTop(position, 5);
-                clueList.setSelection(position);
-            }
-
-            clueList.setItemChecked(position, true);
-            otherList.clearChoices();
-        } else {
-            // show keyboard when clicked selected clue
-            render(true);
-        }
-    }
-
     private void launchNotes() {
         Intent i = new Intent(this, NotesActivity.class);
         ClueListActivity.this.startActivityForResult(i, 0);
     }
-
-    /**
-     * Get the right view for a clue list item
-     *
-     * @param clue the clue at the position
-     * @param across if is across
-     */
-    public View getClueListView(int position,
-                                View convertView,
-                                ViewGroup parent,
-                                Playboard.Clue clue,
-                                boolean across) {
-        LayoutInflater inflater
-            = LayoutInflater.from(this);
-
-        View view;
-        TextView tv;
-        if (getBoard().isFilled(position, across)) {
-            view = inflater.inflate(R.layout.clue_list_item_filled,
-                                    parent,
-                                    false);
-            tv = (TextView) view.findViewById(R.id.clue_text_view_filled);
-        } else {
-            view = inflater.inflate(R.layout.clue_list_item,
-                                    parent,
-                                    false);
-            tv = (TextView) view.findViewById(R.id.clue_text_view);
-        }
-
-        tv.setText(clue.toString());
-
-        return view;
-    }
-
 }

@@ -90,6 +90,7 @@
             android:label="Clues"
             android:theme="@style/Theme.Forkyz"
             android:configChanges="orientation"
+            android:windowSoftInputMode="adjustNothing"
         />
         <activity
             android:name="app.crossword.yourealwaysbe.NotesActivity"
