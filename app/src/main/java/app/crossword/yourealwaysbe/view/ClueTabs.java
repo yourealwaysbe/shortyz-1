@@ -50,7 +50,7 @@ public class ClueTabs extends LinearLayout
         TabLayout tabLayout = findViewById(R.id.clueTabsTabLayout);
         viewPager = findViewById(R.id.clueTabsPager);
 
-        viewPager.setAdapter(new ClueTabsPagerAdapter(board));
+        viewPager.setAdapter(new ClueTabsPagerAdapter());
 
         new TabLayoutMediator(tabLayout, viewPager,
             (tab, position) -> {
@@ -86,12 +86,6 @@ public class ClueTabs extends LinearLayout
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {
-        private Playboard board;
-
-        public ClueTabsPagerAdapter(Playboard board) {
-            this.board = board;
-        }
-
         @Override
         public ClueListHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View page = LayoutInflater.from(parent.getContext())
@@ -103,9 +97,10 @@ public class ClueTabs extends LinearLayout
 
         @Override
         public void onBindViewHolder(ClueListHolder holder, int position) {
+            Playboard board = ClueTabs.this.board;
             switch (position) {
-            case 0: holder.setContents(board, true); break;
-            case 1: holder.setContents(board, false); break;
+            case 0: holder.setContents(true); break;
+            case 1: holder.setContents(false); break;
             }
         }
 
@@ -115,10 +110,9 @@ public class ClueTabs extends LinearLayout
         }
     }
 
-    private static class ClueListHolder extends RecyclerView.ViewHolder {
+    private class ClueListHolder extends RecyclerView.ViewHolder {
         private RecyclerView clueList;
         private ClueListAdapter clueListAdapter;
-        private Playboard board;
         private boolean across;
 
         public ClueListHolder(View view) {
@@ -136,35 +130,33 @@ public class ClueTabs extends LinearLayout
              );
         }
 
-        public void setContents(Playboard board, boolean across) {
-            if (this.board != board || this.across != across) {
-                this.board = board;
+        public void setContents(boolean across) {
+            Playboard board = ClueTabs.this.board;
+
+            if (board != null && this.across != across) {
                 this.across = across;
 
                 List<Clue> clues = Arrays.asList(across ?
                                                  board.getAcrossClues() :
                                                  board.getDownClues());
 
-                clueListAdapter = new ClueListAdapter(clues, across, board);
+                clueListAdapter = new ClueListAdapter(clues, across);
                 clueList.setAdapter(clueListAdapter);
             }
             clueListAdapter.notifyDataSetChanged();
         }
     }
 
-    private static class ClueListAdapter
-           extends RecyclerView.Adapter<ClueViewHolder> {
+    private class ClueListAdapter
+            extends RecyclerView.Adapter<ClueViewHolder> {
 
         private List<Clue> clueList;
         private boolean across;
-        private Playboard board;
 
         public ClueListAdapter(List<Clue> clueList,
-                               boolean across,
-                               Playboard board) {
+                               boolean across) {
             this.clueList = clueList;
             this.across = across;
-            this.board = board;
         }
 
         @Override
@@ -174,7 +166,7 @@ public class ClueTabs extends LinearLayout
                                                    parent,
                                                    false);
 
-            return new ClueViewHolder(clueView, board);
+            return new ClueViewHolder(clueView);
         }
 
         @Override
@@ -190,17 +182,15 @@ public class ClueTabs extends LinearLayout
         }
     }
 
-    private static class ClueViewHolder extends RecyclerView.ViewHolder {
+    private class ClueViewHolder extends RecyclerView.ViewHolder {
         private CheckedTextView clueView;
-        private Playboard board;
         private Clue clue;
         private boolean across;
         private int position;
 
-        public ClueViewHolder(View view, Playboard board) {
+        public ClueViewHolder(View view) {
             super(view);
             this.clueView = view.findViewById(R.id.clue_text_view);
-            this.board = board;
 
             this.clueView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -214,6 +204,8 @@ public class ClueTabs extends LinearLayout
         private void setClue(Clue clue, boolean across, int position) {
             if (clue == null)
                 return;
+
+            Playboard board = ClueTabs.this.board;
 
             this.clue = clue;
             this.position = position;
@@ -240,6 +232,7 @@ public class ClueTabs extends LinearLayout
         }
 
         private void onClueClicked() {
+            Playboard board = ClueTabs.this.board;
             if (board != null) {
                 board.jumpTo(position, across);
             } else {
