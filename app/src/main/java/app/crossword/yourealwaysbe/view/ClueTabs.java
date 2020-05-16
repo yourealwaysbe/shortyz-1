@@ -3,6 +3,7 @@ package app.crossword.yourealwaysbe.view;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.Playboard.Word;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -78,7 +79,7 @@ public class ClueTabs extends LinearLayout
         }
     }
 
-    public void onPlayboardChange() {
+    public void onPlayboardChange(Word currentWord, Word previousWord) {
         if (viewPager != null) {
             viewPager.getAdapter().notifyDataSetChanged();
         }

@@ -28,6 +28,7 @@ public class Playboard implements Serializable {
     private boolean preserveCorrectLettersInShowErrors;
     private Vector<PlayboardListener> listeners = new Vector<>();
     private int notificationDisabledDepth = 0;
+    private Word previousWord = null;
 
     public Playboard(Puzzle puzzle, MovementStrategy movementStrategy, boolean preserveCorrectLettersInShowErrors){
         this(puzzle, movementStrategy);
@@ -809,8 +810,11 @@ public class Playboard implements Serializable {
     private void notifyChange() {
         if (notificationDisabledDepth == 0) {
             updateHistory();
+
+            Word currentWord = getCurrentWord();
             for (PlayboardListener listener : listeners)
-                listener.onPlayboardChange();
+                listener.onPlayboardChange(currentWord, previousWord);
+            previousWord = currentWord;
         }
     }
 
@@ -949,6 +953,16 @@ public class Playboard implements Serializable {
      * TODO: what about notes in scratch?
      */
     public interface PlayboardListener {
-        public void onPlayboardChange();
+        /**
+         * Notify that something has changed on the board
+         *
+         * currentWord and previousWord are the selected words since the
+         * last notification. These will be where changes are.
+         *
+         * @param currentWord the currently selected word
+         * @param previousWord the word selected in the last
+         * notification (may be null)
+         */
+        public void onPlayboardChange(Word currentWord, Word previousWord);
     }
 }
