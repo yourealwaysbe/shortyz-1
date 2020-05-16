@@ -113,7 +113,7 @@
         <androidx.preference.CheckBoxPreference
             android:title="Scroll To Clue"
             android:defaultValue="false"
-            android:summary="Toggles the auto-scrolling to the selected clue in the clues list mode. (Works like Forkyz 1)"
+            android:summary="Toggles the auto-scrolling to the selected clue in the clues list. (Works like Forkyz 1)"
             android:key="snapClue"
         />
 
