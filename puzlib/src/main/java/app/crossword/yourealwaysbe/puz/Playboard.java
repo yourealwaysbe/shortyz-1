@@ -937,7 +937,10 @@ public class Playboard implements Serializable {
     }
 
     private void updateHistory() {
-        HistoryItem item = new HistoryItem(getClue(), isAcross());
+        HistoryItem item
+            = new HistoryItem(getClue(),
+                              isAcross(),
+                              getCurrentClueIndex());
         // if a new item, not equal to most recent
         if (historyList.isEmpty() ||
             !item.equals(historyList.getFirst())) {

@@ -3,6 +3,7 @@ package app.crossword.yourealwaysbe.view;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.HistoryItem;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 
 import android.content.Context;
@@ -37,6 +38,10 @@ public class ClueTabs extends LinearLayout
     private static final int DOWN_PAGE_INDEX = 1;
     private static final int HISTORY_PAGE_INDEX = 2;
 
+    private static enum PageType {
+        ACROSS, DOWN, HISTORY;
+    }
+
     private ViewPager2 viewPager;
     private Playboard board;
     private Context context;
@@ -48,10 +53,10 @@ public class ClueTabs extends LinearLayout
          * When the user clicks a clue
          *
          * @param clue the clue clicked
-         * @param the clue index
+         * @param index the clue index in the across/down list
          * @param across if the clue is an across clue (or down)
          */
-        public void onClueTabsClick(Clue clue, int position, boolean across);
+        public void onClueTabsClick(Clue clue, int index , boolean across);
 
         /**
          * When the user long-presses a clue
@@ -60,7 +65,7 @@ public class ClueTabs extends LinearLayout
          * @param the clue index
          * @param across if the clue is an across clue (or down)
          */
-        public void onClueTabsLongClick(Clue clue, int position, boolean across);
+        public void onClueTabsLongClick(Clue clue, int index, boolean across);
     }
 
     public ClueTabs(Context context, AttributeSet as) {
@@ -132,17 +137,17 @@ public class ClueTabs extends LinearLayout
     }
 
     private void notifyListenersClueClick(Clue clue,
-                                          int position,
+                                          int index,
                                           boolean across) {
         for (ClueTabsListener listener : listeners)
-            listener.onClueTabsClick(clue, position, across);
+            listener.onClueTabsClick(clue, index, across);
     }
 
     private void notifyListenersClueLongClick(Clue clue,
-                                              int position,
+                                              int index,
                                               boolean across) {
         for (ClueTabsListener listener : listeners)
-            listener.onClueTabsLongClick(clue, position, across);
+            listener.onClueTabsLongClick(clue, index, across);
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {
@@ -159,14 +164,21 @@ public class ClueTabs extends LinearLayout
         public void onBindViewHolder(ClueListHolder holder, int position) {
             Playboard board = ClueTabs.this.board;
             switch (position) {
-            case ACROSS_PAGE_INDEX: holder.setContents(true); break;
-            case DOWN_PAGE_INDEX: holder.setContents(false); break;
+            case ACROSS_PAGE_INDEX:
+                holder.setContents(PageType.ACROSS);
+                break;
+            case DOWN_PAGE_INDEX:
+                holder.setContents(PageType.DOWN);
+                break;
+            case HISTORY_PAGE_INDEX:
+                holder.setContents(PageType.HISTORY);
+                break;
             }
         }
 
         @Override
         public int getItemCount() {
-            return 2;
+            return 3;
         }
     }
 
@@ -174,7 +186,7 @@ public class ClueTabs extends LinearLayout
         private RecyclerView clueList;
         private ClueListAdapter clueListAdapter;
         private LinearLayoutManager layoutManager;
-        private boolean across;
+        private PageType pageType;
 
         public ClueListHolder(View view) {
             super(view);
@@ -191,47 +203,62 @@ public class ClueTabs extends LinearLayout
             );
         }
 
-        public void setContents(boolean across) {
+        public void setContents(PageType pageType) {
             Playboard board = ClueTabs.this.board;
 
-            // the second check is "either we haven't initialised or
-            // we're changing direction"
-            if (board != null &&
-                (clueListAdapter == null || this.across != across)) {
-                this.across = across;
 
-                List<Clue> clues = Arrays.asList(across ?
-                                                 board.getAcrossClues() :
-                                                 board.getDownClues());
+            if (board != null && this.pageType != pageType) {
+                switch (pageType) {
+                case ACROSS:
+                case DOWN:
+                    boolean across = pageType == PageType.ACROSS;
 
-                clueListAdapter = new ClueListAdapter(clues, across);
-                clueList.setAdapter(clueListAdapter);
+                    List<Clue> clues = Arrays.asList(across ?
+                                                     board.getAcrossClues() :
+                                                     board.getDownClues());
+
+                    clueListAdapter = new AcrossDownAdapter(clues, across);
+                    clueList.setAdapter(clueListAdapter);
+                    break;
+
+                case HISTORY:
+                    clueListAdapter = new HistoryListAdapter(board.getHistory());
+                    clueList.setAdapter(clueListAdapter);
+                    break;
+                }
+
+                this.pageType = pageType;
             }
 
             clueListAdapter.notifyDataSetChanged();
 
-            if (board != null && board.isAcross() == across) {
+            if (board != null) {
                 SharedPreferences prefs
                     = PreferenceManager.getDefaultSharedPreferences(ClueTabs.this.context);
 
                 if (prefs.getBoolean("snapClue", false)) {
-                    int position = board.getCurrentClueIndex();
-                    layoutManager.scrollToPositionWithOffset(position, 5);
+
+                    switch (pageType) {
+                    case ACROSS:
+                    case DOWN:
+                        int position = board.getCurrentClueIndex();
+                        layoutManager.scrollToPositionWithOffset(position, 5);
+                        break;
+                    case HISTORY:
+                        layoutManager.scrollToPositionWithOffset(0, 5);
+                        break;
+                    }
                 }
             }
         }
     }
 
-    private class ClueListAdapter
+    private abstract class ClueListAdapter
             extends RecyclerView.Adapter<ClueViewHolder> {
+        boolean showDirection;
 
-        private List<Clue> clueList;
-        private boolean across;
-
-        public ClueListAdapter(List<Clue> clueList,
-                               boolean across) {
-            this.clueList = clueList;
-            this.across = across;
+        public ClueListAdapter(boolean showDirection) {
+            this.showDirection = showDirection;
         }
 
         @Override
@@ -240,8 +267,19 @@ public class ClueTabs extends LinearLayout
                                           .inflate(R.layout.clue_list_item,
                                                    parent,
                                                    false);
+            return new ClueViewHolder(clueView, showDirection);
+        }
+    }
 
-            return new ClueViewHolder(clueView);
+    private class AcrossDownAdapter extends ClueListAdapter {
+        private List<Clue> clueList;
+        private boolean across;
+
+        public AcrossDownAdapter(List<Clue> clueList,
+                                 boolean across) {
+            super(false);
+            this.clueList = clueList;
+            this.across = across;
         }
 
         @Override
@@ -257,21 +295,49 @@ public class ClueTabs extends LinearLayout
         }
     }
 
+    public class HistoryListAdapter
+           extends ClueListAdapter {
+
+        private List<HistoryItem> historyList;
+
+        public HistoryListAdapter(List<HistoryItem> historyList) {
+            super(true);
+            this.historyList = historyList;
+        }
+
+        @Override
+        public void onBindViewHolder(ClueViewHolder holder, int position) {
+            // plus one because first item not shown (it is current clue)
+            HistoryItem item = historyList.get(position);
+            holder.setClue(item.getClue(),
+                           item.getAcross(),
+                           item.getIndex());
+        }
+
+        @Override
+        public int getItemCount() {
+            // minus one because first item is current clue
+            return historyList.size();
+        }
+    }
+
     private class ClueViewHolder extends RecyclerView.ViewHolder {
         private CheckedTextView clueView;
         private Clue clue;
         private boolean across;
-        private int position;
+        private int index;
+        private boolean showDirection;
 
-        public ClueViewHolder(View view) {
+        public ClueViewHolder(View view, boolean showDirection) {
             super(view);
             this.clueView = view.findViewById(R.id.clue_text_view);
+            this.showDirection = showDirection;
 
             this.clueView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     ClueTabs.this.notifyListenersClueClick(clue,
-                                                           position,
+                                                           index,
                                                            across);
                 }
             });
@@ -280,27 +346,38 @@ public class ClueTabs extends LinearLayout
                 @Override
                 public boolean onLongClick(View view) {
                     ClueTabs.this.notifyListenersClueLongClick(clue,
-                                                               position,
+                                                               index,
                                                                across);
                     return true;
                 }
             });
         }
 
-        private void setClue(Clue clue, boolean across, int position) {
+        /**
+         * Set the clue in the holder
+         *
+         * @param clue the clue
+         * @param across if clue is across
+         * @param index the index of the clue in the across/down clues list
+         */
+        public void setClue(Clue clue, boolean across, int index) {
             if (clue == null)
                 return;
 
             Playboard board = ClueTabs.this.board;
 
             this.clue = clue;
-            this.position = position;
+            this.index = index;
             this.across = across;
 
-            clueView.setText(clue.number + ". " + clue.hint);
+            String direction = "";
+            if (showDirection)
+                direction = across ? "a" : "d";
+
+            clueView.setText(clue.number + direction + ". " + clue.hint);
 
             int color = R.color.textColorPrimary;
-            if (board != null && board.isFilled(position, across)) {
+            if (board != null && board.isFilled(index, across)) {
                 color = R.color.textColorFilled;
             }
 

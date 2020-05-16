@@ -71,7 +71,6 @@ public class PlayActivity extends ForkyzActivity
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
-    private static final int HISTORY_LEN = 5;
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
@@ -85,9 +84,6 @@ public class PlayActivity extends ForkyzActivity
     private ClueListAdapter acrossAdapter;
     private ClueListAdapter downAdapter;
     private SeparatedListAdapter allCluesAdapter;
-    private RecyclerView historyView;
-    private HistoryListAdapter historyAdapter;
-    //private LinkedList<HistoryItem> historyList;
     private ClueTabs clueTabs;
     private Configuration configuration;
     private Dialog dialog;
@@ -418,20 +414,6 @@ public class PlayActivity extends ForkyzActivity
 
         this.clueTabs = this.findViewById(R.id.playClueTab);
         this.clueTabs.setBoard(getBoard());
-        // this.historyList = new LinkedList<HistoryItem>();
-        // this.historyAdapter = new HistoryListAdapter(this.historyList);
-        // this.historyView = (RecyclerView) this.findViewById(R.id.historyList);
-        // if (this.historyView != null) {
-        //     RecyclerView.LayoutManager layoutManager
-        //         = new LinearLayoutManager(getApplicationContext());
-        //     this.historyView.setLayoutManager(layoutManager);
-        //     this.historyView.setItemAnimator(new DefaultItemAnimator());
-        //     this.historyView.setAdapter(this.historyAdapter);
-        //     this.historyView.addItemDecoration(
-        //         new DividerItemDecoration(getApplicationContext(),
-        //                                   DividerItemDecoration.VERTICAL)
-        //     );
-        // }
 
         this.render(true);
 
@@ -916,19 +898,19 @@ public class PlayActivity extends ForkyzActivity
         return false;
     }
 
-    public void onClueTabsClick(Clue clue, int position, boolean across) {
+    public void onClueTabsClick(Clue clue, int index, boolean across) {
         Playboard board = getBoard();
         if (board != null) {
             Word old = board.getCurrentWord();
-            board.jumpTo(position, across);
+            board.jumpTo(index, across);
             displayKeyboard(old);
         }
     }
 
-    public void onClueTabsLongClick(Clue clue, int position, boolean across) {
+    public void onClueTabsLongClick(Clue clue, int index, boolean across) {
         Playboard board = getBoard();
         if (board != null) {
-            board.jumpTo(position, across);
+            board.jumpTo(index, across);
             launchNotes();
         }
     }
@@ -1275,8 +1257,6 @@ public class PlayActivity extends ForkyzActivity
                         + (this.showCount ? ("  ["
                         + getBoard().getCurrentWord().length + "]") : ""));
 
-        updateHistory(c, getBoard().isAcross());
-
         if (this.allClues != null) {
             if (getBoard().isAcross()) {
                 ClueListAdapter cla = (ClueListAdapter) this.allCluesAdapter.sections
@@ -1342,22 +1322,6 @@ public class PlayActivity extends ForkyzActivity
 
         }
         this.boardView.requestFocus();
-    }
-
-    private void updateHistory(Clue currentClue, boolean across) {
-        // if (historyList == null)
-        //     return;
-
-        // HistoryItem item = new HistoryItem(currentClue, across);
-        // // if a new item, not equal to most recent
-        // if (historyList.isEmpty() ||
-        //     !item.equals(historyList.getFirst())) {
-        //     historyList.remove(item);
-        //     historyList.addFirst(item);
-        //     while (historyList.size() > HISTORY_LEN)
-        //         historyList.removeLast();
-        //     historyAdapter.notifyDataSetChanged();
-        // }
     }
 
     /**

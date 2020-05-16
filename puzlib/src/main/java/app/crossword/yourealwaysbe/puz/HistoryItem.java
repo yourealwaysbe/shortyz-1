@@ -7,17 +7,20 @@ import java.util.Objects;
 public class HistoryItem {
     private Clue clue;
     private boolean across;
+    private int index;
 
-    public HistoryItem(Clue clue, boolean across) {
+    public HistoryItem(Clue clue, boolean across, int index) {
         this.clue = clue;
         this.across = across;
+        this.index = index;
     }
 
     public Clue getClue() { return clue; }
     public boolean getAcross() { return across; }
+    public int getIndex() { return index; }
 
     public int hashCode() {
-        return Objects.hash(clue, across);
+        return Objects.hash(clue, across, index);
     }
 
     public boolean equals(Object o) {
@@ -25,7 +28,9 @@ public class HistoryItem {
             HistoryItem other = (HistoryItem) o;
             if (clue == null && other.clue != null)
                 return false;
-            return clue.equals(other.clue) && across == other.across;
+            return clue.equals(other.clue) &&
+                   across == other.across &&
+                   index == other.index;
         }
         return false;
     }
