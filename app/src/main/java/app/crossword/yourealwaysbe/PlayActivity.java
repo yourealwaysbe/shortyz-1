@@ -66,7 +66,8 @@ import java.util.logging.Logger;
 
 
 public class PlayActivity extends ForkyzActivity
-                          implements Playboard.PlayboardListener {
+                          implements Playboard.PlayboardListener,
+                                     ClueTabs.ClueTabsListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
@@ -915,6 +916,23 @@ public class PlayActivity extends ForkyzActivity
         return false;
     }
 
+    public void onClueTabsClick(Clue clue, int position, boolean across) {
+        Playboard board = getBoard();
+        if (board != null) {
+            Word old = board.getCurrentWord();
+            board.jumpTo(position, across);
+            displayKeyboard(old);
+        }
+    }
+
+    public void onClueTabsLongClick(Clue clue, int position, boolean across) {
+        Playboard board = getBoard();
+        if (board != null) {
+            board.jumpTo(position, across);
+            launchNotes();
+        }
+    }
+
     public void onPlayboardChange(Word currentWord, Word previousWord) {
         // hide keyboard when moving to a new word
         Position newPos = getBoard().getHighlightLetter();
@@ -980,9 +998,10 @@ public class PlayActivity extends ForkyzActivity
         this.timer = null;
 
         Playboard board = getBoard();
-        if (board != null) {
+        if (board != null)
             board.removeListener(this);
-        }
+        if (clueTabs != null)
+            clueTabs.removeListener(this);
     }
 
     @Override
@@ -1022,6 +1041,9 @@ public class PlayActivity extends ForkyzActivity
         if (runTimer) {
             this.handler.post(this.updateTimeTask);
         }
+
+        if (clueTabs != null)
+            clueTabs.addListener(this);
 
         render();
     }

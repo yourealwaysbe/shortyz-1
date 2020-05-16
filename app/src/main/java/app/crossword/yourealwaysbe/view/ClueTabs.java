@@ -26,6 +26,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 public class ClueTabs extends LinearLayout
@@ -40,6 +41,27 @@ public class ClueTabs extends LinearLayout
     private Playboard board;
     private Context context;
     private boolean listening = false;
+    private Vector<ClueTabsListener> listeners = new Vector<>();
+
+    public static interface ClueTabsListener {
+        /**
+         * When the user clicks a clue
+         *
+         * @param clue the clue clicked
+         * @param the clue index
+         * @param across if the clue is an across clue (or down)
+         */
+        public void onClueTabsClick(Clue clue, int position, boolean across);
+
+        /**
+         * When the user long-presses a clue
+         *
+         * @param clue the clue clicked
+         * @param the clue index
+         * @param across if the clue is an across clue (or down)
+         */
+        public void onClueTabsLongClick(Clue clue, int position, boolean across);
+    }
 
     public ClueTabs(Context context, AttributeSet as) {
         super(context, as);
@@ -71,6 +93,14 @@ public class ClueTabs extends LinearLayout
         listenBoard();
     }
 
+    public void addListener(ClueTabsListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(ClueTabsListener listener) {
+        listeners.remove(listener);
+    }
+
     public void listenBoard() {
         if (board != null && !listening) {
             board.addListener(this);
@@ -99,6 +129,20 @@ public class ClueTabs extends LinearLayout
                     viewPager.setCurrentItem(DOWN_PAGE_INDEX);
             }
         }
+    }
+
+    private void notifyListenersClueClick(Clue clue,
+                                          int position,
+                                          boolean across) {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsClick(clue, position, across);
+    }
+
+    private void notifyListenersClueLongClick(Clue clue,
+                                              int position,
+                                              boolean across) {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsLongClick(clue, position, across);
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {
@@ -226,8 +270,19 @@ public class ClueTabs extends LinearLayout
             this.clueView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    LOG.info("Clicked");
-                    onClueClicked();
+                    ClueTabs.this.notifyListenersClueClick(clue,
+                                                           position,
+                                                           across);
+                }
+            });
+
+            this.clueView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    ClueTabs.this.notifyListenersClueLongClick(clue,
+                                                               position,
+                                                               across);
+                    return true;
                 }
             });
         }
@@ -261,18 +316,6 @@ public class ClueTabs extends LinearLayout
                                     selectedClue.number == clue.number);
             }
         }
-
-        private void onClueClicked() {
-            Playboard board = ClueTabs.this.board;
-            if (board != null) {
-                board.jumpTo(position, across);
-            } else {
-                // TODO show keyboard when clicked selected clue
-            }
-        }
-
     }
-
-
 }
 
