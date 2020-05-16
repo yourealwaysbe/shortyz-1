@@ -65,7 +65,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class PlayActivity extends ForkyzActivity {
+public class PlayActivity extends ForkyzActivity
+                          implements Playboard.PlayboardListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
@@ -305,7 +306,6 @@ public class PlayActivity extends ForkyzActivity {
                                 getRenderer().setScale(prefs.getFloat(SCALE, 1F));
                                 boardView.setCurrentScale(1F);
                                 getBoard().setHighlightLetter(getRenderer().findBox(e));
-                                render();
                             } else {
                                 int w = boardView.getWidth();
                                 int h = boardView.getHeight();
@@ -319,8 +319,8 @@ public class PlayActivity extends ForkyzActivity {
                         } else {
                             Position p = getRenderer().findBox(e);
                             if (getBoard().isInWord(p)) {
-                                Word old = getBoard().setHighlightLetter(p);
-                                PlayActivity.this.render(old);
+                                Word previous = getBoard().setHighlightLetter(p);
+                                displayKeyboard(previous);
                             }
                         }
 
@@ -364,7 +364,6 @@ public class PlayActivity extends ForkyzActivity {
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         getBoard().revealPuzzle();
-                        render();
                     }
                 });
         revealPuzzleDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
@@ -399,8 +398,6 @@ public class PlayActivity extends ForkyzActivity {
                                                 scale)
                                         .apply();
                                 getBoard().setHighlightLetter(getRenderer().findBox(center));
-
-                                render(true);
                             }
                         });
                     }
@@ -457,7 +454,6 @@ public class PlayActivity extends ForkyzActivity {
                                             int arg2, long arg3) {
                         arg0.setSelected(true);
                         getBoard().jumpTo(arg2, true);
-                        render();
                     }
                 });
                 across.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -467,7 +463,6 @@ public class PlayActivity extends ForkyzActivity {
                                                    long id) {
                         parent.setSelected(true);
                         getBoard().jumpTo(pos, true);
-                        render();
                         launchNotes();
                         return true;
                     }
@@ -480,7 +475,6 @@ public class PlayActivity extends ForkyzActivity {
                     if (!getBoard().isAcross()
                             || (getBoard().getCurrentClueIndex() != arg2)) {
                         getBoard().jumpTo(arg2, true);
-                        render();
                     }
                 }
 
@@ -493,7 +487,6 @@ public class PlayActivity extends ForkyzActivity {
                     public void onItemClick(AdapterView<?> arg0, View arg1,
                                             final int arg2, long arg3) {
                         getBoard().jumpTo(arg2, false);
-                        render();
                     }
                 });
                 down.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -503,7 +496,6 @@ public class PlayActivity extends ForkyzActivity {
                                                    long id) {
                         parent.setSelected(true);
                         getBoard().jumpTo(pos, true);
-                        render();
                         launchNotes();
                         return true;
                     }
@@ -516,7 +508,6 @@ public class PlayActivity extends ForkyzActivity {
                     if (getBoard().isAcross()
                             || (getBoard().getCurrentClueIndex() != arg2)) {
                         getBoard().jumpTo(arg2, false);
-                        render();
                     }
                 }
 
@@ -574,7 +565,6 @@ public class PlayActivity extends ForkyzActivity {
                     if (!getBoard().isAcross() == across && getBoard().getCurrentClueIndex() != index) {
                         arg0.setSelected(true);
                         getBoard().jumpTo(index, across);
-                        render();
                     }
                 }
 
@@ -687,8 +677,6 @@ public class PlayActivity extends ForkyzActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Word previous;
-
         if ((System.currentTimeMillis() - this.resumedOn) < 500) {
             return true;
         }
@@ -696,9 +684,8 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_SEARCH:
                 System.out.println("Next clue.");
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
-                previous = getBoard().nextWord();
+                getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
-                this.render(previous);
 
                 return true;
 
@@ -713,8 +700,7 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_DPAD_DOWN:
 
                 if ((System.currentTimeMillis() - lastKey) > 50) {
-                    previous = getBoard().moveDown();
-                    this.render(previous);
+                    getBoard().moveDown();
                 }
 
 
@@ -724,8 +710,7 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_DPAD_UP:
 
                 if ((System.currentTimeMillis() - lastKey) > 50) {
-                    previous = getBoard().moveUp();
-                    this.render(previous);
+                    getBoard().moveUp();
                 }
 
                 lastKey = System.currentTimeMillis();
@@ -735,8 +720,7 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_DPAD_LEFT:
 
                 if ((System.currentTimeMillis() - lastKey) > 50) {
-                    previous = getBoard().moveLeft();
-                    this.render(previous);
+                    getBoard().moveLeft();
                 }
 
                 lastKey = System.currentTimeMillis();
@@ -746,8 +730,7 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_DPAD_RIGHT:
 
                 if ((System.currentTimeMillis() - lastKey) > 50) {
-                    previous = getBoard().moveRight();
-                    this.render(previous);
+                    getBoard().moveRight();
                 }
 
                 lastKey = System.currentTimeMillis();
@@ -755,20 +738,16 @@ public class PlayActivity extends ForkyzActivity {
                 return true;
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
-                previous = getBoard().toggleDirection();
-                this.render(previous);
-
+                getBoard().toggleDirection();
                 return true;
 
             case KeyEvent.KEYCODE_SPACE:
 
                 if ((System.currentTimeMillis() - lastKey) > 150) {
                     if (prefs.getBoolean("spaceChangesDirection", true)) {
-                        previous = getBoard().toggleDirection();
-                        this.render(previous);
+                        getBoard().toggleDirection();
                     } else {
-                        previous = getBoard().playLetter(' ');
-                        this.render(previous);
+                        getBoard().playLetter(' ');
                     }
                 }
 
@@ -780,11 +759,9 @@ public class PlayActivity extends ForkyzActivity {
 
                 if ((System.currentTimeMillis() - lastKey) > 150) {
                     if (prefs.getBoolean("enterChangesDirection", true)) {
-                        previous = getBoard().toggleDirection();
-                        this.render(previous);
+                        getBoard().toggleDirection();
                     } else {
-                        previous = getBoard().nextWord();
-                        this.render(previous);
+                        getBoard().nextWord();
                     }
                 }
 
@@ -795,8 +772,7 @@ public class PlayActivity extends ForkyzActivity {
             case KeyEvent.KEYCODE_DEL:
 
                 if ((System.currentTimeMillis() - lastKey) > 150) {
-                    previous = getBoard().deleteLetter();
-                    this.render(previous);
+                    getBoard().deleteLetter();
                 }
 
                 lastKey = System.currentTimeMillis();
@@ -809,9 +785,7 @@ public class PlayActivity extends ForkyzActivity {
                         .getDisplayLabel() : ((char) keyCode));
 
         if (ALPHA.indexOf(c) != -1) {
-            previous = getBoard().playLetter(c);
-            this.render(previous);
-
+            getBoard().playLetter(c);
             return true;
         }
 
@@ -833,18 +807,12 @@ public class PlayActivity extends ForkyzActivity {
         }
         if (item.getTitle().toString().equals("Letter")) {
             getBoard().revealLetter();
-            this.render();
-
             return true;
         } else if (item.getTitle().toString().equals("Word")) {
             getBoard().revealWord();
-            this.render();
-
             return true;
         } else if (item.getTitle().toString().equals("Errors")) {
             getBoard().revealErrors();
-            this.render();
-
             return true;
         } else if (item.getTitle().toString().equals("Puzzle")) {
             this.showDialog(REVEAL_PUZZLE_DIALOG);
@@ -856,8 +824,6 @@ public class PlayActivity extends ForkyzActivity {
             item.setTitle(getBoard().isShowErrors() ? "Hide Errors" : "Show Errors");
             this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
                     .apply();
-            this.render();
-
             return true;
         } else if (item.getTitle().toString().equals("Settings")) {
             Intent i = new Intent(this, PreferencesActivity.class);
@@ -949,6 +915,17 @@ public class PlayActivity extends ForkyzActivity {
         return false;
     }
 
+    public void onPlayboardChange(Word currentWord, Word previousWord) {
+        // hide keyboard when moving to a new word
+        Position newPos = getBoard().getHighlightLetter();
+        if ((previousWord == null) ||
+            !previousWord.checkInWord(newPos.across, newPos.down)) {
+            keyboardManager.hideKeyboard();
+        }
+
+        render(previousWord);
+    }
+
     private void fitToScreen() {
         this.boardView.scrollTo(0, 0);
 
@@ -1001,6 +978,11 @@ public class PlayActivity extends ForkyzActivity {
         }
 
         this.timer = null;
+
+        Playboard board = getBoard();
+        if (board != null) {
+            board.removeListener(this);
+        }
     }
 
     @Override
@@ -1016,9 +998,14 @@ public class PlayActivity extends ForkyzActivity {
     protected void onResume() {
         super.onResume();
         this.resumedOn = System.currentTimeMillis();
-        getBoard().setSkipCompletedLetters(this.prefs
-                .getBoolean("skipFilled", false));
-        getBoard().setMovementStrategy(this.getMovementStrategy());
+
+        Playboard board = getBoard();
+
+        if (board != null) {
+            board.setSkipCompletedLetters(this.prefs.getBoolean("skipFilled", false));
+            board.setMovementStrategy(this.getMovementStrategy());
+            board.addListener(this);
+        }
 
         keyboardManager.onResume((KeyboardView) findViewById(R.id.playKeyboard));
 
@@ -1174,6 +1161,21 @@ public class PlayActivity extends ForkyzActivity {
         });
     }
 
+    /**
+     * Change keyboard display if the same word has been selected twice
+     */
+    private void displayKeyboard(Word previous) {
+        // only show keyboard if double click a word
+        // hide if it's a new word
+        Position newPos = getBoard().getHighlightLetter();
+        if ((previous != null) &&
+            previous.checkInWord(newPos.across, newPos.down)) {
+            keyboardManager.render();
+        } else {
+            keyboardManager.hideKeyboard();
+        }
+    }
+
     private void render() {
         render(null);
     }
@@ -1187,23 +1189,10 @@ public class PlayActivity extends ForkyzActivity {
     }
 
     private void render(Word previous, boolean rescale) {
-        // only show keyboard if double click a word
-        // hide if it's a new word
-        Position newPos = getBoard().getHighlightLetter();
-        if ((previous != null) &&
-            previous.checkInWord(newPos.across, newPos.down)) {
-            keyboardManager.render();
-        } else {
-            keyboardManager.hideKeyboard();
-        }
-
         Clue c = getBoard().getClue();
-        getBoard().toggleDirection();
-        getBoard().toggleDirection();
-
         if (c.hint == null) {
             getBoard().toggleDirection();
-            c = getBoard().getClue();
+            return;
         }
 
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
@@ -1363,7 +1352,6 @@ public class PlayActivity extends ForkyzActivity {
         }
         parent.setSelected(true);
         getBoard().jumpTo(index, across);
-        render();
     }
 
     private void launchNotes() {
