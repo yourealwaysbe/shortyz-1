@@ -41,24 +41,24 @@ import java.io.File;
 import java.io.IOException;
 
 public class ClueListActivity extends ForkyzActivity {
-	private Configuration configuration;
-	private File baseFile;
-	private ImaginaryTimer timer;
-	private KeyboardManager keyboardManager;
-	private ListView across;
-	private ListView down;
-	private Puzzle puz;
-	private ScrollingImageView imageView;
-	private TabHost tabHost;
-	private boolean useNativeKeyboard = false;
-	private PlayboardRenderer renderer;
+    private Configuration configuration;
+    private File baseFile;
+    private ImaginaryTimer timer;
+    private KeyboardManager keyboardManager;
+    private ListView across;
+    private ListView down;
+    private Puzzle puz;
+    private ScrollingImageView imageView;
+    private TabHost tabHost;
+    private boolean useNativeKeyboard = false;
+    private PlayboardRenderer renderer;
 
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		this.configuration = newConfig;
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        this.configuration = newConfig;
         keyboardManager.onConfigurationChanged(newConfig);
-	}
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -74,105 +74,105 @@ public class ClueListActivity extends ForkyzActivity {
     }
 
     @Override
-	public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		utils.holographic(this);
-		utils.finishOnHomeButton(this);
-		DisplayMetrics metrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
-				!prefs.getBoolean("supressHints", false),
-				ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
-				ContextCompat.getColor(this, R.color.errorColor));
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        utils.holographic(this);
+        utils.finishOnHomeButton(this);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
+                !prefs.getBoolean("supressHints", false),
+                ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
+                ContextCompat.getColor(this, R.color.errorColor));
 
         scaleRendererToCurWord();
 
         try {
-			this.configuration = getBaseContext().getResources()
-					.getConfiguration();
-		} catch (Exception e) {
-			Toast.makeText(this, "Unable to read device configuration.",
-					Toast.LENGTH_LONG).show();
-			finish();
-		}
+            this.configuration = getBaseContext().getResources()
+                    .getConfiguration();
+        } catch (Exception e) {
+            Toast.makeText(this, "Unable to read device configuration.",
+                    Toast.LENGTH_LONG).show();
+            finish();
+        }
         if(ForkyzApplication.getInstance().getBoard() == null || ForkyzApplication.getInstance().getBoard().getPuzzle() == null){
             finish();
         }
-		this.timer = new ImaginaryTimer(
-				ForkyzApplication.getInstance().getBoard().getPuzzle().getTime());
+        this.timer = new ImaginaryTimer(
+                ForkyzApplication.getInstance().getBoard().getPuzzle().getTime());
 
-		Uri u = this.getIntent().getData();
+        Uri u = this.getIntent().getData();
 
-		if (u != null) {
-			if (u.getScheme().equals("file")) {
-				baseFile = new File(u.getPath());
-			}
-		}
+        if (u != null) {
+            if (u.getScheme().equals("file")) {
+                baseFile = new File(u.getPath());
+            }
+        }
 
-		puz = ForkyzApplication.getInstance().getBoard().getPuzzle();
-		timer.start();
-		setContentView(R.layout.clue_list);
+        puz = ForkyzApplication.getInstance().getBoard().getPuzzle();
+        timer.start();
+        setContentView(R.layout.clue_list);
 
-		keyboardManager
+        keyboardManager
             = new KeyboardManager(this, (KeyboardView) findViewById(R.id.clueKeyboard));
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
 
-		this.imageView.setContextMenuListener(new ClickListener() {
-			public void onContextMenu(Point e) {
+        this.imageView.setContextMenuListener(new ClickListener() {
+            public void onContextMenu(Point e) {
                 onTap(e);
                 launchNotes();
-			}
+            }
 
-			public void onTap(Point e) {
-				Word current = getBoard().getCurrentWord();
-				int newAcross = current.start.across;
-				int newDown = current.start.down;
-				int box = renderer.findBox(e).across;
+            public void onTap(Point e) {
+                Word current = getBoard().getCurrentWord();
+                int newAcross = current.start.across;
+                int newDown = current.start.down;
+                int box = renderer.findBox(e).across;
 
-				if (box < current.length) {
-					if (tabHost.getCurrentTab() == 0) {
-						newAcross += box;
-					} else {
-						newDown += box;
-					}
-				}
+                if (box < current.length) {
+                    if (tabHost.getCurrentTab() == 0) {
+                        newAcross += box;
+                    } else {
+                        newDown += box;
+                    }
+                }
 
-				Position newPos = new Position(newAcross, newDown);
+                Position newPos = new Position(newAcross, newDown);
 
-				if (!newPos.equals(getBoard().getHighlightLetter())) {
-					getBoard().setHighlightLetter(newPos);
-				}
+                if (!newPos.equals(getBoard().getHighlightLetter())) {
+                    getBoard().setHighlightLetter(newPos);
+                }
                 ClueListActivity.this.render(true);
-			}
-		});
+            }
+        });
 
-		this.tabHost = this.findViewById(R.id.tabhost);
-		this.tabHost.setup();
+        this.tabHost = this.findViewById(R.id.tabhost);
+        this.tabHost.setup();
 
-		TabSpec ts = tabHost.newTabSpec("TAB1");
+        TabSpec ts = tabHost.newTabSpec("TAB1");
 
-		ts.setIndicator("Across",
-				ContextCompat.getDrawable(this, R.drawable.across));
+        ts.setIndicator("Across",
+                ContextCompat.getDrawable(this, R.drawable.across));
 
-		ts.setContent(R.id.acrossList);
+        ts.setContent(R.id.acrossList);
 
-		this.tabHost.addTab(ts);
+        this.tabHost.addTab(ts);
 
-		ts = this.tabHost.newTabSpec("TAB2");
+        ts = this.tabHost.newTabSpec("TAB2");
 
-		ts.setIndicator("Down", ContextCompat.getDrawable(this, R.drawable.down));
+        ts.setIndicator("Down", ContextCompat.getDrawable(this, R.drawable.down));
 
-		ts.setContent(R.id.downList);
-		this.tabHost.addTab(ts);
+        ts.setContent(R.id.downList);
+        this.tabHost.addTab(ts);
 
-		this.tabHost.setCurrentTab(getBoard().isAcross() ? 0 : 1);
+        this.tabHost.setCurrentTab(getBoard().isAcross() ? 0 : 1);
 
-		this.across = (ListView) this.findViewById(R.id.acrossList);
-		this.down = (ListView) this.findViewById(R.id.downList);
+        this.across = (ListView) this.findViewById(R.id.acrossList);
+        this.down = (ListView) this.findViewById(R.id.downList);
 
-		across.setAdapter(new ArrayAdapter(this,
-				//android.R.layout.simple_list_item_single_choice,
+        across.setAdapter(new ArrayAdapter(this,
+                //android.R.layout.simple_list_item_single_choice,
                 R.layout.clue_list_item,
                 getBoard().getAcrossClues()) {
             @Override
@@ -186,9 +186,9 @@ public class ClueListActivity extends ForkyzActivity {
                                        true);
             }
         });
-		across.setFocusableInTouchMode(true);
-		down.setAdapter(new ArrayAdapter(this,
-				//android.R.layout.simple_list_item_single_choice,
+        across.setFocusableInTouchMode(true);
+        down.setAdapter(new ArrayAdapter(this,
+                //android.R.layout.simple_list_item_single_choice,
                 R.layout.clue_list_item,
                 getBoard().getDownClues()) {
             @Override
@@ -209,57 +209,57 @@ public class ClueListActivity extends ForkyzActivity {
         else
             down.setItemChecked(index, true);
 
-		across.setOnItemLongClickListener(new OnItemLongClickListener() {
-			public boolean onItemLongClick(AdapterView<?> parent,
+        across.setOnItemLongClickListener(new OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> parent,
                                            View view,
                                            int pos,
-					                       long id) {
+                                           long id) {
                 onItemClickSelect(parent, view, pos, id, true);
                 launchNotes();
                 return true;
-			}
-		});
-		across.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
+            }
+        });
+        across.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+                    long arg3) {
                 onItemClickSelect(arg0, arg1, arg2, arg3, true);
-			}
-		});
-		across.setOnItemSelectedListener(new OnItemSelectedListener() {
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int arg2, long arg3) {
+            }
+        });
+        across.setOnItemSelectedListener(new OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                    int arg2, long arg3) {
                 onItemClickSelect(arg0, arg1, arg2, arg3, true);
-			}
-			public void onNothingSelected(AdapterView<?> arg0) { }
-		});
-		down.setOnItemLongClickListener(new OnItemLongClickListener() {
-			public boolean onItemLongClick(AdapterView<?> parent,
+            }
+            public void onNothingSelected(AdapterView<?> arg0) { }
+        });
+        down.setOnItemLongClickListener(new OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> parent,
                                            View view,
                                            int pos,
-					                       long id) {
+                                           long id) {
                 onItemClickSelect(parent, view, pos, id, false);
                 launchNotes();
                 return true;
-			}
-		});
-		down.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1,
-					final int arg2, long arg3) {
+            }
+        });
+        down.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View arg1,
+                    final int arg2, long arg3) {
                 onItemClickSelect(arg0, arg1, arg2, arg3, false);
-			}
-		});
+            }
+        });
 
-		down.setOnItemSelectedListener(new OnItemSelectedListener() {
-			public void onItemSelected(AdapterView<?> arg0, View arg1,
-					int arg2, long arg3) {
+        down.setOnItemSelectedListener(new OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                    int arg2, long arg3) {
                 onItemClickSelect(arg0, arg1, arg2, arg3, false);
-			}
+            }
 
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-		this.render(false);
-	}
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+        this.render(false);
+    }
 
     @Override
     public void onResume() {
@@ -268,138 +268,138 @@ public class ClueListActivity extends ForkyzActivity {
         this.render(false);
     }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
+        return true;
+    }
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		return super.onKeyUp(keyCode, event);
-	}
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return super.onKeyUp(keyCode, event);
+    }
 
-	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		Playboard board = getBoard();
-		Word w = board.getCurrentWord();
-		Position last = new Position(w.start.across
-				+ (w.across ? (w.length - 1) : 0), w.start.down
-				+ ((!w.across) ? (w.length - 1) : 0));
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Playboard board = getBoard();
+        Word w = board.getCurrentWord();
+        Position last = new Position(w.start.across
+                + (w.across ? (w.length - 1) : 0), w.start.down
+                + ((!w.across) ? (w.length - 1) : 0));
 
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_MENU:
-			return false;
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_MENU:
+            return false;
 
-		case KeyEvent.KEYCODE_BACK:
+        case KeyEvent.KEYCODE_BACK:
             this.finish();
-			return true;
+            return true;
 
-		case KeyEvent.KEYCODE_DPAD_LEFT:
+        case KeyEvent.KEYCODE_DPAD_LEFT:
 
-			if (!board.getHighlightLetter().equals(
-					board.getCurrentWord().start)) {
-				board.previousLetter();
+            if (!board.getHighlightLetter().equals(
+                    board.getCurrentWord().start)) {
+                board.previousLetter();
 
-				this.render(true);
-			}
+                this.render(true);
+            }
 
-			return true;
+            return true;
 
-		case KeyEvent.KEYCODE_DPAD_RIGHT:
+        case KeyEvent.KEYCODE_DPAD_RIGHT:
 
-			if (!board.getHighlightLetter().equals(last)) {
-				board.nextLetter();
-				this.render(true);
-			}
+            if (!board.getHighlightLetter().equals(last)) {
+                board.nextLetter();
+                this.render(true);
+            }
 
-			return true;
+            return true;
 
-		case KeyEvent.KEYCODE_DEL:
-			w = board.getCurrentWord();
-			board.deleteLetter();
+        case KeyEvent.KEYCODE_DEL:
+            w = board.getCurrentWord();
+            board.deleteLetter();
 
-			Position p = board.getHighlightLetter();
+            Position p = board.getHighlightLetter();
 
-			if (!w.checkInWord(p.across, p.down)) {
-				board.setHighlightLetter(w.start);
-			}
+            if (!w.checkInWord(p.across, p.down)) {
+                board.setHighlightLetter(w.start);
+            }
 
-			this.render(true);
+            this.render(true);
 
-			return true;
+            return true;
 
-		case KeyEvent.KEYCODE_SPACE:
+        case KeyEvent.KEYCODE_SPACE:
 
-			if (!prefs.getBoolean("spaceChangesDirection", true)) {
-				board.playLetter(' ');
+            if (!prefs.getBoolean("spaceChangesDirection", true)) {
+                board.playLetter(' ');
 
-				Position curr = board.getHighlightLetter();
+                Position curr = board.getHighlightLetter();
 
-				if (!board.getCurrentWord().equals(w)
-						|| (board.getBoxes()[curr.across][curr.down] == null)) {
-					board.setHighlightLetter(last);
-				}
+                if (!board.getCurrentWord().equals(w)
+                        || (board.getBoxes()[curr.across][curr.down] == null)) {
+                    board.setHighlightLetter(last);
+                }
 
-				this.render(true);
+                this.render(true);
 
-				return true;
-			}
-		}
+                return true;
+            }
+        }
 
-		char c = Character
-				.toUpperCase(((configuration.hardKeyboardHidden
+        char c = Character
+                .toUpperCase(((configuration.hardKeyboardHidden
                                    == Configuration.HARDKEYBOARDHIDDEN_NO) ||
                                keyboardManager.getUseNativeKeyboard()) ? event
-						.getDisplayLabel() : ((char) keyCode));
+                        .getDisplayLabel() : ((char) keyCode));
 
-		if (PlayActivity.ALPHA.indexOf(c) != -1) {
-			board.playLetter(c);
+        if (PlayActivity.ALPHA.indexOf(c) != -1) {
+            board.playLetter(c);
 
-			Position p = board.getHighlightLetter();
+            Position p = board.getHighlightLetter();
 
-			if (!board.getCurrentWord().equals(w)
-					|| (board.getBoxes()[p.across][p.down] == null)) {
-				board.setHighlightLetter(last);
-			}
+            if (!board.getCurrentWord().equals(w)
+                    || (board.getBoxes()[p.across][p.down] == null)) {
+                board.setHighlightLetter(last);
+            }
 
-			this.render(true);
+            this.render(true);
 
-			if ((puz.getPercentComplete() == 100) && (timer != null)) {
-	            timer.stop();
-	            puz.setTime(timer.getElapsed());
-	            this.timer = null;
-	            Intent i = new Intent(ClueListActivity.this, PuzzleFinishedActivity.class);
-	            this.startActivity(i);
+            if ((puz.getPercentComplete() == 100) && (timer != null)) {
+                timer.stop();
+                puz.setTime(timer.getElapsed());
+                this.timer = null;
+                Intent i = new Intent(ClueListActivity.this, PuzzleFinishedActivity.class);
+                this.startActivity(i);
 
-	        }
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		return super.onKeyUp(keyCode, event);
-	}
+        return super.onKeyUp(keyCode, event);
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-		try {
-			if ((puz != null) && (baseFile != null)) {
-				if ((timer != null) && (puz.getPercentComplete() != 100)) {
-					this.timer.stop();
-					puz.setTime(timer.getElapsed());
-					this.timer = null;
-				}
+        try {
+            if ((puz != null) && (baseFile != null)) {
+                if ((timer != null) && (puz.getPercentComplete() != 100)) {
+                    this.timer.stop();
+                    puz.setTime(timer.getElapsed());
+                    this.timer = null;
+                }
 
-				IO.save(puz, baseFile);
-			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
+                IO.save(puz, baseFile);
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
 
         keyboardManager.onPause();
-	}
+    }
 
     @Override
     protected void onStop() {
@@ -413,18 +413,18 @@ public class ClueListActivity extends ForkyzActivity {
         keyboardManager.onDestroy();
     }
 
-	private void render(boolean showKeyboard) {
+    private void render(boolean showKeyboard) {
         if (showKeyboard)
             keyboardManager.render();
         else
             keyboardManager.hideKeyboard();
 
-		boolean displayScratch = prefs.getBoolean("displayScratch", false);
-		this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
+        boolean displayScratch = prefs.getBoolean("displayScratch", false);
+        this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
         // in case we're retuning from notes and something was filled in
         this.across.invalidateViews();
         this.down.invalidateViews();
-	}
+    }
 
     private Playboard getBoard(){
         return ForkyzApplication.getInstance().getBoard();
@@ -435,8 +435,8 @@ public class ClueListActivity extends ForkyzActivity {
      * selected word.
      */
     private void scaleRendererToCurWord() {
-		DisplayMetrics metrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
         int curWordLen = getBoard().getCurrentWord().length;
         double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
         if (scale > 1)
@@ -452,7 +452,7 @@ public class ClueListActivity extends ForkyzActivity {
      */
     private void onItemClickSelect(AdapterView<?> parent,
                                    View view,
-					               int position,
+                                   int position,
                                    long id,
                                    boolean isAcross) {
         Playboard board = getBoard();
