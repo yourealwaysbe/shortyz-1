@@ -205,7 +205,6 @@ public class ClueListActivity extends ForkyzActivity
         }
     }
 
-
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Playboard board = getBoard();
