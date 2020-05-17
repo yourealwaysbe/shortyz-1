@@ -88,6 +88,7 @@ public class PlayActivity extends ForkyzActivity
     private ClueListAdapter downAdapter;
     private SeparatedListAdapter allCluesAdapter;
     private ClueTabs clueTabs;
+    private ConstraintLayout constraintLayout;
     private Configuration configuration;
     private Dialog dialog;
     private File baseFile;
@@ -248,16 +249,18 @@ public class PlayActivity extends ForkyzActivity
 
             setContentView(R.layout.play);
 
+            this.constraintLayout
+                = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
+
             keyboardManager
                 = new KeyboardManager(this, (KeyboardView) findViewById(R.id.playKeyboard));
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
-                ConstraintLayout layout = this.findViewById(R.id.playConstraintLayout);
                 ConstraintSet set = new ConstraintSet();
-                set.clone(layout);
+                set.clone(constraintLayout);
                 set.setVisibility(clue.getId(), ConstraintSet.GONE);
-                set.applyTo(layout);
+                set.applyTo(constraintLayout);
 
                 View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
                 if (custom != null) {
@@ -276,7 +279,7 @@ public class PlayActivity extends ForkyzActivity
                 });
             }
 
-            boardView = (ScrollingImageView) this.findViewById(R.id.board);
+            this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
             this.boardView.setCurrentScale(scale);
             this.boardView.setFocusable(true);
             this.registerForContextMenu(boardView);
@@ -330,6 +333,27 @@ public class PlayActivity extends ForkyzActivity
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
+                }
+            });
+            // constrain to 1:1 if clueTabs is showing
+            boardView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                public void onLayoutChange(View v,
+                  int left, int top, int right, int bottom,
+                  int leftWas, int topWas, int rightWas, int bottomWas
+                ) {
+                    if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+                        int height = bottom - top;
+                        int width = right - left;
+
+                        if (height > width) {
+                            ConstraintSet set = new ConstraintSet();
+                            set.clone(constraintLayout);
+                            set.constrainMaxHeight(boardView.getId(), width);
+                            set.applyTo(constraintLayout);
+                        }
+                    }
+
+                    PlayActivity.this.render();
                 }
             });
         } catch (IOException e) {
@@ -893,24 +917,16 @@ public class PlayActivity extends ForkyzActivity
         if (clueTabs != null) {
             clueTabs.addListener(this);
 
-            ConstraintLayout layout = this.findViewById(R.id.playConstraintLayout);
             ConstraintSet set = new ConstraintSet();
-            set.clone(layout);
+            set.clone(constraintLayout);
 
             if (!prefs.getBoolean(SHOW_CLUES_TAB, true)) {
                 set.setVisibility(clueTabs.getId(), ConstraintSet.GONE);
-                if (boardView != null) {
-                    set.setDimensionRatio(boardView.getId(), null);
-                }
             } else {
                 set.setVisibility(clueTabs.getId(), ConstraintSet.VISIBLE);
-                if (boardView != null) {
-                    set.setDimensionRatio(boardView.getId(),
-                                          CONSTRAINED_BOARD_DIMENSION_RATIO);
-                }
             }
 
-            set.applyTo(layout);
+            set.applyTo(constraintLayout);
         }
 
         render();
