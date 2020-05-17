@@ -29,62 +29,13 @@
         android:keyPreviewLayout="@layout/key_preview"
 	/>
 	
-	<RelativeLayout
-		android:id="@+id/clues"
+	<app.crossword.yourealwaysbe.view.ClueTabs
+		android:id="@+id/playClueTab"
 		android:layout_alignParentTop="true"
 		android:layout_alignParentRight="true"
 		android:layout_above="@id/playKeyboard"
 		android:layout_width="650dp"
-		android:layout_height="wrap_content">
-			<TextView android:id="@+id/downLabel"
-				android:layout_alignParentTop="true"
-				android:layout_alignParentRight="true"
-				android:layout_width="325dp"
-				android:layout_height="wrap_content"
-				android:text="Down"
-				android:textStyle="bold"
-				android:textSize="16dp"
-                android:textColor="@color/primary"
-                android:background="@color/background_light"
-                android:paddingBottom="8dp"
-                android:paddingLeft="8dp"
-                android:paddingTop="8dp"
-				/>
-				
-            <ListView android:id="@+id/downList"
-                android:layout_width="325dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/downLabel"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:background="@color/background_light"
-			/>    
-			
-			<TextView android:id="@+id/acrossLabel"
-				android:layout_alignParentTop="true"
-				android:layout_alignParentLeft="true"
-				android:layout_width="325dp"
-				android:layout_height="wrap_content"
-				android:text="Across"
-				android:textStyle="bold"
-				android:textSize="16dp"
-                android:textColor="@color/primary"
-                android:background="@color/background_light"
-                android:paddingBottom="8dp"
-                android:paddingTop="8dp"
-                android:paddingLeft="8dp"
-				tools:ignore="InconsistentLayout"
-				/>
-         	<ListView android:id="@+id/acrossList"
-                android:layout_width="325dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/acrossLabel"
-                android:layout_alignParentBottom="true"
-                android:layout_toLeftOf="@id/downList"
-                android:background="@color/background_light"
-				tools:ignore="InconsistentLayout"
-			/>
-     </RelativeLayout>
+        android:layout_height="wrap_content" />
 
 	<app.crossword.yourealwaysbe.view.ScrollingImageView
 		android:id="@+id/board"

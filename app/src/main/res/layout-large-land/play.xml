@@ -36,8 +36,8 @@
 	    android:layout_alignParentTop="true" 
 	    android:layout_above="@id/playKeyboard">
 				
-            <ListView
-                android:id="@+id/allClues"
+            <app.crossword.yourealwaysbe.view.ClueTabs
+                android:id="@+id/playClueTab"
                 android:layout_width="325dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
