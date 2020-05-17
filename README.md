@@ -7,6 +7,9 @@ implementing my own customisations.
 
 Additions:
 
+* Clues view on board page for smaller screens.
+* Update to androidx libraries.
+* History of viewed clues in clues lists.
 * Download of daily Guardian Cryptics.
 * Progress measures number of filled boxes instead of correctly filled
   boxes (no cheating).
