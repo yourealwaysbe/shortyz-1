@@ -54,12 +54,7 @@ public class IOVersion1 implements IOVersion {
     }
 
     public void write(Puzzle puz, DataOutputStream dos) throws IOException {
-        IO.writeNullTerminatedString(dos, puz.getAuthor());
-        IO.writeNullTerminatedString(dos, puz.getSource());
-        IO.writeNullTerminatedString(dos, puz.getTitle());
-        dos.writeLong(puz.getDate() == null ? 0 : puz.getDate().getTime());
-        dos.writeInt(puz.getPercentComplete());
-        //System.out.println("Meta written.");
+        writeMeta(puz, dos);
         Box[][] boxes = puz.getBoxes();
         for(Box[] row : boxes ){
             for(Box b : row){
@@ -73,5 +68,12 @@ public class IOVersion1 implements IOVersion {
         dos.writeLong(puz.getTime());
     }
 
-
+    protected void writeMeta(Puzzle puz, DataOutputStream dos)
+              throws IOException {
+        IO.writeNullTerminatedString(dos, puz.getAuthor());
+        IO.writeNullTerminatedString(dos, puz.getSource());
+        IO.writeNullTerminatedString(dos, puz.getTitle());
+        dos.writeLong(puz.getDate() == null ? 0 : puz.getDate().getTime());
+        dos.writeInt(puz.getPercentComplete());
+    }
 }

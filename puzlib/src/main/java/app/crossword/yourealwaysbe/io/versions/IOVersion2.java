@@ -22,41 +22,17 @@ public class IOVersion2 extends IOVersion1 {
 
     @Override
     public PuzzleMeta readMeta(DataInputStream dis) throws IOException{
-        //System.out.println("Read V2");
-        PuzzleMeta meta = new PuzzleMeta();
-        meta.author = IO.readNullTerminatedString(dis);
-        meta.source = IO.readNullTerminatedString(dis);
-        meta.title = IO.readNullTerminatedString(dis);
-        meta.date = new Date( dis.readLong() );
-        meta.percentComplete = dis.readInt();
-        meta.percentFilled = meta.percentComplete;
+        PuzzleMeta meta = super.readMeta(dis);
         meta.updatable = dis.read() == 1;
         meta.sourceUrl = IO.readNullTerminatedString(dis);
-        //System.out.println(meta);
         return meta;
     }
 
     @Override
-    public void write(Puzzle puz, DataOutputStream dos) throws IOException {
-        IO.writeNullTerminatedString(dos, puz.getAuthor());
-        IO.writeNullTerminatedString(dos, puz.getSource());
-        IO.writeNullTerminatedString(dos, puz.getTitle());
-        dos.writeLong(puz.getDate() == null ? 0 : puz.getDate().getTime());
-        dos.writeInt(puz.getPercentComplete());
+    protected void writeMeta(Puzzle puz, DataOutputStream dos)
+              throws IOException {
+        super.writeMeta(puz, dos);
         dos.write(puz.isUpdatable() ? 1 : -1);
         IO.writeNullTerminatedString(dos, puz.getSourceUrl());
-        //System.out.println("Meta written.");
-        Box[][] boxes = puz.getBoxes();
-        for(Box[] row : boxes ){
-            for(Box b : row){
-                if(b == null){
-                    continue;
-                }
-                dos.writeBoolean(b.isCheated());
-                IO.writeNullTerminatedString(dos, b.getResponder());
-            }
-        }
-        dos.writeLong(puz.getTime());
     }
-
 }

@@ -25,15 +25,7 @@ public class IOVersion3 extends IOVersion2 {
 
     @Override
     public PuzzleMeta readMeta(DataInputStream dis) throws IOException {
-        PuzzleMeta meta = new PuzzleMeta();
-        meta.author = IO.readNullTerminatedString(dis);
-        meta.source = IO.readNullTerminatedString(dis);
-        meta.title = IO.readNullTerminatedString(dis);
-        meta.date = new Date( dis.readLong() );
-        meta.percentComplete = dis.readInt();
-        meta.percentFilled = meta.percentComplete;
-        meta.updatable = dis.read() == 1;
-        meta.sourceUrl = IO.readNullTerminatedString(dis);
+        PuzzleMeta meta = super.readMeta(dis);
         int x = dis.readInt();
         int y = dis.readInt();
         meta.position = new Position(x, y);
@@ -42,14 +34,9 @@ public class IOVersion3 extends IOVersion2 {
     }
 
     @Override
-    public void write(Puzzle puz, DataOutputStream dos) throws IOException {
-        IO.writeNullTerminatedString(dos, puz.getAuthor());
-        IO.writeNullTerminatedString(dos, puz.getSource());
-        IO.writeNullTerminatedString(dos, puz.getTitle());
-        dos.writeLong(puz.getDate() == null ? 0 : puz.getDate().getTime());
-        dos.writeInt(puz.getPercentComplete());
-        dos.write(puz.isUpdatable() ? 1 : -1);
-        IO.writeNullTerminatedString(dos, puz.getSourceUrl());
+    protected void writeMeta(Puzzle puz, DataOutputStream dos)
+              throws IOException {
+        super.writeMeta(puz, dos);
         Position p = puz.getPosition();
         if (p != null) {
             dos.writeInt(p.across);
@@ -59,17 +46,5 @@ public class IOVersion3 extends IOVersion2 {
             dos.writeInt(0);
         }
         dos.write(puz.getAcross() ? 1 : -1);
-        Box[][] boxes = puz.getBoxes();
-        for(Box[] row : boxes ){
-            for(Box b : row){
-                if(b == null){
-                    continue;
-                }
-                dos.writeBoolean(b.isCheated());
-                IO.writeNullTerminatedString(dos, b.getResponder());
-            }
-        }
-        dos.writeLong(puz.getTime());
     }
-
 }
