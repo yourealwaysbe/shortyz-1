@@ -315,7 +315,7 @@ public class ClueTabs extends LinearLayout
 
         @Override
         public void onBindViewHolder(ClueViewHolder holder, int position) {
-            HistoryItem item = historyList.get(position + 1);
+            HistoryItem item = historyList.get(position);
             Playboard board = ClueTabs.this.board;
             if (board != null) {
                 int number = item.getClueNumber();
@@ -334,7 +334,7 @@ public class ClueTabs extends LinearLayout
 
         @Override
         public int getItemCount() {
-            return historyList.size() - 1;
+            return historyList.size();
         }
     }
 
