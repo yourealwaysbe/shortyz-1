@@ -260,24 +260,19 @@ public class IO {
         switch (version) {
             case 1:
                 v = new IOVersion1();
-
                 break;
-
             case 2:
                 v = new IOVersion2();
-
                 break;
-
             case 3:
                 v = new IOVersion3();
-
                 break;
-
             case 4:
                 v = new IOVersion4();
-
                 break;
-
+            case 5:
+                v = new IOVersion5();
+                break;
             default:
                 throw new IOException("UnknownVersion " + version);
         }
@@ -335,24 +330,19 @@ public class IO {
         switch (version) {
             case 1:
                 v = new IOVersion1();
-
                 break;
-
             case 2:
                 v = new IOVersion2();
-
                 break;
-
             case 3:
                 v = new IOVersion3();
-
                 break;
-
             case 4:
                 v = new IOVersion4();
-
                 break;
-
+            case 5:
+                v = new IOVersion5();
+                break;
             default:
                 throw new IOException("UnknownVersion  " + version);
         }
@@ -600,9 +590,8 @@ public class IO {
 
     public static void writeCustom(Puzzle puz, DataOutputStream os)
             throws IOException {
-        os.write(4);
-
-        IOVersion v = new IOVersion4();
+        os.write(5);
+        IOVersion v = new IOVersion5();
         v.write(puz, os);
     }
 

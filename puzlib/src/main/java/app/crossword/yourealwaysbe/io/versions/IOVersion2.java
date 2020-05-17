@@ -1,21 +1,18 @@
 package app.crossword.yourealwaysbe.io.versions;
 
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Date;
 
 public class IOVersion2 extends IOVersion1 {
 
     @Override
     protected void applyMeta(Puzzle puz, PuzzleMeta meta){
         super.applyMeta(puz, meta);
-        //System.out.println("Applying V2 Meta");
         puz.setUpdatable(meta.updatable);
         puz.setSourceUrl(meta.sourceUrl);
     }

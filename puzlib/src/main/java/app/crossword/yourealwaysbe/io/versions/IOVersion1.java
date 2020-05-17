@@ -41,7 +41,6 @@ public class IOVersion1 implements IOVersion {
     }
 
     public PuzzleMeta readMeta(DataInputStream dis) throws IOException {
-        //System.out.println("Read V1");
         PuzzleMeta meta = new PuzzleMeta();
         meta.author = IO.readNullTerminatedString(dis);
         meta.source = IO.readNullTerminatedString(dis);
@@ -50,7 +49,6 @@ public class IOVersion1 implements IOVersion {
         meta.percentComplete = dis.readInt();
         meta.percentFilled = meta.percentComplete;
         return meta;
-
     }
 
     public void write(Puzzle puz, DataOutputStream dos) throws IOException {

@@ -1,7 +1,5 @@
 package app.crossword.yourealwaysbe.io.versions;
 
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
@@ -9,7 +7,6 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.logging.Logger;
 
 // Saves the current board position and clue orientation.
