@@ -31,6 +31,13 @@
         android:title="Application Settings">
 
         <androidx.preference.CheckBoxPreference
+            android:title="Show clues list on play screen"
+            android:defaultValue="true"
+            android:summary="Shows the across/down/history lists on the main play screen."
+            android:key="showCluesOnPlayScreen"
+        />
+
+        <androidx.preference.CheckBoxPreference
             android:title="Fit to screen when starting"
             android:defaultValue="false"
             android:summary="Best-fits the puzzle when you start."

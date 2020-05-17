@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.core.content.ContextCompat;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -71,8 +72,10 @@ public class PlayActivity extends ForkyzActivity
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
+    private static final String CONSTRAINED_BOARD_DIMENSION_RATIO = "H,1:1.01";
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
+    public static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
     public static final String SCALE = "scale";
 
     @SuppressWarnings("rawtypes")
@@ -1024,8 +1027,28 @@ public class PlayActivity extends ForkyzActivity
             this.handler.post(this.updateTimeTask);
         }
 
-        if (clueTabs != null)
+        if (clueTabs != null) {
             clueTabs.addListener(this);
+
+            ConstraintLayout layout = this.findViewById(R.id.playConstraintLayout);
+            ConstraintSet set = new ConstraintSet();
+            set.clone(layout);
+
+            if (!prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+                set.setVisibility(clueTabs.getId(), ConstraintSet.GONE);
+                if (boardView != null) {
+                    set.setDimensionRatio(boardView.getId(), null);
+                }
+            } else {
+                set.setVisibility(clueTabs.getId(), ConstraintSet.VISIBLE);
+                if (boardView != null) {
+                    set.setDimensionRatio(boardView.getId(),
+                                          CONSTRAINED_BOARD_DIMENSION_RATIO);
+                }
+            }
+
+            set.applyTo(layout);
+        }
 
         render();
     }
