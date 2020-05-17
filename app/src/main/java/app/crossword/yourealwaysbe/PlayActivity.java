@@ -253,9 +253,11 @@ public class PlayActivity extends ForkyzActivity
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
+                ConstraintLayout layout = this.findViewById(R.id.playConstraintLayout);
                 ConstraintSet set = new ConstraintSet();
+                set.clone(layout);
                 set.setVisibility(clue.getId(), ConstraintSet.GONE);
-                set.applyTo(this.findViewById(R.id.playConstraintLayout));
+                set.applyTo(layout);
 
                 View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
                 if (custom != null) {
