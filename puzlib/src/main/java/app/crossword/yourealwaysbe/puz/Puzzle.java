@@ -698,6 +698,12 @@ public class Puzzle implements Serializable{
         }
     }
 
+    public void setHistory(List<HistoryItem> newHistory) {
+        historyList.clear();
+        if (newHistory != null)
+            historyList.addAll(newHistory);
+    }
+
     public List<HistoryItem> getHistory() {
         return historyList;
     }
