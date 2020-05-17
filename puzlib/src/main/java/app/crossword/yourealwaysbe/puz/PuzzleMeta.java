@@ -1,10 +1,11 @@
 package app.crossword.yourealwaysbe.puz;
 
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
+import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
 
 import java.io.Serializable;
 import java.util.Date;
-
+import java.util.List;
 
 public class PuzzleMeta implements Serializable {
 
@@ -18,6 +19,7 @@ public class PuzzleMeta implements Serializable {
     public String sourceUrl;
     public Position position;
     public boolean across;
+    public List<HistoryItem> historyList;
 
     public String toString() {
         return new StringBuilder("author: ")
@@ -40,6 +42,8 @@ public class PuzzleMeta implements Serializable {
                 .append(position)
                 .append(" across: ")
                 .append(across)
+                .append(" history: ")
+                .append(historyList)
                 .toString();
     }
 
@@ -60,8 +64,10 @@ public class PuzzleMeta implements Serializable {
         if (date != null ? !date.equals(that.date) : that.date != null) return false;
         if (sourceUrl != null ? !sourceUrl.equals(that.sourceUrl) : that.sourceUrl != null)
             return false;
+        if (historyList != null ?
+            !historyList.equals(that.historyList) : that.historyList != null)
+            return false;
         return !(position != null ? !position.equals(that.position) : that.position != null);
-
     }
 
     @Override
@@ -76,6 +82,7 @@ public class PuzzleMeta implements Serializable {
         result = 31 * result + (sourceUrl != null ? sourceUrl.hashCode() : 0);
         result = 31 * result + (position != null ? position.hashCode() : 0);
         result = 31 * result + (across ? 1 : 0);
+        result = 31 * result + (historyList != null ? historyList.hashCode() : 0);
         return result;
     }
 }

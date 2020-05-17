@@ -3,8 +3,9 @@ package app.crossword.yourealwaysbe.view;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
-import app.crossword.yourealwaysbe.puz.HistoryItem;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Puzzle;
+import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -222,7 +224,13 @@ public class ClueTabs extends LinearLayout
                     break;
 
                 case HISTORY:
-                    clueListAdapter = new HistoryListAdapter(board.getHistory());
+                    Puzzle puz = board.getPuzzle();
+                    if (puz != null) {
+                        clueListAdapter = new HistoryListAdapter(puz.getHistory());
+                    } else {
+                        clueListAdapter
+                            = new HistoryListAdapter(new LinkedList<>());
+                    }
                     clueList.setAdapter(clueListAdapter);
                     break;
                 }
@@ -309,9 +317,20 @@ public class ClueTabs extends LinearLayout
         public void onBindViewHolder(ClueViewHolder holder, int position) {
             // plus one because first item not shown (it is current clue)
             HistoryItem item = historyList.get(position);
-            holder.setClue(item.getClue(),
-                           item.getAcross(),
-                           item.getIndex());
+            Playboard board = ClueTabs.this.board;
+            if (board != null) {
+                int number = item.getClueNumber();
+                boolean across = item.getAcross();
+                Clue clue = board.getClue(number, across);
+                Puzzle puz = board.getPuzzle();
+                if (puz != null) {
+                    int idx = across ?
+                              puz.getAcrossClueIndex(number) :
+                              puz.getDownClueIndex(number);
+
+                    holder.setClue(clue, across, idx);
+                }
+            }
         }
 
         @Override

@@ -5,9 +5,15 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Objects;
 
+import java.util.logging.Logger;
 
 public class Puzzle implements Serializable{
+    private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
+
     private String author;
     private String copyright;
     private String notes;
@@ -36,6 +42,8 @@ public class Puzzle implements Serializable{
 
     private Note[] acrossNotes = null;
     private Note[] downNotes = null;
+
+    private LinkedList<HistoryItem> historyList = new LinkedList<>();
 
     // Temporary fields used for unscrambling.
     public int[] unscrambleKey;
@@ -474,10 +482,10 @@ public class Puzzle implements Serializable{
             return null;
 
         if (isAcross) {
-            int idx = Arrays.binarySearch(acrossCluesLookup, clueNum);
+            int idx = getAcrossClueIndex(clueNum);
             return (idx < 0) ? null : acrossNotes[idx];
         } else {
-            int idx = Arrays.binarySearch(downCluesLookup, clueNum);
+            int idx = getDownClueIndex(clueNum);
             return (idx < 0) ? null : downNotes[idx];
         }
     }
@@ -486,8 +494,8 @@ public class Puzzle implements Serializable{
      * Assumes acrossClues and downClues has been initialised
      */
     public void setNote(Note note, int clueNum, boolean isAcross) {
-        int idx = isAcross ? Arrays.binarySearch(acrossCluesLookup, clueNum)
-                           : Arrays.binarySearch(downCluesLookup, clueNum);
+        int idx = isAcross ? getAcrossClueIndex(clueNum)
+                           : getDownClueIndex(clueNum);
 
         setNoteRaw(note, idx, isAcross);
     }
@@ -635,13 +643,19 @@ public class Puzzle implements Serializable{
     }
 
     public String findAcrossClue(int clueNumber) {
-        return this.acrossClues[Arrays.binarySearch(this.acrossCluesLookup,
-            clueNumber)];
+        return this.acrossClues[getAcrossClueIndex(clueNumber)];
     }
 
     public String findDownClue(int clueNumber) {
-        return this.downClues[Arrays.binarySearch(this.downCluesLookup,
-            clueNumber)];
+        return this.downClues[getDownClueIndex(clueNumber)];
+    }
+
+    public int getAcrossClueIndex(int number) {
+        return Arrays.binarySearch(this.acrossCluesLookup, number);
+    }
+
+    public int getDownClueIndex(int number) {
+        return Arrays.binarySearch(this.downCluesLookup, number);
     }
 
     @Override
@@ -672,5 +686,48 @@ public class Puzzle implements Serializable{
     public String toString() {
         return "Puzzle " + boxes.length + " x " + boxes[0].length + " " +
         this.title;
+    }
+
+    public void updateHistory(int clueNumber, boolean across) {
+        HistoryItem item = new HistoryItem(clueNumber, across);
+        // if a new item, not equal to most recent
+        if (historyList.isEmpty() ||
+            !item.equals(historyList.getFirst())) {
+            historyList.remove(item);
+            historyList.addFirst(item);
+        }
+    }
+
+    public List<HistoryItem> getHistory() {
+        return historyList;
+    }
+
+    public static class HistoryItem {
+        private int clueNumber;
+        private boolean across;
+
+        public HistoryItem(int clueNumber, boolean across) {
+            this.clueNumber = clueNumber;
+            this.across = across;
+        }
+
+        public int getClueNumber() { return clueNumber; }
+        public boolean getAcross() { return across; }
+
+        public boolean equals(Object o) {
+            if (o instanceof HistoryItem) {
+                HistoryItem other = (HistoryItem) o;
+                return clueNumber == other.clueNumber && across == other.across;
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            return Objects.hash(clueNumber, across);
+        }
+
+        public String toString() {
+            return clueNumber + (across ? "a" : "d");
+        }
     }
 }

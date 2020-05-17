@@ -18,7 +18,6 @@ public class Playboard implements Serializable {
     private HashMap<Integer, Position> downWordStarts = new HashMap<Integer, Position>();
     private MovementStrategy movementStrategy = MovementStrategy.MOVE_NEXT_ON_AXIS;
     private Position highlightLetter = new Position(0, 0);
-    private LinkedList<HistoryItem> historyList = new LinkedList<>();
     private Puzzle puzzle;
     private String responder;
     private Box[][] boxes;
@@ -117,6 +116,15 @@ public class Playboard implements Serializable {
         return c;
     }
 
+    public Clue getClue(int number, boolean across) {
+        Clue clue = new Clue();
+        clue.number = number;
+        clue.hint = across ?
+                    this.puzzle.findAcrossClue(number) :
+                    this.puzzle.findDownClue(number);
+        return clue;
+    }
+
     public Box getCurrentBox() {
         return this.boxes[this.highlightLetter.across][this.highlightLetter.down];
     }
@@ -129,9 +137,9 @@ public class Playboard implements Serializable {
         Clue c = this.getClue();
 
         if (across) {
-            return Arrays.binarySearch(this.puzzle.getAcrossCluesLookup(), c.number);
+            return this.puzzle.getAcrossClueIndex(c.number);
         } else {
-            return Arrays.binarySearch(this.puzzle.getDownCluesLookup(), c.number);
+            return this.puzzle.getDownClueIndex(c.number);
         }
     }
 
@@ -272,10 +280,6 @@ public class Playboard implements Serializable {
         notifyChange();
 
         return w;
-    }
-
-    public List<HistoryItem> getHistory() {
-        return historyList;
     }
 
     /**
@@ -939,15 +943,8 @@ public class Playboard implements Serializable {
     }
 
     private void updateHistory() {
-        HistoryItem item
-            = new HistoryItem(getClue(),
-                              isAcross(),
-                              getCurrentClueIndex());
-        // if a new item, not equal to most recent
-        if (historyList.isEmpty() ||
-            !item.equals(historyList.getFirst())) {
-            historyList.remove(item);
-            historyList.addFirst(item);
+        if (puzzle != null) {
+            puzzle.updateHistory(getClue().number, isAcross());
         }
     }
 

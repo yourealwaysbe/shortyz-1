@@ -590,8 +590,8 @@ public class IO {
 
     public static void writeCustom(Puzzle puz, DataOutputStream os)
             throws IOException {
-        os.write(5);
-        IOVersion v = new IOVersion5();
+        os.write(4);
+        IOVersion v = new IOVersion4();
         v.write(puz, os);
     }
 
