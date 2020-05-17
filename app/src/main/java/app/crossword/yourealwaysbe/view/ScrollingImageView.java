@@ -16,6 +16,9 @@ import android.widget.ImageView;
 @SuppressWarnings("deprecation")
 public class ScrollingImageView extends FrameLayout implements OnGestureListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
+
+    private static final double SCROLL_SNAP_BUFFER_PCNT = 0.05;
+
     private AuxTouchHandler aux = null;
     private ClickListener ctxListener;
     private GestureDetector gestureDetector;
@@ -236,16 +239,22 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         int boardWidth = this.imageView.getWidth();
         int boardHeight= this.imageView.getHeight();
 
+        int scrollSnapBuffer = (int)(boardWidth * SCROLL_SNAP_BUFFER_PCNT);
+
         // don't allow space between right/bot edge of screen and
         // board (careful of negatives, since co-ords are neg)
         // only adjust if we're scrolling up and just stay put if there
         // was already a gap
         int newRight = newX - boardWidth;
-        if (x > 0 && -newRight < screenWidth)
+        if (x > 0 &&
+            -newRight < screenWidth &&
+            -newRight > screenWidth - scrollSnapBuffer)
             newX = Math.max(-(screenWidth - boardWidth), curX);
 
         int newBot = newY - boardHeight;
-        if (y > 0 && -newBot < screenHeight)
+        if (y > 0 &&
+            -newBot < screenHeight &&
+            -newBot > screenHeight - scrollSnapBuffer)
             newY = Math.max(-(screenHeight - boardHeight), curY);
 
         // don't allow space between left/top edge of screen and board
@@ -253,8 +262,8 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         // fix even if scrolling down to stop flipping from one edge to
         // the other (i.e. never allow a gap top/left, but sometime
         // allow bot/right if needed)
-        if (newX < 0) newX = 0;
-        if (newY < 0) newY = 0;
+        if (newX < 0 && newX > -scrollSnapBuffer) newX = 0;
+        if (newY < 0 && newY > -scrollSnapBuffer) newY = 0;
 
         super.scrollTo(newX, newY);
     }
