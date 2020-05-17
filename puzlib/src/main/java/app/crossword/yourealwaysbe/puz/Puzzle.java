@@ -35,7 +35,7 @@ public class Puzzle implements Serializable{
     private boolean across = true;
 
     private Note[] acrossNotes = null;
-    private Note[] downNotes = null;;
+    private Note[] downNotes = null;
 
     // Temporary fields used for unscrambling.
     public int[] unscrambleKey;
