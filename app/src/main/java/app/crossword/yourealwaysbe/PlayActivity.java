@@ -72,7 +72,7 @@ public class PlayActivity extends ForkyzActivity
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
-    private static final double BOARD_DIM_RATIO = 1.01;
+    private static final double BOARD_DIM_RATIO = 1.0;
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
