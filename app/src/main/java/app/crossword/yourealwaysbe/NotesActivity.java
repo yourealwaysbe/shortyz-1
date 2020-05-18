@@ -150,6 +150,7 @@ public class NotesActivity extends ForkyzActivity {
 			+ curWordLen + "]") : ""));
 
 		imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
+        imageView.setAllowOverScroll(false);
 		this.imageView.setContextMenuListener(new ClickListener() {
 			public void onContextMenu(Point e) {
 				// TODO Auto-generated method stub

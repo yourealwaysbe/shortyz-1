@@ -64,6 +64,8 @@ public class BoardEditText extends ScrollingImageView {
     public BoardEditText(Context context, AttributeSet as) {
         super(context, as);
 
+        setAllowOverScroll(false);
+
         super.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
                 if (ctxListener != null) {

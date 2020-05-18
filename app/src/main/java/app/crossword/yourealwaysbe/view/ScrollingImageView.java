@@ -17,7 +17,7 @@ import android.widget.ImageView;
 public class ScrollingImageView extends FrameLayout implements OnGestureListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
-    private static final double SCROLL_SNAP_BUFFER_PCNT = 0.1;
+    private static final double SCROLL_SNAP_BUFFER_PCNT = 0.07;
 
     private AuxTouchHandler aux = null;
     private ClickListener ctxListener;
@@ -31,6 +31,8 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
     private float minScale = 0.20f;
     private float runningScale = 1.0f;
     private boolean haveAdded = false;
+    private boolean allowOverScroll = true;
+
     public ScrollingImageView(Context context, AttributeSet as) {
         super(context, as);
         gestureDetector = new GestureDetector(this);
@@ -228,6 +230,18 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         return new Point(x + this.getScrollX(), y + this.getScrollY());
     }
 
+    /**
+     * Set whether overscroll is allowed
+     *
+     * Overscroll is when the board is dragged so that an edge of the
+     * board pulls away from the corresponding edge of the view. E.g. a
+     * gap between the left view edge and the left board edge. Default
+     * is yes.
+     */
+    public void setAllowOverScroll(boolean allowOverScroll) {
+        this.allowOverScroll = allowOverScroll;
+    }
+
     public void scrollBy(int x, int y) {
         int curX = this.getScrollX();
         int curY = this.getScrollY();
@@ -249,13 +263,13 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         int newRight = newX - boardWidth;
         if (x > 0 &&
             -newRight < screenWidth &&
-            -newRight > screenWidth - scrollSnapBufferWidth)
+            (!allowOverScroll || -newRight > screenWidth - scrollSnapBufferWidth))
             newX = Math.max(-(screenWidth - boardWidth), curX);
 
         int newBot = newY - boardHeight;
         if (y > 0 &&
             -newBot < screenHeight &&
-            -newBot > screenHeight - scrollSnapBufferHeight)
+            (!allowOverScroll || -newBot > screenHeight - scrollSnapBufferHeight))
             newY = Math.max(-(screenHeight - boardHeight), curY);
 
         // don't allow space between left/top edge of screen and board
@@ -263,8 +277,12 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         // fix even if scrolling down to stop flipping from one edge to
         // the other (i.e. never allow a gap top/left, but sometime
         // allow bot/right if needed)
-        if (newX < 0) newX = 0;
-        if (newY < 0) newY = 0;
+        if (newX < 0 &&
+            (!allowOverScroll || newX > -scrollSnapBufferWidth))
+            newX = 0;
+        if (newY < 0 &&
+            (!allowOverScroll || newY > -scrollSnapBufferHeight))
+            newY = 0;
 
         super.scrollTo(newX, newY);
     }
