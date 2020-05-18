@@ -111,6 +111,7 @@ public class ClueListActivity extends ForkyzActivity
             = new KeyboardManager(this, (KeyboardView) findViewById(R.id.clueKeyboard));
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
+        this.imageView.setAllowOverScroll(false);
 
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
