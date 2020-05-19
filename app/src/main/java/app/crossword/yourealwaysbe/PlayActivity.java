@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -347,7 +348,25 @@ public class PlayActivity extends ForkyzActivity
                         }
                     }
 
-                    PlayActivity.this.render();
+                    // if the view changed size, then rescale the view
+                    // cannot change layout during a layout change, so
+                    // use a predraw listener that requests a new layout
+                    // (via render) and returns false to cancel the
+                    // current draw
+                    if (left != leftWas || right != rightWas ||
+                        top != topWas || bottom != bottomWas) {
+                        boardView.getViewTreeObserver()
+                                 .addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                            public boolean onPreDraw() {
+                                PlayActivity.this.render(true);
+                                PlayActivity.this
+                                            .boardView
+                                            .getViewTreeObserver()
+                                            .removeOnPreDrawListener(this);
+                                return false;
+                            }
+                        });
+                    }
                 }
             });
         } catch (IOException e) {
@@ -549,7 +568,6 @@ public class PlayActivity extends ForkyzActivity
         }
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
-                System.out.println("Next clue.");
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
                 getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
@@ -665,7 +683,6 @@ public class PlayActivity extends ForkyzActivity
     @SuppressWarnings("deprecation")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        System.out.println(item.getTitle());
         if (item.getTitle() == null) {
             finish();
             return true;
@@ -702,7 +719,7 @@ public class PlayActivity extends ForkyzActivity
             this.prefs.edit().putFloat(SCALE, newScale).apply();
             this.fitToScreen = false;
             boardView.setCurrentScale(newScale);
-            this.render();
+            this.render(true);
 
             return true;
         } else if (item.getTitle().toString().equals("Zoom In Max")) {
@@ -712,7 +729,7 @@ public class PlayActivity extends ForkyzActivity
             this.prefs.edit().putFloat(SCALE, newScale).apply();
             this.fitToScreen = false;
             boardView.setCurrentScale(newScale);
-            this.render();
+            this.render(true);
 
             return true;
         } else if (item.getTitle().toString().equals("Zoom Out")) {
@@ -722,7 +739,7 @@ public class PlayActivity extends ForkyzActivity
             this.prefs.edit().putFloat(SCALE, newScale).apply();
             this.fitToScreen = false;
             boardView.setCurrentScale(newScale);
-            this.render();
+            this.render(true);
 
             return true;
         } else if (item.getTitle().toString().equals("Fit to Screen")) {
@@ -733,7 +750,7 @@ public class PlayActivity extends ForkyzActivity
             float newScale = getRenderer().zoomReset();
             boardView.setCurrentScale(newScale);
             this.prefs.edit().putFloat(SCALE, newScale).apply();
-            this.render();
+            this.render(true);
             this.boardView.scrollTo(0, 0);
 
             return true;
@@ -805,7 +822,7 @@ public class PlayActivity extends ForkyzActivity
             keyboardManager.hideKeyboard();
         }
 
-        render(previousWord);
+        render(previousWord, false);
     }
 
     private void fitToScreen() {
@@ -816,12 +833,12 @@ public class PlayActivity extends ForkyzActivity
         float newScale = getRenderer().fitTo(v);
         this.prefs.edit().putFloat(SCALE, newScale).apply();
         boardView.setCurrentScale(newScale);
-        this.render();
+        this.render(true);
     }
 
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        this.render();
+        this.render(true);
     }
 
     protected Dialog onCreateDialog(int id) {
@@ -922,7 +939,7 @@ public class PlayActivity extends ForkyzActivity
             set.applyTo(constraintLayout);
         }
 
-        render();
+        render(true);
     }
 
     @Override
@@ -1087,7 +1104,7 @@ public class PlayActivity extends ForkyzActivity
     }
 
     private void render(Word previous) {
-        this.render(previous, true);
+        this.render(previous, false);
     }
 
     private void render(Word previous, boolean rescale) {
