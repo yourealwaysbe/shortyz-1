@@ -15,25 +15,10 @@
 		android:visibility="gone"
 	/>
 	
-	
-	
-	<android.inputmethodservice.KeyboardView
-		android:id="@+id/playKeyboard"
-		android:layout_alignParentBottom="true"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-        android:keyBackground="@color/background_light"
-        android:keyTextColor="@color/textColorPrimary"
-        android:background="@color/background_light"
-        android:shadowRadius="0.0"
-        android:keyPreviewLayout="@layout/key_preview"
-	/>
-	
 	<app.crossword.yourealwaysbe.view.ClueTabs
 		android:id="@+id/playClueTab"
 		android:layout_alignParentTop="true"
 		android:layout_alignParentRight="true"
-		android:layout_above="@id/playKeyboard"
 		android:layout_width="650dp"
         android:layout_height="wrap_content" />
 
@@ -41,7 +26,6 @@
 		android:id="@+id/board"
 		android:layout_alignParentTop="true"
 		android:layout_alignParentLeft="true"
-		android:layout_above="@id/playKeyboard"
 		android:layout_toLeftOf="@id/clues"
 		android:layout_width="wrap_content"
 		android:layout_height="fill_parent"

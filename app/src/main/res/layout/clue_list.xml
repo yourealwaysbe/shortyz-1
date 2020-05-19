@@ -4,20 +4,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
-
-    <android.inputmethodservice.KeyboardView
-        android:id="@+id/clueKeyboard"
-        android:layout_alignParentBottom="true"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:keyBackground="@color/background_light"
-        android:keyTextColor="@color/textColorPrimary"
-        android:background="@color/background_light"
-        android:shadowRadius="0.0"
-        android:keyPreviewLayout="@layout/key_preview"
-    />
-
+>
     <app.crossword.yourealwaysbe.view.ScrollingImageView
         android:id="@+id/miniboard"
         android:layout_width="fill_parent"

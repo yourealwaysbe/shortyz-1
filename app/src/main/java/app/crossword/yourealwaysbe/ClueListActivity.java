@@ -2,8 +2,6 @@ package app.crossword.yourealwaysbe;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.core.content.ContextCompat;
@@ -37,22 +35,13 @@ import java.io.IOException;
 public class ClueListActivity extends ForkyzActivity
                               implements ClueTabs.ClueTabsListener,
                                          Playboard.PlayboardListener {
-    private Configuration configuration;
     private File baseFile;
     private ImaginaryTimer timer;
     private KeyboardManager keyboardManager;
     private Puzzle puz;
     private ScrollingImageView imageView;
-    private boolean useNativeKeyboard = false;
     private PlayboardRenderer renderer;
     private ClueTabs clueTabs;
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        this.configuration = newConfig;
-        keyboardManager.onConfigurationChanged(newConfig);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -81,14 +70,6 @@ public class ClueListActivity extends ForkyzActivity
 
         scaleRendererToCurWord();
 
-        try {
-            this.configuration = getBaseContext().getResources()
-                    .getConfiguration();
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to read device configuration.",
-                    Toast.LENGTH_LONG).show();
-            finish();
-        }
         if(ForkyzApplication.getInstance().getBoard() == null || ForkyzApplication.getInstance().getBoard().getPuzzle() == null){
             finish();
         }
@@ -107,8 +88,7 @@ public class ClueListActivity extends ForkyzActivity
         timer.start();
         setContentView(R.layout.clue_list);
 
-        keyboardManager
-            = new KeyboardManager(this, (KeyboardView) findViewById(R.id.clueKeyboard));
+        keyboardManager = new KeyboardManager(this);
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
         this.imageView.setAllowOverScroll(false);
@@ -159,7 +139,7 @@ public class ClueListActivity extends ForkyzActivity
     @Override
     public void onResume() {
         super.onResume();
-        keyboardManager.onResume((KeyboardView) findViewById(R.id.clueKeyboard));
+        keyboardManager.onResume();
 
         Playboard board = getBoard();
         if (board != null)
@@ -267,11 +247,7 @@ public class ClueListActivity extends ForkyzActivity
             }
         }
 
-        char c = Character
-                .toUpperCase(((configuration.hardKeyboardHidden
-                                   == Configuration.HARDKEYBOARDHIDDEN_NO) ||
-                               keyboardManager.getUseNativeKeyboard()) ? event
-                        .getDisplayLabel() : ((char) keyCode));
+        char c = Character.toUpperCase(event.getDisplayLabel());
 
         if (PlayActivity.ALPHA.indexOf(c) != -1) {
             board.playLetter(c);
@@ -339,7 +315,7 @@ public class ClueListActivity extends ForkyzActivity
     }
 
     private void displayKeyboard() {
-        keyboardManager.render();
+        keyboardManager.showKeyboard();
     }
 
     private void displayKeyboard(Word previousWord) {
@@ -350,7 +326,7 @@ public class ClueListActivity extends ForkyzActivity
             Position newPos = board.getHighlightLetter();
             if ((previousWord != null) &&
                 previousWord.checkInWord(newPos.across, newPos.down)) {
-                keyboardManager.render();
+                keyboardManager.showKeyboard();
             } else {
                 keyboardManager.hideKeyboard();
             }

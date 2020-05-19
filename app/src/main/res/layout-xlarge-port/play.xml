@@ -20,18 +20,6 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
             android:layout_alignParentBottom="true" />
-
-		<android.inputmethodservice.KeyboardView
-		android:id="@+id/playKeyboard"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-            android:keyBackground="@color/background_light"
-            android:keyTextColor="@color/textColorPrimary"
-            android:background="@color/background_light"
-            android:shadowRadius="0.0"
-            android:keyPreviewLayout="@layout/key_preview"
-            />
-
 	</LinearLayout>
 	
 

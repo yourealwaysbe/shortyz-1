@@ -183,21 +183,6 @@
         />
 
         <androidx.preference.ListPreference
-            android:title="Keyboard Style"
-            android:summary="Select soft keyboard layout."
-            android:key="keyboardType"
-            android:defaultValue="CONDENSED"
-            android:entries="@array/keyboardTypeLabels"
-            android:entryValues="@array/keyboardTypeValues" />
-
-        <androidx.preference.CheckBoxPreference
-            android:title="Force Keyboard"
-            android:defaultValue="false"
-            android:summary="Forces the keyboard to always be on screen. \n Good for some generic tablets"
-            android:key="forceKeyboard"
-        />
-
-        <androidx.preference.ListPreference
             android:title="Orientation Lock"
             android:summary="Locks the screen location"
             android:key="orientationLock"

@@ -44,17 +44,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
     />
-    <android.inputmethodservice.KeyboardView
-        android:id="@+id/playKeyboard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:keyTextColor="@color/textColorPrimary"
-        android:keyBackground="@color/transparent"
-        android:background="@color/background_light"
-        android:shadowRadius="0.0"
-        android:keyPreviewLayout="@layout/key_preview"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-    />
 </androidx.constraintlayout.widget.ConstraintLayout>

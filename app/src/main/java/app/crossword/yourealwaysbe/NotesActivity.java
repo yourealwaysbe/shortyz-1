@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.net.Uri;
 import android.widget.EditText;
@@ -17,7 +16,6 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.View;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.widget.Toast;
 import android.content.Context;
 import android.app.AlertDialog;
@@ -45,7 +43,6 @@ public class NotesActivity extends ForkyzActivity
                            implements Playboard.PlayboardListener {
     private static final Logger LOG = Logger.getLogger(NotesActivity.class.getCanonicalName());
 
-    protected Configuration configuration;
     protected File baseFile;
     protected ImaginaryTimer timer;
     protected KeyboardManager keyboardManager;
@@ -59,13 +56,6 @@ public class NotesActivity extends ForkyzActivity
     private Random rand = new Random();
 
     private int numAnagramLetters = 0;
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        this.configuration = newConfig;
-        keyboardManager.onConfigurationChanged(newConfig);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -83,14 +73,6 @@ public class NotesActivity extends ForkyzActivity
         utils.holographic(this);
         utils.finishOnHomeButton(this);
 
-        try {
-            this.configuration = getBaseContext().getResources()
-                    .getConfiguration();
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to read device configuration.",
-                    Toast.LENGTH_LONG).show();
-            finish();
-        }
         if(getBoard() == null || getBoard().getPuzzle() == null){
             finish();
             return;
@@ -124,8 +106,7 @@ public class NotesActivity extends ForkyzActivity
 
         setContentView(R.layout.notes);
 
-        keyboardManager
-            = new KeyboardManager(this, (KeyboardView) findViewById(R.id.notesKeyboard));
+        keyboardManager = new KeyboardManager(this);
 
         Clue c = getBoard().getClue();
 
@@ -445,11 +426,7 @@ public class NotesActivity extends ForkyzActivity
             }
         }
 
-        char c = Character
-                .toUpperCase(((configuration.hardKeyboardHidden
-                                   == Configuration.HARDKEYBOARDHIDDEN_NO) ||
-                              keyboardManager.getUseNativeKeyboard()) ? event
-                        .getDisplayLabel() : ((char) keyCode));
+        char c = Character .toUpperCase(event.getDisplayLabel());
 
         if (PlayActivity.ALPHA.indexOf(c) != -1) {
             getBoard().playLetter(c);
@@ -485,7 +462,7 @@ public class NotesActivity extends ForkyzActivity
     @Override
     protected void onResume() {
         super.onResume();
-        keyboardManager.onResume((KeyboardView) findViewById(R.id.notesKeyboard));
+        keyboardManager.onResume();
 
         Playboard board = getBoard();
         if (board != null)
@@ -495,7 +472,7 @@ public class NotesActivity extends ForkyzActivity
     }
 
     protected void render() {
-        keyboardManager.render();
+        keyboardManager.showKeyboard();
 
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         boolean displayScratchAcross = displayScratch && !getBoard().isAcross();

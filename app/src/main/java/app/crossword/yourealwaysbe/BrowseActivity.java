@@ -851,28 +851,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private void upgradePreferences() {
-        if (this.prefs.getString("keyboardType", null) == null) {
-            if (this.prefs.getBoolean("useNativeKeyboard", false)) {
-                this.prefs.edit()
-                          .putString("keyboardType", "NATIVE")
-                          .apply();
-            } else {
-                Configuration config = getBaseContext()
-                                           .getResources()
-                                           .getConfiguration();
-
-                if ((config.navigation == Configuration.NAVIGATION_NONAV) ||
-                        (config.navigation == Configuration.NAVIGATION_UNDEFINED)) {
-                    this.prefs.edit()
-                              .putString("keyboardType", "CONDENSED_ARROWS")
-                              .apply();
-                } else {
-                    this.prefs.edit()
-                              .putString("keyboardType", "CONDENSED")
-                              .apply();
-                }
-            }
-        }
+        // do nothing now no keyboard
     }
 
     @Override

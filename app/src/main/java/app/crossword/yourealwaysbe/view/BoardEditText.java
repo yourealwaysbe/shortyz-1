@@ -8,7 +8,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
-import android.content.res.Configuration;
 import java.util.logging.Logger;
 
 import app.crossword.yourealwaysbe.puz.Playboard;
@@ -46,8 +45,6 @@ public class BoardEditText extends ScrollingImageView {
     // surely a better way...
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    private boolean useNativeKeyboard = false;
-    private Configuration configuration;
     private SharedPreferences prefs;
 
     // we have our own onTap for input, but the activity containing the widget
@@ -104,9 +101,6 @@ public class BoardEditText extends ScrollingImageView {
         });
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        useNativeKeyboard = "NATIVE".equals(prefs.getString("keyboardType", ""));
-
-        configuration = context.getResources().getConfiguration();
     }
 
     @Override
@@ -234,9 +228,7 @@ public class BoardEditText extends ScrollingImageView {
             return true;
         }
 
-        char c = Character
-                .toUpperCase(((this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) || this.useNativeKeyboard) ? event
-                        .getDisplayLabel() : ((char) keyCode));
+        char c = Character.toUpperCase(event.getDisplayLabel());
 
         if (boxes != null && ALPHA.indexOf(c) != -1) {
             c = filterReplacement(c, selection);

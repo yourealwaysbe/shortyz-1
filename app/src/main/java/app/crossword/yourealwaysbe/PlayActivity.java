@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.inputmethodservice.KeyboardView;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -89,7 +88,6 @@ public class PlayActivity extends ForkyzActivity
     private SeparatedListAdapter allCluesAdapter;
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
-    private Configuration configuration;
     private Dialog dialog;
     private File baseFile;
     private Handler handler = new Handler();
@@ -141,9 +139,6 @@ public class PlayActivity extends ForkyzActivity
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        this.configuration = newConfig;
-
-        keyboardManager.onConfigurationChanged(newConfig);
 
         this.runTimer = prefs.getBoolean("runTimer", false);
 
@@ -173,7 +168,6 @@ public class PlayActivity extends ForkyzActivity
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
-        this.configuration = getBaseContext().getResources().getConfiguration();
 
         try {
             if (!prefs.getBoolean(SHOW_TIMER, false)) {
@@ -252,8 +246,7 @@ public class PlayActivity extends ForkyzActivity
             this.constraintLayout
                 = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
 
-            keyboardManager
-                = new KeyboardManager(this, (KeyboardView) findViewById(R.id.playKeyboard));
+            keyboardManager = new KeyboardManager(this);
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
@@ -654,9 +647,7 @@ public class PlayActivity extends ForkyzActivity
                 return true;
         }
 
-        char c = Character
-                .toUpperCase(((this.configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) || keyboardManager.getUseNativeKeyboard()) ? event
-                        .getDisplayLabel() : ((char) keyCode));
+        char c = Character.toUpperCase(event.getDisplayLabel());
 
         if (ALPHA.indexOf(c) != -1) {
             getBoard().playLetter(c);
@@ -899,10 +890,11 @@ public class PlayActivity extends ForkyzActivity
             board.addListener(this);
         }
 
-        keyboardManager.onResume((KeyboardView) findViewById(R.id.playKeyboard));
+        keyboardManager.onResume();
 
         this.showCount = prefs.getBoolean("showCount", false);
-        this.onConfigurationChanged(this.configuration);
+        this.onConfigurationChanged(getBaseContext().getResources()
+                                                    .getConfiguration());
 
         if (puz.getPercentComplete() != 100) {
             timer = new ImaginaryTimer(this.puz.getTime());
@@ -1079,7 +1071,7 @@ public class PlayActivity extends ForkyzActivity
             Position newPos = board.getHighlightLetter();
             if ((previous != null) &&
                 previous.checkInWord(newPos.across, newPos.down)) {
-                keyboardManager.render();
+                keyboardManager.showKeyboard();
             } else {
                 keyboardManager.hideKeyboard();
             }
