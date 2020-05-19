@@ -27,6 +27,7 @@ Removals:
 * No Google email or games integration.
 * No crashlytics.
 * No New York Times.
+* No non-native or forced keyboard.
 
 The latter is for no reason other than i didn't want to maintain it. It could
 be put back.
