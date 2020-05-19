@@ -41,7 +41,8 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Box;
 
-public class NotesActivity extends ForkyzActivity {
+public class NotesActivity extends ForkyzActivity
+                           implements Playboard.PlayboardListener {
     private static final Logger LOG = Logger.getLogger(NotesActivity.class.getCanonicalName());
 
     protected Configuration configuration;
@@ -177,7 +178,6 @@ public class NotesActivity extends ForkyzActivity {
                 if (!newPos.equals(getBoard().getHighlightLetter())) {
                     getBoard().setHighlightLetter(newPos);
                 }
-                NotesActivity.this.render();
             }
         });
 
@@ -343,6 +343,10 @@ public class NotesActivity extends ForkyzActivity {
         puz.setNote(note, c.number, getBoard().isAcross());
 
         keyboardManager.onPause();
+
+        Playboard board = getBoard();
+        if (board != null)
+            board.removeListener(this);
     }
 
     @Override
@@ -401,8 +405,6 @@ public class NotesActivity extends ForkyzActivity {
             if (!getBoard().getHighlightLetter().equals(
                     getBoard().getCurrentWord().start)) {
                 getBoard().previousLetter();
-
-                this.render();
             }
 
             return true;
@@ -411,7 +413,6 @@ public class NotesActivity extends ForkyzActivity {
 
             if (!getBoard().getHighlightLetter().equals(last)) {
                 getBoard().nextLetter();
-                this.render();
             }
 
             return true;
@@ -426,8 +427,6 @@ public class NotesActivity extends ForkyzActivity {
                 getBoard().setHighlightLetter(w.start);
             }
 
-            this.render();
-
             return true;
 
         case KeyEvent.KEYCODE_SPACE:
@@ -441,8 +440,6 @@ public class NotesActivity extends ForkyzActivity {
                         || (getBoard().getBoxes()[curr.across][curr.down] == null)) {
                     getBoard().setHighlightLetter(last);
                 }
-
-                this.render();
 
                 return true;
             }
@@ -464,14 +461,15 @@ public class NotesActivity extends ForkyzActivity {
                 getBoard().setHighlightLetter(last);
             }
 
-            this.render();
-
-            afterPlay();
-
             return true;
         }
 
         return super.onKeyUp(keyCode, event);
+    }
+
+    public void onPlayboardChange(Word currentWord, Word previousWord) {
+        render();
+        afterPlay();
     }
 
     private void afterPlay() {
@@ -488,6 +486,11 @@ public class NotesActivity extends ForkyzActivity {
     protected void onResume() {
         super.onResume();
         keyboardManager.onResume((KeyboardView) findViewById(R.id.notesKeyboard));
+
+        Playboard board = getBoard();
+        if (board != null)
+            board.addListener(this);
+
         this.render();
     }
 
@@ -529,8 +532,6 @@ public class NotesActivity extends ForkyzActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     board.setCurrentWord(response);
-                    render();
-                    afterPlay();
                     dialog.dismiss();
                 }
             });
@@ -545,8 +546,6 @@ public class NotesActivity extends ForkyzActivity {
             alert.show();
         } else {
             board.setCurrentWord(response);
-            render();
-            afterPlay();
         }
     }
 
