@@ -249,6 +249,14 @@ public class Playboard implements Serializable {
         return clues;
     }
 
+    public void setCurrentWord(String response) {
+        Box[] boxes = getCurrentWordBoxes();
+        for (int i = 0; i < boxes.length && i < response.length(); i++) {
+            boxes[i].setResponse(response.charAt(i));
+        }
+        notifyChange();
+    }
+
     public Word setHighlightLetter(Position highlightLetter) {
         Word w = this.getCurrentWord();
         int x = highlightLetter.across;

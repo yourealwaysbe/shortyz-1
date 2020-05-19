@@ -502,14 +502,19 @@ public class NotesActivity extends ForkyzActivity {
     }
 
     private void copyBoardViewToBoard(final BoardEditText view) {
-        final Box[] curWordBoxes = getBoard().getCurrentWordBoxes();
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        final Box[] curWordBoxes = board.getCurrentWordBoxes();
+        final String response = view.toString();
+
         boolean conflicts = false;
 
-        for (int i = 0; i < curWordBoxes.length; i++) {
+        for (int i = 0; i < curWordBoxes.length && i < response.length(); i++) {
             char oldResponse = curWordBoxes[i].getResponse();
             if (Character.isLetter(oldResponse) &&
-                view.getResponse(i) != oldResponse) {
-
+                response.charAt(i) != oldResponse) {
                 conflicts = true;
                 break;
             }
@@ -523,7 +528,9 @@ public class NotesActivity extends ForkyzActivity {
             builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    copyBoardViewToBoardUnchecked(view, curWordBoxes);
+                    board.setCurrentWord(response);
+                    render();
+                    afterPlay();
                     dialog.dismiss();
                 }
             });
@@ -537,18 +544,10 @@ public class NotesActivity extends ForkyzActivity {
             AlertDialog alert = builder.create();
             alert.show();
         } else {
-            copyBoardViewToBoardUnchecked(view, curWordBoxes);
+            board.setCurrentWord(response);
+            render();
+            afterPlay();
         }
-    }
-
-    private void copyBoardViewToBoardUnchecked(BoardEditText view,
-                                               Box[] curWordBoxes) {
-        for (int i = 0; i < curWordBoxes.length; i++) {
-            curWordBoxes[i].setResponse(view.getResponse(i));
-        }
-
-        render();
-        afterPlay();
     }
 
     private Playboard getBoard(){
