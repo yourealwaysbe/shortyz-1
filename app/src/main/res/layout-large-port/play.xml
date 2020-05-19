@@ -15,25 +15,12 @@
         android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
         android:background="@drawable/clue_list_shadow">
-
-		<TextView android:id="@+id/acrossLabel" android:layout_width="fill_parent"
-			android:layout_height="wrap_content" android:text="Across"
-			android:textStyle="bold" android:textSize="16dp" 
-			android:gravity="center_horizontal"/>
-		<Gallery android:id="@+id/acrossListGal" android:layout_width="fill_parent"
-			android:spacing="0dp"
-			android:layout_height="wrap_content" />
-		<TextView android:id="@+id/downLabel" android:layout_width="fill_parent"
-			android:layout_height="wrap_content" android:text="Down"
-			android:textStyle="bold"
-            android:textSize="16dp"
-			android:gravity="center_horizontal"/>
-
-		<Gallery android:id="@+id/downListGal" android:layout_width="fill_parent"
-			android:spacing="0dp"
-			android:layout_height="wrap_content" 
-		android:layout_marginBottom="10dp" />
-
+		<app.crossword.yourealwaysbe.view.CluesTab
+			android:id="@+id/playClueTab"
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" />
 	</LinearLayout>
 	
 
