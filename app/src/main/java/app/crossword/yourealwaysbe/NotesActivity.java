@@ -80,10 +80,7 @@ public class NotesActivity extends ForkyzActivity
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
-                !prefs.getBoolean("supressHints", false),
-                ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
-                ContextCompat.getColor(this, R.color.errorColor));
+        this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
 
         final int curWordLen = getBoard().getCurrentWord().length;
         double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);

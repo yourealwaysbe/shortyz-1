@@ -1,5 +1,6 @@
 package app.crossword.yourealwaysbe.view;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,7 +9,9 @@ import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import androidx.core.content.ContextCompat;
 
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Note;
 import app.crossword.yourealwaysbe.puz.Playboard;
@@ -43,43 +46,56 @@ public class PlayboardRenderer {
     private final int boxColor;
     private final int blankColor;
     private final int errorColor;
+    private final int currentWordHighlightColor;
+    private final int currentLetterHighlightColor;
+    private final int cheatedColor;
+    private final int boardLetterColor;
 
-    public PlayboardRenderer(Playboard board, float dpi, int widthPixels, boolean hintHighlight,
-                             int boxColor, int blankColor, int errorColor) {
-        this.boxColor = boxColor;
-        this.blankColor = blankColor;
-        this.errorColor = errorColor;
-
+    // colors are gotten from context
+    public PlayboardRenderer(Playboard board,
+                             float dpi, int widthPixels, boolean hintHighlight,
+                             Context context) {
         this.dpi = dpi;
         this.widthPixels = widthPixels;
         this.board = board;
         this.hintHighlight = hintHighlight;
+
+        blankColor = ContextCompat.getColor(context, R.color.blankColor);
+        boxColor = ContextCompat.getColor(context, R.color.boxColor);
+        currentWordHighlightColor
+            = ContextCompat.getColor(context, R.color.currentWordHighlightColor);
+        currentLetterHighlightColor
+            = ContextCompat.getColor(context, R.color.currentLetterHighlightColor);
+        errorColor = ContextCompat.getColor(context, R.color.errorColor);
+        cheatedColor = ContextCompat.getColor(context, R.color.cheatedColor);
+        boardLetterColor = ContextCompat.getColor(context, R.color.boardLetterColor);
+
         blackLine.setColor(blankColor);
         blackLine.setStrokeWidth(2.0F);
 
         numberText.setTextAlign(Align.LEFT);
-        numberText.setColor(blankColor);
+        numberText.setColor(boardLetterColor);
         numberText.setAntiAlias(true);
         numberText.setTypeface(Typeface.MONOSPACE);
 
         noteText.setTextAlign(Align.LEFT);
-        noteText.setColor(blankColor);
+        noteText.setColor(boardLetterColor);
         noteText.setAntiAlias(true);
         noteText.setTypeface(Typeface.MONOSPACE);
 
         letterText.setTextAlign(Align.CENTER);
-        letterText.setColor(blankColor);
+        letterText.setColor(boardLetterColor);
         letterText.setAntiAlias(true);
         letterText.setTypeface(Typeface.SANS_SERIF);
 
         blackBox.setColor(blankColor);
 
-        blackCircle.setColor(blankColor);
+        blackCircle.setColor(boardLetterColor);
         blackCircle.setAntiAlias(true);
         blackCircle.setStyle(Style.STROKE);
 
-        currentWordHighlight.setColor(Color.parseColor("#FFAE57"));
-        currentLetterHighlight.setColor(Color.parseColor("#EB6000"));
+        currentWordHighlight.setColor(currentWordHighlightColor);
+        currentLetterHighlight.setColor(currentLetterHighlightColor);
         currentLetterBox.setColor(boxColor);
         currentLetterBox.setStrokeWidth(2.0F);
 
@@ -93,7 +109,7 @@ public class PlayboardRenderer {
         red.setAntiAlias(true);
         red.setTypeface(Typeface.SANS_SERIF);
 
-        this.cheated.setColor(Color.parseColor("#FFE0E0"));
+        cheated.setColor(cheatedColor);
     }
 
     public float getDeviceMaxScale(){

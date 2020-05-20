@@ -7,14 +7,14 @@
 
     <TextView
         android:id="@+id/clueLine"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:textSize="12dip"
-		android:minLines="2"
-		android:maxLines="4"
-		android:textColor="#FFFFFF"
-		android:background="#2C2C2C"
-	/>
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12dip"
+        android:minLines="2"
+        android:maxLines="4"
+        android:textColor="@color/textColorPrimary"
+        android:background="@color/background_dark"
+    />
 
     <TextView
         android:id="@+id/boardLab"
@@ -22,6 +22,7 @@
         android:layout_height="wrap_content"
         android:text="@string/board_lab"
         android:layout_below="@+id/clueLine"
+        android:textColor="@color/textColorPrimary"
     />
 
     <app.crossword.yourealwaysbe.view.ScrollingImageView
@@ -52,6 +53,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/scratch_lab"
                 android:inputType="text"
+                android:textColor="@color/textColorPrimary"
             />
 
             <app.crossword.yourealwaysbe.view.BoardEditText
@@ -68,6 +70,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/notes_lab"
+                android:textColor="@color/textColorPrimary"
             />
 
             <EditText
@@ -85,6 +88,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/anagram_source_lab"
                 android:layout_below="@+id/notesBox"
+                android:textColor="@color/textColorPrimary"
             />
 
             <app.crossword.yourealwaysbe.view.BoardEditText
@@ -102,6 +106,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/anagram_solution_lab"
                 android:layout_below="@+id/notesBox"
+                android:textColor="@color/textColorPrimary"
             />
 
             <app.crossword.yourealwaysbe.view.BoardEditText

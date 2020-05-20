@@ -212,10 +212,7 @@ public class PlayActivity extends ForkyzActivity
             }
 
             ForkyzApplication.getInstance().setBoard(new Playboard(puz, movement, prefs.getBoolean("preserveCorrectLettersInShowErrors", false)));
-            ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels,
-                    !prefs.getBoolean("supressHints", false),
-                    ContextCompat.getColor(this, R.color.boxColor), ContextCompat.getColor(this, R.color.blankColor),
-                    ContextCompat.getColor(this, R.color.errorColor)));
+            ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
 
             float scale = prefs.getFloat(SCALE, 1.0F);
 
