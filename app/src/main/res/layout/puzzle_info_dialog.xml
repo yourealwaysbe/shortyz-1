@@ -4,7 +4,9 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical"
-  android:gravity="center_horizontal">
+  android:gravity="center_horizontal"
+  android:background="@color/background_dark"
+>
   
   <TextView 
   android:id="@+id/puzzle_info_title"
@@ -12,6 +14,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="Title of Puzzle"
+  android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
   <TextView 
@@ -20,6 +23,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="By Author"
+  android:textColor="@color/textColorPrimary"
    android:gravity="center_horizontal"/>
   
   <TextView 
@@ -28,6 +32,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="(c) 2010"
+  android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
   
@@ -37,6 +42,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="Elapsed Time: 3:15"
+  android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
   <ProgressBar
@@ -55,6 +61,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:scrollbars="vertical"
+  android:textColor="@color/textColorPrimary"
     android:gravity="center_horizontal"/>
 
   <ScrollView
@@ -67,6 +74,7 @@
     android:layout_height="wrap_content"
     android:text="Puzzle notes."
     android:scrollbars="vertical"
+  android:textColor="@color/textColorPrimary"
     android:gravity="center_horizontal"/>
   </ScrollView> 
 
