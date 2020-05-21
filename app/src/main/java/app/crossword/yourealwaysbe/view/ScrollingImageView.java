@@ -266,10 +266,20 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
             (!allowOverScroll || -newRight > screenWidth - scrollSnapBufferWidth))
             newX = Math.max(-(screenWidth - boardWidth), curX);
 
+        if (x < 0 &&
+            -newRight > screenWidth &&
+            (!allowOverScroll || -newRight < screenWidth + scrollSnapBufferWidth))
+            newX = Math.max(-(screenWidth - boardWidth), curX);
+
         int newBot = newY - boardHeight;
         if (y > 0 &&
             -newBot < screenHeight &&
             (!allowOverScroll || -newBot > screenHeight - scrollSnapBufferHeight))
+            newY = Math.max(-(screenHeight - boardHeight), curY);
+
+        if (y < 0 &&
+            -newBot > screenHeight &&
+            (!allowOverScroll || -newBot < screenHeight + scrollSnapBufferHeight))
             newY = Math.max(-(screenHeight - boardHeight), curY);
 
         // don't allow space between left/top edge of screen and board
@@ -282,6 +292,14 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
             newX = 0;
         if (newY < 0 &&
             (!allowOverScroll || newY > -scrollSnapBufferHeight))
+            newY = 0;
+
+        // as above but for scrolling top/left off screen
+        if (newX > 0 &&
+            (!allowOverScroll || newX < scrollSnapBufferWidth))
+            newX = 0;
+        if (newY > 0 &&
+            (!allowOverScroll || newY < scrollSnapBufferHeight))
             newY = 0;
 
         super.scrollTo(newX, newY);
