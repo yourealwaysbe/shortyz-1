@@ -18,4 +18,8 @@
     <color name="currentLetterHighlightColor">@color/accent</color>
     <color name="boardLetterColor">#aaa</color>
     <color name="titleTextColor">@color/textColorPrimary</color>
+    <color name="progressNull">#b4b4b4</color>
+    <color name="progressInProgress">#d5a518</color>
+    <color name="progressDone">#31915a</color>
+    <color name="progressError">#ff4a4d</color>
 </resources>

@@ -10,6 +10,9 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
+import androidx.core.content.ContextCompat;
+
+import app.crossword.yourealwaysbe.forkyz.R;
 
 /**
  * Created by rcooper on 10/26/14.
@@ -17,10 +20,10 @@ import android.view.WindowManager;
 public class CircleProgressBar extends View {
     private static Typeface icons1;
     private static Typeface icons4;
-    private static final int GRAY = Color.rgb(180, 180, 180);
-    private static final int ORANGE = Color.rgb(213, 165, 24);
-    private static final int GREEN = Color.rgb(49, 145, 90);
-    private static final int RED = Color.rgb(255, 74, 77);
+    private int nullColor;
+    private int inProgressColor;
+    private int doneColor;
+    private int errorColor;
     private int height;
     private int width;
     private int percentFilled;
@@ -33,17 +36,26 @@ public class CircleProgressBar extends View {
     public CircleProgressBar(Context context) {
         super(context);
         initMetrics(context);
-
+        loadColors(context);
     }
 
     public CircleProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         initMetrics(context);
+        loadColors(context);
     }
 
     public CircleProgressBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initMetrics(context);
+        loadColors(context);
+    }
+
+    private void loadColors(Context context) {
+        nullColor = ContextCompat.getColor(context, R.color.progressNull);
+        inProgressColor = ContextCompat.getColor(context, R.color.progressInProgress);
+        doneColor = ContextCompat.getColor(context, R.color.progressDone);
+        errorColor = ContextCompat.getColor(context, R.color.progressError);
     }
 
     private final void initMetrics(Context context){
@@ -90,21 +102,21 @@ public class CircleProgressBar extends View {
 
         Paint paint = new Paint();
         paint.setAntiAlias(true);
-        paint.setColor(GRAY);
+        paint.setColor(nullColor);
         paint.setStyle(Paint.Style.STROKE);
         paint.setTypeface(Typeface.SANS_SERIF);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(textSize);
 
         if (this.complete) {
-            paint.setColor(GREEN);
+            paint.setColor(doneColor);
             paint.setStrokeWidth(circleStroke);
             canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
             paint.setTypeface(icons1);
             paint.setStyle(Paint.Style.FILL);
             canvas.drawText("4", halfWidth, halfHeight + textSize / 2f, paint);
         } else if (this.percentFilled < 0) {
-            paint.setColor(RED);
+            paint.setColor(errorColor);
             paint.setStrokeWidth(circleStroke);
             canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
             paint.setStyle(Paint.Style.FILL);
@@ -116,7 +128,7 @@ public class CircleProgressBar extends View {
             paint.setStyle(Paint.Style.FILL);
             canvas.drawText("W", halfWidth, halfWidth + textSize / 2.5f, paint);
         } else {
-            paint.setColor(ORANGE);
+            paint.setColor(inProgressColor);
             paint.setStrokeWidth(circleFine);
             canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - 1f, paint);
             paint.setStrokeWidth(circleStroke);
