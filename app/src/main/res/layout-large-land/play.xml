@@ -9,8 +9,8 @@
 		android:textSize="12dip" 
 		android:minLines="2"
 		android:maxLines="4"
-		android:textColor="@color/textColorPrimary"
-		android:background="@color/background_dark"
+		android:textColor="@color/titleTextColor"
+		android:background="@color/primary"
 		android:visibility="gone"
 	/>
 	

@@ -5,6 +5,6 @@
 		android:layout_height="wrap_content" 
 		android:textSize="12dip" 
 		android:minLines="2"
-		android:maxLines="4"
-		android:textColor="#FFFFFF"
+		android:maxLines="5"
+		android:textColor="@color/titleTextColor"
 	/>

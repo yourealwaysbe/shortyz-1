@@ -1,9 +1,9 @@
 <resources>
     <color name="primary">#222</color>
     <color name="primary_dark">#000</color>
-    <color name="accent">#ad4300</color>
-    <color name="textColorPrimary">#aaa</color>
-    <color name="textColorSecondary">#666</color>
+    <color name="accent">#ad5620</color>
+    <color name="textColorPrimary">#bbb</color>
+    <color name="textColorSecondary">#777</color>
     <color name="textColorFilled">@color/textColorSecondary</color>
     <color name="accentText">#eee</color>
     <color name="transparent">#00000000</color>
@@ -14,7 +14,8 @@
     <color name="boxColor">#333</color>
     <color name="blankColor">#000</color>
     <color name="errorColor">#00f</color>
-    <color name="currentWordHighlightColor">#ad5620</color>
-    <color name="currentLetterHighlightColor">#c43f00</color>
+    <color name="currentWordHighlightColor">#743513</color>
+    <color name="currentLetterHighlightColor">@color/accent</color>
     <color name="boardLetterColor">#aaa</color>
+    <color name="titleTextColor">@color/textColorPrimary</color>
 </resources>

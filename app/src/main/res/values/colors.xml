@@ -3,8 +3,8 @@
     <color name="primary_dark">#2c3e50</color>
     <color name="accent">#2980b9</color>
     <color name="textColorPrimary">#262626</color>
-    <color name="textColorSecondary">#bebebe</color>
-    <color name="textColorFilled">#767676</color>
+    <color name="textColorSecondary">#767676</color>
+    <color name="textColorFilled">@color/textColorSecondary</color>
     <color name="accentText">#fff</color>
     <color name="transparent">#00000000</color>
     <color name="background_light">#fafafa</color>
@@ -18,4 +18,5 @@
     <color name="currentLetterHighlightColor">#EB6000</color>
     <color name="cheatedColor">#FFE0E0</color>
     <color name="boardLetterColor">#000</color>
+    <color name="titleTextColor">#fff</color>
 </resources>
