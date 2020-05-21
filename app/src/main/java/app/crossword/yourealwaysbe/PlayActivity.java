@@ -706,6 +706,7 @@ public class PlayActivity extends ForkyzActivity
             return true;
         } else if (item.getTitle().toString().equals("Settings")) {
             Intent i = new Intent(this, PreferencesActivity.class);
+            i.putExtra(PreferencesActivity.NIGHT_MODE, nightMode.isNightMode());
             this.startActivity(i);
 
             return true;

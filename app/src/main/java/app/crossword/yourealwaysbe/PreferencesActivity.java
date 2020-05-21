@@ -1,23 +1,39 @@
 package app.crossword.yourealwaysbe;
 
 import android.os.Bundle;
+import android.content.Intent;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceClickListener;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceFragmentCompat;
 
 import app.crossword.yourealwaysbe.forkyz.R;
+import app.crossword.yourealwaysbe.util.NightModeHelper;
+import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 
 public class PreferencesActivity
        extends AppCompatActivity
        implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
+    public static final String NIGHT_MODE = "nightMode";
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.preferences_activity);
+
+        Intent i = getIntent();
+        if (i != null) {
+            Bundle arguments = i.getExtras();
+            if (arguments != null && arguments.getBoolean(NIGHT_MODE)) {
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+        }
 
         getSupportFragmentManager().beginTransaction()
                                    .replace(R.id.preferencesActivity,

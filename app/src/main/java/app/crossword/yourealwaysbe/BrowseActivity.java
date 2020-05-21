@@ -247,6 +247,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         } else if (item.getTitle()
                            .equals("Settings")) {
             Intent i = new Intent(this, PreferencesActivity.class);
+            i.putExtra(PreferencesActivity.NIGHT_MODE, nightMode.isNightMode());
             this.startActivity(i);
 
             return true;
