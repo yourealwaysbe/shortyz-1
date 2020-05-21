@@ -103,7 +103,7 @@ public class DownloadPickerDialogBuilder {
                 }
             });
 
-        AlertDialog.Builder builder = (new AlertDialog.Builder(new ContextThemeWrapper(mActivity, R.style.Base_Theme_AppCompat_Light_Dialog))).setPositiveButton("Download", clickHandler)
+        AlertDialog.Builder builder = (new AlertDialog.Builder(new ContextThemeWrapper(mActivity, R.style.dialogStyle))).setPositiveButton("Download", clickHandler)
                                        .setNegativeButton("Cancel", null);
 
         builder.setView(layout);
