@@ -332,25 +332,32 @@ public class PlayActivity extends ForkyzActivity
                   int left, int top, int right, int bottom,
                   int leftWas, int topWas, int rightWas, int bottomWas
                 ) {
+                    boolean constrainedHeight = false;
+
+                    ConstraintSet set = new ConstraintSet();
+                    set.clone(constraintLayout);
                     if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
                         int height = bottom - top;
                         int width = right - left;
 
                         if (height > width) {
-                            ConstraintSet set = new ConstraintSet();
-                            set.clone(constraintLayout);
+                            constrainedHeight = true;
                             set.constrainMaxHeight(boardView.getId(),
                                                    (int)(BOARD_DIM_RATIO * width));
-                            set.applyTo(constraintLayout);
                         }
+                    } else {
+                        set.constrainMaxHeight(boardView.getId(), 0);
                     }
+
+                    set.applyTo(constraintLayout);
 
                     // if the view changed size, then rescale the view
                     // cannot change layout during a layout change, so
                     // use a predraw listener that requests a new layout
                     // (via render) and returns false to cancel the
                     // current draw
-                    if (left != leftWas || right != rightWas ||
+                    if (constrainedHeight ||
+                        left != leftWas || right != rightWas ||
                         top != topWas || bottom != bottomWas) {
                         boardView.getViewTreeObserver()
                                  .addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
