@@ -10,7 +10,7 @@
         <item name="titleTextColor">@color/titleTextColor</item>
         <item name="actionOverflowButtonStyle">@style/actionOverflowButtonStyle</item>
         <item name="toolbarNavigationButtonStyle">@style/actionNavigationButtonStyle</item>
-        <item name="android:itemBackground">@color/background_dark</item>
+        <item name="android:itemBackground">@color/background_light</item>
         <item name="textAppearanceLargePopupMenu">@style/actionMenuTextLarge</item>
         <item name="textAppearanceSmallPopupMenu">@style/actionMenuTextSmall</item>
         <item name="actionBarPopupTheme">@style/submenuHeaderStyle</item>
@@ -34,13 +34,13 @@
     </style>
 
     <style name="submenuHeaderStyle" parent="ThemeOverlay.AppCompat.Light">
-        <item name="android:colorBackground">@color/background_light</item>
+        <item name="android:colorBackground">@color/background_dark</item>
         <item name="android:textColor">@color/textColorPrimary</item>
         <item name="android:textColorSecondary">@color/textColorPrimary</item>
     </style>
 
      <style name="dialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
          <item name="android:colorAccent">@color/accent</item>
-         <item name="android:background">@color/background_dark</item>
+         <item name="android:background">@color/background_light</item>
     </style>
 </resources>
