@@ -11,11 +11,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.CheckedTextView;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
@@ -49,6 +54,8 @@ public class ClueTabs extends LinearLayout
     private Context context;
     private boolean listening = false;
     private Vector<ClueTabsListener> listeners = new Vector<>();
+    private GestureDetectorCompat tabSwipeDetector;
+    private OnGestureListener tabSwipeListener;
 
     public static interface ClueTabsListener {
         /**
@@ -76,6 +83,27 @@ public class ClueTabs extends LinearLayout
                                          int index,
                                          boolean across,
                                          ClueTabs view) { }
+
+        /**
+         * When the user swipes up on the tab bar
+         *
+         * @param view the view calling
+         */
+        default void onClueTabsBarSwipeUp(ClueTabs view) { }
+
+        /**
+         * When the user swipes down on the tab bar
+         *
+         * @param view the view calling
+         */
+        default void onClueTabsBarSwipeDown(ClueTabs view) { }
+
+        /**
+         * When the user swipes down on the tab bar
+         *
+         * @param view the view calling
+         */
+        default void onClueTabsBarLongclick(ClueTabs view) { }
     }
 
     public ClueTabs(Context context, AttributeSet as) {
@@ -105,7 +133,47 @@ public class ClueTabs extends LinearLayout
             }
         ).attach();
 
-        listenBoard();
+        tabLayout.setOnTouchListener(new OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent e) {
+                return tabSwipeDetector.onTouchEvent(e);
+            }
+        });
+
+        LinearLayout tabStrip = (LinearLayout) tabLayout.getChildAt(0);
+        for (int i = 0; i < tabStrip.getChildCount(); i++) {
+            tabStrip.getChildAt(i).setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    ClueTabs.this.notifyListenersTabsBarLongClick();
+                    return true;
+                }
+            });
+        }
+
+        tabSwipeListener = new SimpleOnGestureListener() {
+            // as recommended by the docs
+            // https://developer.android.com/training/gestures/detector
+            public boolean onDown(MotionEvent e) {
+                return true;
+            }
+
+            public boolean onFling(MotionEvent e1,
+                                   MotionEvent e2,
+                                   float velocityX,
+                                   float velocityY) {
+                if (Math.abs(velocityY) < Math.abs(velocityX))
+                    return false;
+
+                if (velocityY > 0)
+                    ClueTabs.this.notifyListenersTabsBarSwipeDown();
+                else
+                    ClueTabs.this.notifyListenersTabsBarSwipeUp();
+
+                return true;
+            }
+        };
+        tabSwipeDetector = new GestureDetectorCompat(tabLayout.getContext(),
+                                                     tabSwipeListener);
     }
 
     public void addListener(ClueTabsListener listener) {
@@ -128,6 +196,14 @@ public class ClueTabs extends LinearLayout
             board.removeListener(this);
             listening = false;
         }
+    }
+
+    public void onResume() {
+
+    }
+
+    public void onPause() {
+
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {
@@ -158,6 +234,21 @@ public class ClueTabs extends LinearLayout
                                               boolean across) {
         for (ClueTabsListener listener : listeners)
             listener.onClueTabsLongClick(clue, index, across, this);
+    }
+
+    private void notifyListenersTabsBarSwipeUp() {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsBarSwipeUp(this);
+    }
+
+    private void notifyListenersTabsBarSwipeDown() {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsBarSwipeDown(this);
+    }
+
+    private void notifyListenersTabsBarLongClick() {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsBarSwipeDown(this);
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {

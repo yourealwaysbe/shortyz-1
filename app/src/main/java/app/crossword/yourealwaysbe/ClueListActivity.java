@@ -142,8 +142,10 @@ public class ClueListActivity extends ForkyzActivity
         if (board != null)
             board.addListener(this);
 
-        if (clueTabs != null)
+        if (clueTabs != null) {
             clueTabs.addListener(this);
+            clueTabs.listenBoard();
+        }
 
         this.render();
     }
@@ -301,8 +303,10 @@ public class ClueListActivity extends ForkyzActivity
         if (board != null)
             board.removeListener(this);
 
-        if (clueTabs != null)
+        if (clueTabs != null) {
             clueTabs.removeListener(this);
+            clueTabs.unlistenBoard();
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
@@ -262,10 +263,16 @@ public class PlayActivity extends ForkyzActivity
                 this.clue.setClickable(true);
                 this.clue.setOnClickListener(new OnClickListener() {
                     public void onClick(View arg0) {
-                        Intent i = new Intent(PlayActivity.this,
-                                ClueListActivity.class);
-                        i.setData(Uri.fromFile(baseFile));
-                        PlayActivity.this.startActivityForResult(i, 0);
+                        if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+                            PlayActivity.this.launchClueList();
+                        } else {
+                            PlayActivity.this.showClueTabs();
+                        }
+                    }
+                });
+                this.clue.setOnLongClickListener(new OnLongClickListener() {
+                    public void onLongClick(View arg0) {
+                        PlayActivity.this.launchClueList();
                     }
                 });
             }
@@ -340,11 +347,11 @@ public class PlayActivity extends ForkyzActivity
                         int height = bottom - top;
                         int width = right - left;
 
-                        //if (height > width) {
-                        //    constrainedHeight = true;
-                        //    set.constrainMaxHeight(boardView.getId(),
-                        //                           (int)(BOARD_DIM_RATIO * width));
-                        //}
+                        if (height > width) {
+                            constrainedHeight = true;
+                            set.constrainMaxHeight(boardView.getId(),
+                                                   (int)(BOARD_DIM_RATIO * width));
+                        }
                     } else {
                         set.constrainMaxHeight(boardView.getId(), 0);
                     }
@@ -892,8 +899,11 @@ public class PlayActivity extends ForkyzActivity
         Playboard board = getBoard();
         if (board != null)
             board.removeListener(this);
-        if (clueTabs != null)
+
+        if (clueTabs != null) {
             clueTabs.removeListener(this);
+            clueTabs.unlistenBoard();
+        }
     }
 
     @Override
@@ -937,6 +947,7 @@ public class PlayActivity extends ForkyzActivity
 
         if (clueTabs != null) {
             clueTabs.addListener(this);
+            clueTabs.listenBoard();
 
             ConstraintSet set = new ConstraintSet();
             set.clone(constraintLayout);
@@ -1198,5 +1209,11 @@ public class PlayActivity extends ForkyzActivity
     private void launchNotes() {
         Intent i = new Intent(this, NotesActivity.class);
         this.startActivityForResult(i, 0);
+    }
+
+    private void launchClueList() {
+        Intent i = new Intent(this, ClueListActivity.class);
+        i.setData(Uri.fromFile(baseFile));
+        PlayActivity.this.startActivityForResult(i, 0);
     }
 }
