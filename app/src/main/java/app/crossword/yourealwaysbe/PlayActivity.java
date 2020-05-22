@@ -264,7 +264,6 @@ public class PlayActivity extends ForkyzActivity
                 this.clue.setClickable(true);
                 this.clue.setOnClickListener(new OnClickListener() {
                     public void onClick(View arg0) {
-                        LOG.info("click");
                         if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
                             PlayActivity.this.launchClueList();
                         } else {
@@ -275,7 +274,6 @@ public class PlayActivity extends ForkyzActivity
                 });
                 this.clue.setOnLongClickListener(new OnLongClickListener() {
                     public boolean onLongClick(View arg0) {
-                        LOG.info("long click");
                         PlayActivity.this.launchClueList();
                         return true;
                     }
