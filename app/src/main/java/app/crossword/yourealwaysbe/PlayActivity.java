@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -263,16 +264,20 @@ public class PlayActivity extends ForkyzActivity
                 this.clue.setClickable(true);
                 this.clue.setOnClickListener(new OnClickListener() {
                     public void onClick(View arg0) {
+                        LOG.info("click");
                         if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
                             PlayActivity.this.launchClueList();
                         } else {
                             PlayActivity.this.showClueTabs();
+                            PlayActivity.this.render(true);
                         }
                     }
                 });
                 this.clue.setOnLongClickListener(new OnLongClickListener() {
-                    public void onLongClick(View arg0) {
+                    public boolean onLongClick(View arg0) {
+                        LOG.info("long click");
                         PlayActivity.this.launchClueList();
+                        return true;
                     }
                 });
             }
@@ -832,6 +837,16 @@ public class PlayActivity extends ForkyzActivity
         }
     }
 
+    public void onClueTabsBarSwipeDown(ClueTabs view) {
+        hideClueTabs();
+        render(true);
+    }
+
+    public void onClueTabsBarLongclick(ClueTabs view) {
+        hideClueTabs();
+        render(true);
+    }
+
     public void onPlayboardChange(Word currentWord, Word previousWord) {
         // hide keyboard when moving to a new word
         Position newPos = getBoard().getHighlightLetter();
@@ -949,16 +964,11 @@ public class PlayActivity extends ForkyzActivity
             clueTabs.addListener(this);
             clueTabs.listenBoard();
 
-            ConstraintSet set = new ConstraintSet();
-            set.clone(constraintLayout);
-
-            if (!prefs.getBoolean(SHOW_CLUES_TAB, true)) {
-                set.setVisibility(clueTabs.getId(), ConstraintSet.GONE);
+            if (prefs.getBoolean(SHOW_CLUES_TAB, false)) {
+                showClueTabs();
             } else {
-                set.setVisibility(clueTabs.getId(), ConstraintSet.VISIBLE);
+                hideClueTabs();
             }
-
-            set.applyTo(constraintLayout);
         }
 
         render(true);
@@ -1215,5 +1225,37 @@ public class PlayActivity extends ForkyzActivity
         Intent i = new Intent(this, ClueListActivity.class);
         i.setData(Uri.fromFile(baseFile));
         PlayActivity.this.startActivityForResult(i, 0);
+    }
+
+    /**
+     * Changes the constraints on clue tabs to show.
+     *
+     * Call render(true) after to rescale board. Updates shared prefs.
+     */
+    private void showClueTabs() {
+        ConstraintSet set = new ConstraintSet();
+        set.clone(constraintLayout);
+        set.setVisibility(clueTabs.getId(), ConstraintSet.VISIBLE);
+        set.applyTo(constraintLayout);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(SHOW_CLUES_TAB, true);
+        editor.apply();
+    }
+
+    /**
+     * Changes the constraints on clue tabs to hide.
+     *
+     * Call render(true) after to rescale board. Updates shared prefs.
+     */
+    private void hideClueTabs() {
+        ConstraintSet set = new ConstraintSet();
+        set.clone(constraintLayout);
+        set.setVisibility(clueTabs.getId(), ConstraintSet.GONE);
+        set.applyTo(constraintLayout);
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(SHOW_CLUES_TAB, false);
+        editor.apply();
     }
 }
