@@ -165,7 +165,10 @@ public class ClueListActivity extends ForkyzActivity
     }
 
     @Override
-    public void onClueTabsClick(Clue clue, int index, boolean across) {
+    public void onClueTabsClick(Clue clue,
+                                int index,
+                                boolean across,
+                                ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             Word old = board.getCurrentWord();
@@ -175,7 +178,10 @@ public class ClueListActivity extends ForkyzActivity
     }
 
     @Override
-    public void onClueTabsLongClick(Clue clue, int index, boolean across) {
+    public void onClueTabsLongClick(Clue clue,
+                                    int index,
+                                    boolean across,
+                                    ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             board.jumpTo(index, across);

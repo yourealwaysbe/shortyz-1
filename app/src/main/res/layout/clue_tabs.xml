@@ -9,7 +9,7 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/clueTabsTabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50sp"
         app:tabTextColor="@color/textColorSecondary"
         app:tabSelectedTextColor="@color/textColorPrimary"
     />

@@ -340,11 +340,11 @@ public class PlayActivity extends ForkyzActivity
                         int height = bottom - top;
                         int width = right - left;
 
-                        if (height > width) {
-                            constrainedHeight = true;
-                            set.constrainMaxHeight(boardView.getId(),
-                                                   (int)(BOARD_DIM_RATIO * width));
-                        }
+                        //if (height > width) {
+                        //    constrainedHeight = true;
+                        //    set.constrainMaxHeight(boardView.getId(),
+                        //                           (int)(BOARD_DIM_RATIO * width));
+                        //}
                     } else {
                         set.constrainMaxHeight(boardView.getId(), 0);
                     }
@@ -802,7 +802,10 @@ public class PlayActivity extends ForkyzActivity
         return false;
     }
 
-    public void onClueTabsClick(Clue clue, int index, boolean across) {
+    public void onClueTabsClick(Clue clue,
+                                int index,
+                                boolean across,
+                                ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             Word old = board.getCurrentWord();
@@ -811,7 +814,10 @@ public class PlayActivity extends ForkyzActivity
         }
     }
 
-    public void onClueTabsLongClick(Clue clue, int index, boolean across) {
+    public void onClueTabsLongClick(Clue clue,
+                                    int index,
+                                    boolean across,
+                                    ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             board.jumpTo(index, across);

@@ -29,7 +29,7 @@
         android:focusableInTouchMode="true"
         app:layout_constraintTop_toBottomOf="@id/clueLine"
         app:layout_constraintBottom_toTopOf="@id/playClueTab"
-        app:layout_constraintVertical_weight="100"
+        app:layout_constraintVertical_weight="14"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
     >
@@ -43,5 +43,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_weight="1"
     />
 </androidx.constraintlayout.widget.ConstraintLayout>

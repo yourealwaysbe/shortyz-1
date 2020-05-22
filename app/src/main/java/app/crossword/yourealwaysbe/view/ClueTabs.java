@@ -57,8 +57,12 @@ public class ClueTabs extends LinearLayout
          * @param clue the clue clicked
          * @param index the clue index in the across/down list
          * @param across if the clue is an across clue (or down)
+         * @param view the view calling
          */
-        public void onClueTabsClick(Clue clue, int index , boolean across);
+        default void onClueTabsClick(Clue clue,
+                                     int index,
+                                     boolean across,
+                                     ClueTabs view) { }
 
         /**
          * When the user long-presses a clue
@@ -66,8 +70,12 @@ public class ClueTabs extends LinearLayout
          * @param clue the clue clicked
          * @param the clue index
          * @param across if the clue is an across clue (or down)
+         * @param view the view calling
          */
-        public void onClueTabsLongClick(Clue clue, int index, boolean across);
+        default void onClueTabsLongClick(Clue clue,
+                                         int index,
+                                         boolean across,
+                                         ClueTabs view) { }
     }
 
     public ClueTabs(Context context, AttributeSet as) {
@@ -142,14 +150,14 @@ public class ClueTabs extends LinearLayout
                                           int index,
                                           boolean across) {
         for (ClueTabsListener listener : listeners)
-            listener.onClueTabsClick(clue, index, across);
+            listener.onClueTabsClick(clue, index, across, this);
     }
 
     private void notifyListenersClueLongClick(Clue clue,
                                               int index,
                                               boolean across) {
         for (ClueTabsListener listener : listeners)
-            listener.onClueTabsLongClick(clue, index, across);
+            listener.onClueTabsLongClick(clue, index, across, this);
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {
