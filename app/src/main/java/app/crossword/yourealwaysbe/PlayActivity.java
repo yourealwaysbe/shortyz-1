@@ -80,15 +80,7 @@ public class PlayActivity extends ForkyzActivity
     public static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
     public static final String SCALE = "scale";
 
-    @SuppressWarnings("rawtypes")
-    private AdapterView across;
-    @SuppressWarnings("rawtypes")
-    private AdapterView down;
     private AlertDialog revealPuzzleDialog;
-    private ListView allClues;
-    private ClueListAdapter acrossAdapter;
-    private ClueListAdapter downAdapter;
-    private SeparatedListAdapter allCluesAdapter;
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
     private Dialog dialog;
@@ -472,14 +464,6 @@ public class PlayActivity extends ForkyzActivity
         this.clueTabs.setBoard(getBoard());
 
         this.render(true);
-
-        if (!prefs.getBoolean(SHOW_TIMER, false)) {
-            if (ForkyzApplication.isLandscape(metrics)) {
-                if (ForkyzApplication.isMiniTabletish(metrics) && allClues != null) {
-                    utils.hideActionBar(this);
-                }
-            }
-        }
 
         this.setClueSize(prefs.getInt("clueSize", 12));
         setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
@@ -993,13 +977,6 @@ public class PlayActivity extends ForkyzActivity
 
     private void setClueSize(int dps) {
         this.clue.setTextSize(TypedValue.COMPLEX_UNIT_SP, dps);
-
-        if ((acrossAdapter != null) && (downAdapter != null)) {
-            acrossAdapter.textSize = dps;
-            acrossAdapter.notifyDataSetInvalidated();
-            downAdapter.textSize = dps;
-            downAdapter.notifyDataSetInvalidated();
-        }
 
         if (prefs.getInt("clueSize", 12) != dps) {
             this.prefs.edit().putInt("clueSize", dps).apply();
