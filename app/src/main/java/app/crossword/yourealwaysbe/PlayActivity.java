@@ -257,7 +257,8 @@ public class PlayActivity extends ForkyzActivity
                 this.clue.setOnClickListener(new OnClickListener() {
                     public void onClick(View arg0) {
                         if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
-                            PlayActivity.this.launchClueList();
+                            PlayActivity.this.hideClueTabs();
+                            PlayActivity.this.render(true);
                         } else {
                             PlayActivity.this.showClueTabs();
                             PlayActivity.this.render(true);
