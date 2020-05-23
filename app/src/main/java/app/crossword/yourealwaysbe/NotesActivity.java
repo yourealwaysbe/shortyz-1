@@ -13,6 +13,7 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import androidx.core.content.ContextCompat;
 import android.util.DisplayMetrics;
+import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.content.Intent;
@@ -498,7 +499,10 @@ public class NotesActivity extends ForkyzActivity
         }
 
         if (conflicts) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder
+                = new AlertDialog.Builder(
+                    new ContextThemeWrapper(this, R.style.dialogStyle)
+                );
 
             builder.setTitle("Copy Conflict");
             builder.setMessage("The new solution conflicts with existing entries.  Overwrite anyway?");

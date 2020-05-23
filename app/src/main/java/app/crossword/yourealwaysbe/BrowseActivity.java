@@ -23,6 +23,7 @@ import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -402,17 +403,18 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                new AlertDialog.Builder(this)
-                        .setTitle("Allow Permissions")
-                        .setMessage("Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(BrowseActivity.this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
-                            }
-                        })
-                        .create()
-                        .show();
+                new AlertDialog.Builder(
+                    new ContextThemeWrapper(this, R.style.dialogStyle)
+                ).setTitle("Allow Permissions")
+                 .setMessage("Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.")
+                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialogInterface, int i) {
+                         ActivityCompat.requestPermissions(BrowseActivity.this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
+                     }
+                 })
+                 .create()
+                 .show();
             } else {
                 ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
             }
