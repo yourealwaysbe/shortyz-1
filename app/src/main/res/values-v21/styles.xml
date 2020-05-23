@@ -15,6 +15,7 @@
         <item name="textAppearanceSmallPopupMenu">@style/actionMenuTextSmall</item>
         <item name="actionBarPopupTheme">@style/submenuHeaderStyle</item>
         <item name="alertDialogStyle">@style/dialogStyle</item>
+        <item name="android:spinnerDropDownItemStyle">@style/spinnerItemStyle</item>
     </style>
 
     <style name="actionOverflowButtonStyle"   parent="Widget.AppCompat.Light.ActionButton.Overflow">
@@ -44,5 +45,9 @@
          <item name="android:background">@color/background_light</item>
          <item name="android:textColorPrimary">@color/textColorPrimary</item>
          <item name="android:textColorSecondary">@color/textColorSecondary</item>
+     </style>
+
+    <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textColor">@color/textColorPrimary</item>
     </style>
 </resources>
