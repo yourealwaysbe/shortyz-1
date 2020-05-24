@@ -6,9 +6,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+
+import app.crossword.yourealwaysbe.puz.util.WeakSet;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Playboard implements Serializable {
@@ -25,7 +27,7 @@ public class Playboard implements Serializable {
     private boolean showErrors;
     private boolean skipCompletedLetters;
     private boolean preserveCorrectLettersInShowErrors;
-    private Vector<PlayboardListener> listeners = new Vector<>();
+    private Set<PlayboardListener> listeners = WeakSet.buildSet();
     private int notificationDisabledDepth = 0;
     private Word previousWord = null;
 

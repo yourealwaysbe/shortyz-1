@@ -6,6 +6,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
+import app.crossword.yourealwaysbe.puz.util.WeakSet;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -34,7 +35,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class ClueTabs extends LinearLayout
@@ -53,7 +54,7 @@ public class ClueTabs extends LinearLayout
     private Playboard board;
     private Context context;
     private boolean listening = false;
-    private Vector<ClueTabsListener> listeners = new Vector<>();
+    private Set<ClueTabsListener> listeners = WeakSet.buildSet();
     private GestureDetectorCompat tabSwipeDetector;
     private OnGestureListener tabSwipeListener;
 
