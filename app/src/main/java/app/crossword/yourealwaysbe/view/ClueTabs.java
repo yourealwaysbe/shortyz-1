@@ -6,7 +6,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
-import app.crossword.yourealwaysbe.puz.util.WeakSet;
+import app.crossword.yourealwaysbe.util.WeakSet;
 
 import android.content.Context;
 import android.content.SharedPreferences;

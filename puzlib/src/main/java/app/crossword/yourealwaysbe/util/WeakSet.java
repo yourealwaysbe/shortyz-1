@@ -1,6 +1,5 @@
 
-package app.crossword.yourealwaysbe.puz.util;
-
+package app.crossword.yourealwaysbe.util;
 
 import java.util.Collections;
 import java.util.Set;

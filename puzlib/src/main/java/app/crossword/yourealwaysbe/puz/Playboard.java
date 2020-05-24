@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import app.crossword.yourealwaysbe.puz.util.WeakSet;
+import app.crossword.yourealwaysbe.util.WeakSet;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Playboard implements Serializable {
