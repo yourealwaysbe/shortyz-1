@@ -105,6 +105,13 @@ public class ClueTabs extends LinearLayout
          * @param view the view calling
          */
         default void onClueTabsBarLongclick(ClueTabs view) { }
+
+        /**
+         * When the user changes the page being viewed
+         *
+         * @param view the view calling
+         */
+        default void onClueTabsPageChange(ClueTabs view, int pageNumber) { }
     }
 
     public ClueTabs(Context context, AttributeSet as) {
@@ -123,6 +130,14 @@ public class ClueTabs extends LinearLayout
         viewPager = findViewById(R.id.clueTabsPager);
 
         viewPager.setAdapter(new ClueTabsPagerAdapter());
+
+        viewPager.registerOnPageChangeCallback(
+            new ViewPager2.OnPageChangeCallback() {
+                public void onPageSelected(int position) {
+                    ClueTabs.this.notifyListenersPageChanged(position);
+                }
+            }
+        );
 
         new TabLayoutMediator(tabLayout, viewPager,
             (tab, position) -> {
@@ -175,6 +190,12 @@ public class ClueTabs extends LinearLayout
         };
         tabSwipeDetector = new GestureDetectorCompat(tabLayout.getContext(),
                                                      tabSwipeListener);
+    }
+
+    public void setPage(int pageNumber) {
+        if (viewPager != null) {
+            viewPager.setCurrentItem(pageNumber);
+        }
     }
 
     public void addListener(ClueTabsListener listener) {
@@ -250,6 +271,11 @@ public class ClueTabs extends LinearLayout
     private void notifyListenersTabsBarLongClick() {
         for (ClueTabsListener listener : listeners)
             listener.onClueTabsBarSwipeDown(this);
+    }
+
+    private void notifyListenersPageChanged(int pageNumber) {
+        for (ClueTabsListener listener : listeners)
+            listener.onClueTabsPageChange(this, pageNumber);
     }
 
     private class ClueTabsPagerAdapter extends RecyclerView.Adapter<ClueListHolder> {

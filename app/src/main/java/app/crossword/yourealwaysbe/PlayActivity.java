@@ -75,9 +75,10 @@ public class PlayActivity extends ForkyzActivity
     private static final int INFO_DIALOG = 0;
     private static final int REVEAL_PUZZLE_DIALOG = 2;
     private static final double BOARD_DIM_RATIO = 1.0;
+    private static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
+    private static final String CLUE_TABS_PAGE = "playActivityClueTabsPage";
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
-    public static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
     public static final String SCALE = "scale";
 
     private AlertDialog revealPuzzleDialog;
@@ -463,6 +464,7 @@ public class PlayActivity extends ForkyzActivity
 
         this.clueTabs = this.findViewById(R.id.playClueTab);
         this.clueTabs.setBoard(getBoard());
+        this.clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
 
         this.render(true);
 
@@ -827,6 +829,12 @@ public class PlayActivity extends ForkyzActivity
     public void onClueTabsBarLongclick(ClueTabs view) {
         hideClueTabs();
         render(true);
+    }
+
+    public void onClueTabsPageChange(ClueTabs view, int pageNumber) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(CLUE_TABS_PAGE, pageNumber);
+        editor.apply();
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {
