@@ -7,7 +7,7 @@ implementing my own customisations.
 
 Additions:
 
-* Less crazy night mode colors.
+* Less crazy night mode colors and night mode by system theme.
 * Clues view on board page for smaller screens.
 * Update to androidx libraries.
 * History of viewed clues in clues lists.
