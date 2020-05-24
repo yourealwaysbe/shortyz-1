@@ -117,8 +117,9 @@ public class NotesActivity extends ForkyzActivity
                 R.layout.clue_line_only).findViewById(R.id.clueLine);
         }
 
-        clue.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-            prefs.getInt("clueSize", 12));
+        clue.setAutoSizeTextTypeUniformWithConfiguration(
+            5, prefs.getInt("clueSize", 12), 1, TypedValue.COMPLEX_UNIT_SP
+        );
 
         clue.setText("("
             + (getBoard().isAcross() ? "across" : "down")
