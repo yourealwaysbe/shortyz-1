@@ -976,7 +976,9 @@ public class PlayActivity extends ForkyzActivity
     }
 
     private void setClueSize(int dps) {
-        this.clue.setTextSize(TypedValue.COMPLEX_UNIT_SP, dps);
+        this.clue.setAutoSizeTextTypeUniformWithConfiguration(
+            5, dps, 1, TypedValue.COMPLEX_UNIT_SP
+        );
 
         if (prefs.getInt("clueSize", 12) != dps) {
             this.prefs.edit().putInt("clueSize", dps).apply();

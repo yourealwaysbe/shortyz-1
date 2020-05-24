@@ -22,6 +22,7 @@ Additions:
 * Less intrusive keyboard pop-ups.
 * Highlight selected clue and grey-out completed clues in Clues List.
 * Reorganisation of game menu.
+* Scale clue size inside clue line.
 
 Removals:
 
