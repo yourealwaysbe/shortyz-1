@@ -11,15 +11,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
+import app.crossword.yourealwaysbe.util.NightModeHelper;
 
 
 @TargetApi(11)
 public class HoneycombUtil extends GingerbreadUtil {
-	
+
 	{
 		System.out.println("Honeycomb Utils.");
 	}
-	
+
 	@Override
     public void finishOnHomeButton(final AppCompatActivity a) {
 		ActionBar bar = a.getSupportActionBar();
@@ -52,8 +53,8 @@ public class HoneycombUtil extends GingerbreadUtil {
 	}
 
 	@Override
-    public void toggleNightMode(ForkyzActivity activity){
-		activity.nightMode.toggle();
+    public void nextNightMode(ForkyzActivity activity){
+		activity.nightMode.next();
         if(activity.nightMode.isNightMode()){
             activity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         } else {
@@ -63,11 +64,12 @@ public class HoneycombUtil extends GingerbreadUtil {
 
 	@Override
 	public void restoreNightMode(ForkyzActivity forkyzActivity) {
-        if(forkyzActivity.nightMode.isNightMode()){
-            forkyzActivity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            forkyzActivity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        restoreNightMode(forkyzActivity.nightMode);
+    }
+
+    @Override
+    public void restoreNightMode(NightModeHelper nightMode) {
+        nightMode.restoreNightMode();
     }
 
 	@Override
@@ -104,7 +106,7 @@ public class HoneycombUtil extends GingerbreadUtil {
     	bar.setCustomView(id);
     	return bar.getCustomView();
 	}
-    
+
     public void hideWindowTitle(AppCompatActivity a) {
     	// no op;
     }
@@ -116,5 +118,5 @@ public class HoneycombUtil extends GingerbreadUtil {
 		}
 		ab.hide();
 	}
-    
+
 }

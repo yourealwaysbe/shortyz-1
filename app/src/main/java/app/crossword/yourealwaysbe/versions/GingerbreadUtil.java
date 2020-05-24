@@ -13,6 +13,7 @@ import android.view.Window;
 import app.crossword.yourealwaysbe.ForkyzActivity;
 import app.crossword.yourealwaysbe.net.DownloadReceiver;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
+import app.crossword.yourealwaysbe.util.NightModeHelper;
 
 
 public class GingerbreadUtil extends DefaultUtil {
@@ -39,11 +40,16 @@ public class GingerbreadUtil extends DefaultUtil {
 
     }
 
+    @Override
+    public void restoreNightMode(NightModeHelper nightMode) {
+
+    }
+
     public void storeMetas(Uri uri, PuzzleMeta meta) {
 		DownloadReceiver.metas.put(uri, meta);
-		
+
 	}
-	
+
 	public void hideWindowTitle(AppCompatActivity a) {
 		a.requestWindowFeature(Window.FEATURE_NO_TITLE);
 	}
@@ -81,7 +87,7 @@ public class GingerbreadUtil extends DefaultUtil {
     }
 
     @Override
-    public void toggleNightMode(ForkyzActivity activity) {
+    public void nextNightMode(ForkyzActivity activity) {
 
     }
 

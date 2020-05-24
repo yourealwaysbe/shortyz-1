@@ -25,15 +25,9 @@ public class PreferencesActivity
 
         setContentView(R.layout.preferences_activity);
 
-        Intent i = getIntent();
-        if (i != null) {
-            Bundle arguments = i.getExtras();
-            if (arguments != null && arguments.getBoolean(NIGHT_MODE)) {
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            } else {
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            }
-        }
+        NightModeHelper nightMode = NightModeHelper.bind(this);
+        AndroidVersionUtils utils = AndroidVersionUtils.Factory.getInstance();
+        utils.restoreNightMode(nightMode);
 
         getSupportFragmentManager().beginTransaction()
                                    .replace(R.id.preferencesActivity,

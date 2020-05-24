@@ -11,6 +11,7 @@ import android.view.View;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
+import app.crossword.yourealwaysbe.util.NightModeHelper;
 
 import java.io.File;
 import java.net.URL;
@@ -34,6 +35,8 @@ public interface AndroidVersionUtils {
 	void onActionBarWithText(SubMenu reveal);
 
 	void restoreNightMode(ForkyzActivity forkyzActivity);
+
+	void restoreNightMode(NightModeHelper nightMode);
 
 	class Factory {
 		private static AndroidVersionUtils INSTANCE;
@@ -72,7 +75,7 @@ public interface AndroidVersionUtils {
 
     void hideTitleOnPortrait(AppCompatActivity a);
 
-	void toggleNightMode(ForkyzActivity activity);
+	void nextNightMode(ForkyzActivity activity);
 
 	boolean isNightModeAvailable();
 

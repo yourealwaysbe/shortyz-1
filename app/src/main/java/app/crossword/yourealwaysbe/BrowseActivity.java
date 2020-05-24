@@ -197,8 +197,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         if(utils.isNightModeAvailable()) {
-            utils.onActionBarWithoutText(menu.add("Night Mode")
-                    .setIcon(R.drawable.night_toggle));
+            utils.onActionBarWithoutText(menu.add("App Theme")
+                    .setIcon(getNightModeIcon()));
         }
         SubMenu sortMenu = menu.addSubMenu("Sort")
                                .setIcon(android.R.drawable.ic_menu_sort_alphabetically);
@@ -221,6 +221,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         return true;
     }
 
+    private int getNightModeIcon() {
+        switch (nightMode.getCurrentMode()) {
+        case DAY: return R.drawable.night_toggle;
+        case NIGHT: return R.drawable.night_toggle;
+        case SYSTEM: return android.R.drawable.ic_menu_rotate;
+        }
+        return R.drawable.night_toggle;
+    }
+
     private void setListItemColor(View v, boolean selected){
         if(selected) {
             v.setBackgroundColor(highlightColor);
@@ -238,8 +247,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if(item == null || item.getTitle() == null){
             return false;
         }
-        if(item.getTitle().equals("Night Mode")){
-            this.utils.toggleNightMode(this);
+        if(item.getTitle().equals("App Theme")){
+            this.utils.nextNightMode(this);
+            item.setIcon(getNightModeIcon());
         }else if (item.getTitle()
                     .equals("Download")) {
 	showDialog(DOWNLOAD_DIALOG_ID);
@@ -248,7 +258,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         } else if (item.getTitle()
                            .equals("Settings")) {
             Intent i = new Intent(this, PreferencesActivity.class);
-            i.putExtra(PreferencesActivity.NIGHT_MODE, nightMode.isNightMode());
             this.startActivity(i);
 
             return true;
