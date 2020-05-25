@@ -223,11 +223,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
     private int getNightModeIcon() {
         switch (nightMode.getCurrentMode()) {
-        case DAY: return R.drawable.night_toggle;
-        case NIGHT: return R.drawable.night_toggle;
-        case SYSTEM: return android.R.drawable.ic_menu_rotate;
+        case DAY: return R.drawable.day_mode;
+        case NIGHT: return R.drawable.night_mode;
+        case SYSTEM: return R.drawable.system_daynight_mode;
         }
-        return R.drawable.night_toggle;
+        return R.drawable.day_mode;
     }
 
     private void setListItemColor(View v, boolean selected){
