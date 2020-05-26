@@ -28,6 +28,7 @@ import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 
 import java.io.File;
 import java.io.IOException;

@@ -2,7 +2,7 @@
  * Manage on screen keyboard for Play/Notes/ClueList activity (and others)
  */
 
-package app.crossword.yourealwaysbe;
+package app.crossword.yourealwaysbe.util;
 
 import java.util.logging.Logger;
 

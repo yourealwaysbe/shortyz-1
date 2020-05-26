@@ -58,6 +58,7 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
 import app.crossword.yourealwaysbe.view.SeparatedListAdapter;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 
 import java.io.File;
 import java.io.IOException;

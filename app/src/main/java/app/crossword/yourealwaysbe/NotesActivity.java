@@ -39,6 +39,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 
 public class NotesActivity extends ForkyzActivity
                            implements Playboard.PlayboardListener {
