@@ -32,11 +32,6 @@ public class     ForkyzActivity extends BaseGameActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(this.nightMode == null) {
-            this.nightMode = NightModeHelper.bind(this);
-            this.utils.restoreNightMode(this);
-
-        }
 
         this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -82,6 +77,12 @@ public class     ForkyzActivity extends BaseGameActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if(this.nightMode == null) {
+            this.nightMode = NightModeHelper.bind(this);
+            this.utils.restoreNightMode(this);
+        }
+
         if (!Environment.MEDIA_MOUNTED.equals(Environment
                 .getExternalStorageState())) {
             showSDCardHelp();

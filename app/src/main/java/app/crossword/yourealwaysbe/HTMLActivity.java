@@ -31,11 +31,6 @@ public class HTMLActivity extends ForkyzActivity {
         actionBar.hide();
 
         WebView webview = (WebView) this.findViewById(R.id.webkit);
-        if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK) &&
-           nightMode.isNightMode()) {
-            WebSettingsCompat.setForceDark(webview.getSettings(),
-                                           WebSettingsCompat.FORCE_DARK_ON);
-        }
 
         Uri u = this.getIntent()
                     .getData();
@@ -50,6 +45,18 @@ public class HTMLActivity extends ForkyzActivity {
             });
             download.setImageBitmap(createBitmap("icons1.ttf", "k"));
             webview.setOnTouchListener(new ShowHideOnScroll(download));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        WebView webview = (WebView) this.findViewById(R.id.webkit);
+        if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK) &&
+           nightMode.isNightMode()) {
+            WebSettingsCompat.setForceDark(webview.getSettings(),
+                                           WebSettingsCompat.FORCE_DARK_ON);
         }
     }
 
