@@ -43,6 +43,7 @@ public class ClueListActivity extends ForkyzActivity
     private ScrollingImageView imageView;
     private PlayboardRenderer renderer;
     private ClueTabs clueTabs;
+    private Playboard savedBoard;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -64,15 +65,19 @@ public class ClueListActivity extends ForkyzActivity
         utils.finishOnHomeButton(this);
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+
+        setBoard(ForkyzApplication.getInstance().getBoard());
+        puz = getBoard().getPuzzle();
+
         this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
 
         scaleRendererToCurWord();
 
-        if(ForkyzApplication.getInstance().getBoard() == null || ForkyzApplication.getInstance().getBoard().getPuzzle() == null){
+        if(getBoard() == null || puz == null){
             finish();
         }
-        this.timer = new ImaginaryTimer(
-                ForkyzApplication.getInstance().getBoard().getPuzzle().getTime());
+        this.timer = new ImaginaryTimer(getBoard().getPuzzle().getTime());
 
         Uri u = this.getIntent().getData();
 
@@ -82,7 +87,6 @@ public class ClueListActivity extends ForkyzActivity
             }
         }
 
-        puz = ForkyzApplication.getInstance().getBoard().getPuzzle();
         timer.start();
         setContentView(R.layout.clue_list);
 
@@ -348,7 +352,11 @@ public class ClueListActivity extends ForkyzActivity
     }
 
     private Playboard getBoard(){
-        return ForkyzApplication.getInstance().getBoard();
+        return savedBoard;
+    }
+
+    private void setBoard(Playboard board) {
+        this.savedBoard = board;
     }
 
     /**
