@@ -689,19 +689,31 @@ public class Puzzle implements Serializable{
     }
 
     public void updateHistory(int clueNumber, boolean across) {
-        HistoryItem item = new HistoryItem(clueNumber, across);
-        // if a new item, not equal to most recent
-        if (historyList.isEmpty() ||
-            !item.equals(historyList.getFirst())) {
-            historyList.remove(item);
-            historyList.addFirst(item);
+        int clueIndex = across ?
+                        getAcrossClueIndex(clueNumber) :
+                        getDownClueIndex(clueNumber);
+
+        if (clueIndex > -1) {
+            HistoryItem item = new HistoryItem(clueNumber, across);
+            // if a new item, not equal to most recent
+            if (historyList.isEmpty() ||
+                !item.equals(historyList.getFirst())) {
+                historyList.remove(item);
+                historyList.addFirst(item);
+            }
         }
     }
 
     public void setHistory(List<HistoryItem> newHistory) {
         historyList.clear();
-        if (newHistory != null)
-            historyList.addAll(newHistory);
+        for (HistoryItem item : newHistory) {
+            int number = item.getClueNumber();
+            int clueIndex = item.getAcross() ?
+                            getAcrossClueIndex(number) :
+                            getDownClueIndex(number);
+            if (clueIndex > -1)
+                historyList.add(item);
+        }
     }
 
     public List<HistoryItem> getHistory() {
