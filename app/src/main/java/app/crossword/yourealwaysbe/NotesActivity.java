@@ -54,6 +54,7 @@ public class NotesActivity extends ForkyzActivity
     private BoardEditText anagramSourceView;
     private BoardEditText anagramSolView;
     private PlayboardRenderer renderer;
+    private Playboard savedBoard;
 
     private Random rand = new Random();
 
@@ -74,6 +75,8 @@ public class NotesActivity extends ForkyzActivity
         super.onCreate(icicle);
         utils.holographic(this);
         utils.finishOnHomeButton(this);
+
+        this.setBoard(ForkyzApplication.getInstance().getBoard());
 
         if(getBoard() == null || getBoard().getPuzzle() == null){
             finish();
@@ -530,6 +533,10 @@ public class NotesActivity extends ForkyzActivity
     }
 
     private Playboard getBoard(){
-        return ForkyzApplication.getInstance().getBoard();
+        return savedBoard;
+    }
+
+    private void setBoard(Playboard board) {
+        this.savedBoard = board;
     }
 }
