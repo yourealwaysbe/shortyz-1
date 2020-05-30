@@ -465,7 +465,14 @@ public class PlayActivity extends ForkyzActivity
 
         this.clueTabs = this.findViewById(R.id.playClueTab);
         this.clueTabs.setBoard(getBoard());
-        this.clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
+        this.clueTabs.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            public void onLayoutChange(View v,
+              int left, int top, int right, int bottom,
+              int leftWas, int topWas, int rightWas, int bottomWas
+            ) {
+                PlayActivity.this.clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
+            }
+        });
 
         this.render(true);
 
@@ -1223,6 +1230,8 @@ public class PlayActivity extends ForkyzActivity
         set.clone(constraintLayout);
         set.setVisibility(clueTabs.getId(), ConstraintSet.VISIBLE);
         set.applyTo(constraintLayout);
+
+        clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(SHOW_CLUES_TAB, true);

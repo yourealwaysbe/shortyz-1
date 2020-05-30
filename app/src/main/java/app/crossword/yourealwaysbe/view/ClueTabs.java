@@ -194,7 +194,7 @@ public class ClueTabs extends LinearLayout
 
     public void setPage(int pageNumber) {
         if (viewPager != null) {
-            viewPager.setCurrentItem(pageNumber);
+            viewPager.setCurrentItem(pageNumber, false);
         }
     }
 
