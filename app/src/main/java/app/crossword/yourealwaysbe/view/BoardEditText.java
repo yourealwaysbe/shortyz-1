@@ -171,6 +171,12 @@ public class BoardEditText extends ScrollingImageView {
         render();
     }
 
+    public void clear() {
+        for (Box box : boxes)
+            box.setResponse(' ');
+        render();
+    }
+
     public String toString() {
         if (boxes == null) {
             return "";

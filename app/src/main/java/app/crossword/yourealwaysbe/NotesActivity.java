@@ -166,10 +166,19 @@ public class NotesActivity extends ForkyzActivity
         });
 
         Note note = puz.getNote(c.number, getBoard().isAcross());
+        EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
+
         if (note != null) {
-            EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
             notesBox.setText(note.getText());
         }
+
+        notesBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                NotesActivity.this.moveScratchToNote();
+                return true;
+            }
+        });
 
         scratchView = (BoardEditText) this.findViewById(R.id.scratchMiniboard);
         if (note != null) {
@@ -538,5 +547,21 @@ public class NotesActivity extends ForkyzActivity
 
     private void setBoard(Playboard board) {
         this.savedBoard = board;
+    }
+
+    private void moveScratchToNote() {
+        EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
+        String notesText = notesBox.getText().toString();
+
+        String scratchText = scratchView.toString();
+
+        if (notesText.length() > 0)
+            notesText += "\n";
+        notesText += scratchText;
+
+        scratchView.clear();
+        notesBox.setText(notesText);
+
+        render();
     }
 }
