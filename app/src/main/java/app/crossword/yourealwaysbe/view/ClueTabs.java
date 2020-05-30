@@ -334,7 +334,6 @@ public class ClueTabs extends LinearLayout
         public void setContents(PageType pageType) {
             Playboard board = ClueTabs.this.board;
 
-
             if (board != null && this.pageType != pageType) {
                 switch (pageType) {
                 case ACROSS:
