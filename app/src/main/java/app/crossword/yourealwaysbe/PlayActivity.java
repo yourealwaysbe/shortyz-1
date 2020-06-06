@@ -818,6 +818,8 @@ public class PlayActivity extends PuzzleActivity
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {
+        super.onPlayboardChange(currentWord, previousWord);
+
         // hide keyboard when moving to a new word
         Position newPos = getBoard().getHighlightLetter();
         if ((previousWord == null) ||

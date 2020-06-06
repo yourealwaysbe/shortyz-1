@@ -65,12 +65,13 @@ public abstract class PuzzleActivity
         Puzzle puz = getPuzzle();
         ImaginaryTimer timer = getTimer();
 
-        if (puz != null && puz.getPercentComplete() == 100) {
-            if (timer != null) {
-                timer.stop();
-                puz.setTime(timer.getElapsed());
-                setTimer(null);
-            }
+        if (puz != null &&
+            puz.getPercentComplete() == 100 &&
+            timer != null) {
+
+            timer.stop();
+            puz.setTime(timer.getElapsed());
+            setTimer(null);
             Intent i = new Intent(PuzzleActivity.this,
                                   PuzzleFinishedActivity.class);
             this.startActivity(i);
