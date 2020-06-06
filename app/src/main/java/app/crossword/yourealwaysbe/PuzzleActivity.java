@@ -23,6 +23,8 @@ public abstract class PuzzleActivity
 
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
+    public static final String SHOW_TIMER = "showTimer";
+
     private File baseFile;
     private ImaginaryTimer timer;
     private Handler handler = new Handler();
@@ -44,7 +46,9 @@ public abstract class PuzzleActivity
             setTimer(timer);
             timer.start();
 
-            handler.post(updateTimeTask);
+            if (prefs.getBoolean(SHOW_TIMER, false)) {
+                handler.post(updateTimeTask);
+            }
         }
     }
 
@@ -52,7 +56,9 @@ public abstract class PuzzleActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        handler.post(updateTimeTask);
+        if (prefs.getBoolean(SHOW_TIMER, false)) {
+            handler.post(updateTimeTask);
+        }
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {
@@ -118,7 +124,9 @@ public abstract class PuzzleActivity
             timer.start();
         }
 
-        handler.post(updateTimeTask);
+        if (prefs.getBoolean(SHOW_TIMER, false)) {
+            handler.post(updateTimeTask);
+        }
 
         Playboard board = getBoard();
         if (board != null)
@@ -138,10 +146,12 @@ public abstract class PuzzleActivity
     /**
      * Override if you want to update your UI based on the timer
      *
-     * But still call super..
+     * But still call super. Only called if the showTimer pref is true
      */
     protected void onTimerUpdate() {
-        handler.postDelayed(updateTimeTask, 1000);
+        if (prefs.getBoolean(SHOW_TIMER, false)) {
+            handler.postDelayed(updateTimeTask, 1000);
+        }
     }
 
     protected Playboard getBoard(){
