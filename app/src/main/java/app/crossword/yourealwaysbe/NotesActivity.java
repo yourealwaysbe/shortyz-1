@@ -41,20 +41,15 @@ import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
 
-public class NotesActivity extends ForkyzActivity
-                           implements Playboard.PlayboardListener {
+public class NotesActivity extends PuzzleActivity {
     private static final Logger LOG = Logger.getLogger(NotesActivity.class.getCanonicalName());
 
-    protected File baseFile;
-    protected ImaginaryTimer timer;
     protected KeyboardManager keyboardManager;
-    protected Puzzle puz;
     private ScrollingImageView imageView;
     private BoardEditText scratchView;
     private BoardEditText anagramSourceView;
     private BoardEditText anagramSolView;
     private PlayboardRenderer renderer;
-    private Playboard savedBoard;
 
     private Random rand = new Random();
 
@@ -76,13 +71,6 @@ public class NotesActivity extends ForkyzActivity
         utils.holographic(this);
         utils.finishOnHomeButton(this);
 
-        this.setBoard(ForkyzApplication.getInstance().getBoard());
-
-        if(getBoard() == null || getBoard().getPuzzle() == null){
-            finish();
-            return;
-        }
-
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
@@ -92,25 +80,14 @@ public class NotesActivity extends ForkyzActivity
         if (scale > 1)
             this.renderer.setScale((float) 1);
 
-        this.timer = new ImaginaryTimer(
-                getBoard().getPuzzle().getTime());
-
-        Uri u = this.getIntent().getData();
-
-        if (u != null) {
-            if (u.getScheme().equals("file")) {
-                baseFile = new File(u.getPath());
-            }
-        }
-
-        puz = getBoard().getPuzzle();
-        timer.start();
+        Playboard board = getBoard();
+        Puzzle puz = board.getPuzzle();
 
         setContentView(R.layout.notes);
 
         keyboardManager = new KeyboardManager(this);
 
-        Clue c = getBoard().getClue();
+        Clue c = board.getClue();
 
         boolean showCount = prefs.getBoolean("showCount", false);
 
@@ -126,7 +103,7 @@ public class NotesActivity extends ForkyzActivity
         );
 
         clue.setText("("
-            + (getBoard().isAcross() ? "across" : "down")
+            + (board.isAcross() ? "across" : "down")
             + ") "
             + c.number
             + ". "
@@ -321,8 +298,6 @@ public class NotesActivity extends ForkyzActivity
     }
 
     public void onPause() {
-        super.onPause();
-
         EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
         String text = notesBox.getText().toString();
 
@@ -330,16 +305,16 @@ public class NotesActivity extends ForkyzActivity
         String anagramSource = anagramSourceView.toString();
         String anagramSolution = anagramSolView.toString();
 
-        Note note = new Note(scratch, text, anagramSource, anagramSolution);
+        Puzzle puz = getPuzzle();
+        if (puz != null) {
+            Note note = new Note(scratch, text, anagramSource, anagramSolution);
+            Clue c = getBoard().getClue();
+            puz.setNote(note, c.number, getBoard().isAcross());
+        }
 
-        Clue c = getBoard().getClue();
-        puz.setNote(note, c.number, getBoard().isAcross());
+        super.onPause();
 
         keyboardManager.onPause();
-
-        Playboard board = getBoard();
-        if (board != null)
-            board.removeListener(this);
     }
 
     @Override
@@ -456,29 +431,16 @@ public class NotesActivity extends ForkyzActivity
         return super.onKeyUp(keyCode, event);
     }
 
+    @Override
     public void onPlayboardChange(Word currentWord, Word previousWord) {
+        super.onPlayboardChange(currentWord, previousWord);
         render();
-        afterPlay();
-    }
-
-    private void afterPlay() {
-        if ((puz.getPercentComplete() == 100) && (timer != null)) {
-            timer.stop();
-            puz.setTime(timer.getElapsed());
-            this.timer = null;
-            Intent i = new Intent(NotesActivity.this, PuzzleFinishedActivity.class);
-            this.startActivity(i);
-        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         keyboardManager.onResume();
-
-        Playboard board = getBoard();
-        if (board != null)
-            board.addListener(this);
 
         this.render();
     }
@@ -539,14 +501,6 @@ public class NotesActivity extends ForkyzActivity
         } else {
             board.setCurrentWord(response);
         }
-    }
-
-    private Playboard getBoard(){
-        return savedBoard;
-    }
-
-    private void setBoard(Playboard board) {
-        this.savedBoard = board;
     }
 
     private void moveScratchToNote() {

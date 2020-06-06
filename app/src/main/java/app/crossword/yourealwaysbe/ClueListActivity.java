@@ -33,17 +33,12 @@ import app.crossword.yourealwaysbe.util.KeyboardManager;
 import java.io.File;
 import java.io.IOException;
 
-public class ClueListActivity extends ForkyzActivity
-                              implements ClueTabs.ClueTabsListener,
-                                         Playboard.PlayboardListener {
-    private File baseFile;
-    private ImaginaryTimer timer;
+public class ClueListActivity extends PuzzleActivity
+                              implements ClueTabs.ClueTabsListener {
     private KeyboardManager keyboardManager;
-    private Puzzle puz;
     private ScrollingImageView imageView;
     private PlayboardRenderer renderer;
     private ClueTabs clueTabs;
-    private Playboard savedBoard;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -66,28 +61,13 @@ public class ClueListActivity extends ForkyzActivity
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
+        Playboard board = getBoard();
+        Puzzle puz = getBoard().getPuzzle();
 
-        setBoard(ForkyzApplication.getInstance().getBoard());
-        puz = getBoard().getPuzzle();
-
-        this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
+        this.renderer = new PlayboardRenderer(board, metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
 
         scaleRendererToCurWord();
 
-        if(getBoard() == null || puz == null){
-            finish();
-        }
-        this.timer = new ImaginaryTimer(getBoard().getPuzzle().getTime());
-
-        Uri u = this.getIntent().getData();
-
-        if (u != null) {
-            if (u.getScheme().equals("file")) {
-                baseFile = new File(u.getPath());
-            }
-        }
-
-        timer.start();
         setContentView(R.layout.clue_list);
 
         keyboardManager = new KeyboardManager(this);
@@ -143,10 +123,6 @@ public class ClueListActivity extends ForkyzActivity
         super.onResume();
         keyboardManager.onResume();
 
-        Playboard board = getBoard();
-        if (board != null)
-            board.addListener(this);
-
         if (clueTabs != null) {
             clueTabs.addListener(this);
             clueTabs.listenBoard();
@@ -168,6 +144,7 @@ public class ClueListActivity extends ForkyzActivity
 
     @Override
     public void onPlayboardChange(Word currentWord, Word previousWord) {
+        super.onPlayboardChange(currentWord, previousWord);
         this.render();
     }
 
@@ -269,15 +246,6 @@ public class ClueListActivity extends ForkyzActivity
                 board.setHighlightLetter(last);
             }
 
-            if ((puz.getPercentComplete() == 100) && (timer != null)) {
-                timer.stop();
-                puz.setTime(timer.getElapsed());
-                this.timer = null;
-                Intent i = new Intent(ClueListActivity.this, PuzzleFinishedActivity.class);
-                this.startActivity(i);
-
-            }
-
             return true;
         }
 
@@ -288,25 +256,7 @@ public class ClueListActivity extends ForkyzActivity
     protected void onPause() {
         super.onPause();
 
-        try {
-            if ((puz != null) && (baseFile != null)) {
-                if ((timer != null) && (puz.getPercentComplete() != 100)) {
-                    this.timer.stop();
-                    puz.setTime(timer.getElapsed());
-                    this.timer = null;
-                }
-
-                IO.save(puz, baseFile);
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-
         keyboardManager.onPause();
-
-        Playboard board = getBoard();
-        if (board != null)
-            board.removeListener(this);
 
         if (clueTabs != null) {
             clueTabs.removeListener(this);
@@ -349,14 +299,6 @@ public class ClueListActivity extends ForkyzActivity
         scaleRendererToCurWord();
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
-    }
-
-    private Playboard getBoard(){
-        return savedBoard;
-    }
-
-    private void setBoard(Playboard board) {
-        this.savedBoard = board;
     }
 
     /**

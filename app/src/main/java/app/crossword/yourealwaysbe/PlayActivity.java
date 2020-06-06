@@ -69,7 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class PlayActivity extends ForkyzActivity
+public class PlayActivity extends PuzzleActivity
                           implements Playboard.PlayboardListener,
                                      ClueTabs.ClueTabsListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
@@ -86,30 +86,12 @@ public class PlayActivity extends ForkyzActivity
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
     private Dialog dialog;
-    private File baseFile;
     private Handler handler = new Handler();
-    private ImaginaryTimer timer;
     private KeyboardManager keyboardManager;
     private MovementStrategy movement = null;
-    private Puzzle puz;
     private ScrollingImageView boardView;
     private TextView clue;
     private boolean fitToScreen;
-    private boolean runTimer = false;
-    private Runnable updateTimeTask = new Runnable() {
-        public void run() {
-            if (timer != null) {
-                getWindow().setTitle(timer.time());
-                //noinspection deprecation
-                getWindow().setFeatureInt(Window.FEATURE_PROGRESS,
-                        puz.getPercentComplete() * 100);
-            }
-
-            if (runTimer) {
-                handler.postDelayed(this, 1000);
-            }
-        }
-    };
 
     private boolean showCount = false;
     private boolean showErrors = false;
@@ -124,11 +106,6 @@ public class PlayActivity extends ForkyzActivity
         }
     };
 
-
-    private Playboard getBoard(){
-        return ForkyzApplication.getInstance().getBoard();
-    }
-
     private PlayboardRenderer getRenderer(){
         return ForkyzApplication.getInstance().getRenderer();
     }
@@ -136,12 +113,6 @@ public class PlayActivity extends ForkyzActivity
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        this.runTimer = prefs.getBoolean("runTimer", false);
-
-        if (runTimer) {
-            this.handler.post(this.updateTimeTask);
-        }
 
         metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -193,21 +164,28 @@ public class PlayActivity extends ForkyzActivity
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
+        File baseFile = null;
+        Puzzle puz = null;
+
         try {
             Uri u = this.getIntent().getData();
 
-            if (u != null) {
-                if (u.getScheme().equals("file")) {
-                    baseFile = new File(u.getPath());
-                    puz = IO.load(baseFile);
-                }
+            if (u != null && u.getScheme().equals("file")) {
+                baseFile = new File(u.getPath());
+                puz = IO.load(baseFile);
             }
 
             if (puz == null || puz.getBoxes() == null) {
-                throw new IOException();
+                throw new IOException("Puzzle is null or contains no boxes.");
             }
 
-            ForkyzApplication.getInstance().setBoard(new Playboard(puz, movement, prefs.getBoolean("preserveCorrectLettersInShowErrors", false)));
+            ForkyzApplication.getInstance().setBoard(
+                    new Playboard(puz,
+                                  movement,
+                                  prefs.getBoolean("preserveCorrectLettersInShowErrors",
+                                                   false)),
+                    baseFile
+            );
             ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
 
             float scale = prefs.getFloat(SCALE, 1.0F);
@@ -224,16 +202,6 @@ public class PlayActivity extends ForkyzActivity
             getRenderer().setScale(scale);
             getBoard().setSkipCompletedLetters(this.prefs.getBoolean("skipFilled",
                     false));
-
-            if (puz.getPercentComplete() != 100) {
-                this.timer = new ImaginaryTimer(puz.getTime());
-                this.timer.start();
-                this.runTimer = prefs.getBoolean(SHOW_TIMER, false);
-
-                if (runTimer) {
-                    this.handler.post(this.updateTimeTask);
-                }
-            }
 
             setContentView(R.layout.play);
 
@@ -385,7 +353,7 @@ public class PlayActivity extends ForkyzActivity
             String filename = null;
 
             try {
-                filename = this.baseFile.getName();
+                filename = this.getBaseFile().getName();
             } catch (Exception ee) {
                 e.printStackTrace();
             }
@@ -528,6 +496,7 @@ public class PlayActivity extends ForkyzActivity
         clueSize.add(createSpannableForMenu("Medium")).setTitleCondensed("Medium");
         clueSize.add(createSpannableForMenu("Large")).setTitleCondensed("Large");
 
+        Puzzle puz = getPuzzle();
         if (puz != null && !puz.isUpdatable()) {
             MenuItem showItem = menu.add(
                     this.showErrors ? "Hide Errors" : "Show Errors").setIcon(
@@ -768,13 +737,18 @@ public class PlayActivity extends ForkyzActivity
                 TextView view = (TextView) dialog
                         .findViewById(R.id.puzzle_info_time);
 
+                ImaginaryTimer timer = getTimer();
                 if (timer != null) {
-                    this.timer.stop();
-                    view.setText("Elapsed Time: " + this.timer.time());
-                    this.timer.start();
+                    timer.stop();
+                    view.setText("Elapsed Time: " + getTimer().time());
+                    timer.start();
                 } else {
-                    view.setText("Elapsed Time: "
-                            + new ImaginaryTimer(puz.getTime()).time());
+                    Puzzle puz = getPuzzle();
+                    if (puz != null)
+                        view.setText("Elapsed Time: "
+                                + new ImaginaryTimer(puz.getTime()).time());
+                    else
+                        view.setText("No puzzle time available.");
                 }
             }
 
@@ -783,9 +757,7 @@ public class PlayActivity extends ForkyzActivity
             return true;
         } else if (item.getTitle().toString().equals("Clues")) {
             Intent i = new Intent(PlayActivity.this, ClueListActivity.class);
-            i.setData(Uri.fromFile(baseFile));
             PlayActivity.this.startActivityForResult(i, 0);
-
             return true;
         } else if (item.getTitle().toString().equals("Notes")) {
             launchNotes();
@@ -867,6 +839,20 @@ public class PlayActivity extends ForkyzActivity
         this.render(true);
     }
 
+    @Override
+    protected void onTimerUpdate() {
+        super.onTimerUpdate();
+
+        Puzzle puz = getPuzzle();
+        ImaginaryTimer timer = getTimer();
+
+        if (puz != null && timer != null) {
+            getWindow().setTitle(timer.time());
+            //noinspection deprecation
+            getWindow().setFeatureInt(Window.FEATURE_PROGRESS,
+                    puz.getPercentComplete() * 100);
+        }
+    }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         this.render(true);
@@ -893,22 +879,6 @@ public class PlayActivity extends ForkyzActivity
         super.onPause();
         keyboardManager.onPause();
 
-        try {
-            if ((puz != null) && (baseFile != null)) {
-                if ((puz.getPercentComplete() != 100) && (this.timer != null)) {
-                    this.timer.stop();
-                    puz.setTime(timer.getElapsed());
-                    this.timer = null;
-                }
-
-                IO.save(puz, baseFile);
-            }
-        } catch (IOException ioe) {
-            LOG.log(Level.SEVERE, null, ioe);
-        }
-
-        this.timer = null;
-
         Playboard board = getBoard();
         if (board != null)
             board.removeListener(this);
@@ -916,15 +886,6 @@ public class PlayActivity extends ForkyzActivity
         if (clueTabs != null) {
             clueTabs.removeListener(this);
             clueTabs.unlistenBoard();
-        }
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-
-        if (this.timer != null) {
-            this.timer.start();
         }
     }
 
@@ -947,17 +908,6 @@ public class PlayActivity extends ForkyzActivity
         this.onConfigurationChanged(getBaseContext().getResources()
                                                     .getConfiguration());
 
-        if (puz.getPercentComplete() != 100) {
-            timer = new ImaginaryTimer(this.puz.getTime());
-            timer.start();
-        }
-
-        this.runTimer = prefs.getBoolean(SHOW_TIMER, false);
-
-        if (runTimer) {
-            this.handler.post(this.updateTimeTask);
-        }
-
         if (clueTabs != null) {
             clueTabs.addListener(this);
             clueTabs.listenBoard();
@@ -975,10 +925,6 @@ public class PlayActivity extends ForkyzActivity
     @Override
     protected void onStop() {
         super.onStop();
-
-        if (this.timer != null) {
-            this.timer.stop();
-        }
 
         if (keyboardManager != null)
             keyboardManager.onStop();
@@ -1034,18 +980,23 @@ public class PlayActivity extends ForkyzActivity
         dialog.setTitle("Puzzle Info");
         dialog.setContentView(R.layout.puzzle_info_dialog);
 
+        Puzzle puz = getPuzzle();
+        if (puz == null)
+            return dialog;
+
         TextView view = dialog.findViewById(R.id.puzzle_info_title);
-        view.setText(this.puz.getTitle());
+        view.setText(puz.getTitle());
         view = dialog.findViewById(R.id.puzzle_info_author);
-        view.setText(this.puz.getAuthor());
+        view.setText(puz.getAuthor());
         view = dialog.findViewById(R.id.puzzle_info_copyright);
-        view.setText(this.puz.getCopyright());
+        view.setText(puz.getCopyright());
         view = dialog.findViewById(R.id.puzzle_info_time);
 
+        ImaginaryTimer timer = getTimer();
         if (timer != null) {
-            this.timer.stop();
-            view.setText("Elapsed Time: " + this.timer.time());
-            this.timer.start();
+            timer.stop();
+            view.setText("Elapsed Time: " + timer.time());
+            timer.start();
         } else {
             view.setText("Elapsed Time: "
                     + new ImaginaryTimer(puz.getTime()).time());
@@ -1053,10 +1004,10 @@ public class PlayActivity extends ForkyzActivity
 
         ProgressBar progress = (ProgressBar) dialog
                 .findViewById(R.id.puzzle_info_progress);
-        progress.setProgress(this.puz.getPercentComplete());
+        progress.setProgress(puz.getPercentComplete());
 
         view = dialog.findViewById(R.id.puzzle_info_filename);
-        view.setText(Uri.fromFile(baseFile).toString());
+        view.setText(Uri.fromFile(getBaseFile()).toString());
 
         addNotes(dialog);
 
@@ -1066,7 +1017,11 @@ public class PlayActivity extends ForkyzActivity
     private void addNotes(Dialog infoDialog) {
         TextView view = dialog.findViewById(R.id.puzzle_info_notes);
 
-        String puzNotes = this.puz.getNotes();
+        Puzzle puz = getPuzzle();
+        if (puz == null)
+            return;
+
+        String puzNotes = puz.getNotes();
         if (puzNotes == null)
             puzNotes = "";
 
@@ -1197,15 +1152,6 @@ public class PlayActivity extends ForkyzActivity
                         + (this.showCount ? ("  ["
                         + getBoard().getCurrentWord().length + "]") : ""));
 
-        if ((puz.getPercentComplete() == 100) && (timer != null)) {
-            timer.stop();
-            puz.setTime(timer.getElapsed());
-            this.timer = null;
-            Intent i = new Intent(PlayActivity.this,
-                    PuzzleFinishedActivity.class);
-            this.startActivity(i);
-
-        }
         this.boardView.requestFocus();
     }
 
@@ -1216,7 +1162,6 @@ public class PlayActivity extends ForkyzActivity
 
     private void launchClueList() {
         Intent i = new Intent(this, ClueListActivity.class);
-        i.setData(Uri.fromFile(baseFile));
         PlayActivity.this.startActivityForResult(i, 0);
     }
 

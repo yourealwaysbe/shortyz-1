@@ -12,6 +12,7 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
@@ -34,6 +35,7 @@ public class ForkyzApplication extends Application {
 	public static String PUZZLE_DOWNLOAD_CHANNEL_ID = "forkyz.downloads";
     private static ForkyzApplication INSTANCE;
 	private Playboard board;
+    private File baseFile;
 	private PlayboardRenderer renderer;
 	public static File DEBUG_DIR;
 	public static File CROSSWORDS = new File(
@@ -41,12 +43,36 @@ public class ForkyzApplication extends Application {
 	private SharedPreferences settings;
 	private AtomicReference<PersistentCookieJar> cookieJar = new AtomicReference<>(null);
 
-	public void setBoard(Playboard board){
+    /**
+     * Set the board and base file of the puzzle loaded on it
+     */
+	public void setBoard(Playboard board, File baseFile){
 	    this.board = board;
+        this.baseFile = baseFile;
     }
 
     public Playboard getBoard() {
          return board;
+    }
+
+    public File getBaseFile() {
+        return baseFile;
+    }
+
+    public void saveBoard() throws IOException {
+        File baseFile = getBaseFile();
+        if (baseFile == null)
+            throw new IOException("No base file to save puzzle to.");
+
+        Playboard board = getBoard();
+        if (board == null)
+            throw new IOException("No board to save.");
+
+        Puzzle puz = board.getPuzzle();
+        if (puz == null)
+            throw new IOException("No puzzle associated to the board to save.");
+
+        IO.save(puz, baseFile);
     }
 
     public void setRenderer(PlayboardRenderer renderer){
