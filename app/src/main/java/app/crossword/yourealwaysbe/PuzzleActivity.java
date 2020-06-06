@@ -23,8 +23,6 @@ public abstract class PuzzleActivity
 
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
-    public static final String RUN_TIMER = "runTimer";
-
     private File baseFile;
     private ImaginaryTimer timer;
     private Handler handler = new Handler();
@@ -46,9 +44,7 @@ public abstract class PuzzleActivity
             setTimer(timer);
             timer.start();
 
-            if (prefs.getBoolean(RUN_TIMER, false)) {
-                handler.post(updateTimeTask);
-            }
+            handler.post(updateTimeTask);
         }
     }
 
@@ -56,9 +52,7 @@ public abstract class PuzzleActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (prefs.getBoolean(RUN_TIMER, false)) {
-            handler.post(updateTimeTask);
-        }
+        handler.post(updateTimeTask);
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {
@@ -124,9 +118,7 @@ public abstract class PuzzleActivity
             timer.start();
         }
 
-        if (prefs.getBoolean(RUN_TIMER, false)) {
-            handler.post(updateTimeTask);
-        }
+        handler.post(updateTimeTask);
 
         Playboard board = getBoard();
         if (board != null)
@@ -149,9 +141,7 @@ public abstract class PuzzleActivity
      * But still call super..
      */
     protected void onTimerUpdate() {
-        if (prefs.getBoolean(RUN_TIMER, false)) {
-            handler.postDelayed(updateTimeTask, 1000);
-        }
+        handler.postDelayed(updateTimeTask, 1000);
     }
 
     protected Playboard getBoard(){
