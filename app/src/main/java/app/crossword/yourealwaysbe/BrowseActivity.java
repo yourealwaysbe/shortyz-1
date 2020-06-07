@@ -538,6 +538,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     e.printStackTrace();
                 }
             }
+            // force redraw of puzzle items in case theme has changed
+            this.currentAdapter.notifyDataSetChanged();
         }
 
 
