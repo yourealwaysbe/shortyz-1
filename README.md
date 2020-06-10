@@ -31,8 +31,8 @@ Removals:
 * No New York Times.
 * No non-native or forced keyboard.
 
-The latter is for no reason other than i didn't want to maintain it. It could
-be put back.
+The latter two are for no reason other than i didn't want to maintain
+them. They could be put back.
 
 ## Compilation
 
