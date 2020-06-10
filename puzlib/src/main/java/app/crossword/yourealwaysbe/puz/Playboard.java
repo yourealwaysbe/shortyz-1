@@ -63,9 +63,8 @@ public class Playboard implements Serializable {
             }
         }
 
-        if (this.boxes[0][0] == null) {
+        if (getCurrentBox() == null)
             this.moveRight(false);
-        }
 
         updateHistory();
     }
@@ -128,7 +127,16 @@ public class Playboard implements Serializable {
     }
 
     public Box getCurrentBox() {
-        return this.boxes[this.highlightLetter.across][this.highlightLetter.down];
+        Position currentPos = getHighlightLetter();
+        int across = currentPos.across;
+        int down = currentPos.down;
+        Box[][] boxes = getBoxes();
+
+        if (0 <= across && across < boxes.length &&
+            0 <= down && down < boxes[across].length)
+            return boxes[across][down];
+        else
+            return null;
     }
 
     /** Returns the 0 based index of the current clue based on the current across or down state
