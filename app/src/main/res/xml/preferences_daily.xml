@@ -11,6 +11,10 @@
         android:defaultValue="true"
         android:key="downloadGuardianDailyCryptic" />
     <androidx.preference.CheckBoxPreference
+        android:title="Independent Daily Cryptic"
+        android:defaultValue="true"
+        android:key="downloadIndependentDailyCryptic" />
+    <androidx.preference.CheckBoxPreference
         android:title="Newsday"
         android:defaultValue="true"
         android:key="downloadNewsday" />

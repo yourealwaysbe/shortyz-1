@@ -363,6 +363,10 @@ public class Downloaders {
             downloaders.add(new GuardianDailyCrypticDownloader());
         }
 
+        if (prefs.getBoolean("downloadIndependentDailyCryptic", true)) {
+            downloaders.add(new IndependentDailyCrypticDownloader());
+        }
+
         if (prefs.getBoolean("downloadWsj", true)) {
             downloaders.add(new WSJFridayDownloader());
             downloaders.add(new WSJSaturdayDownloader());

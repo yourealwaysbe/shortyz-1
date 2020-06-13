@@ -7,11 +7,11 @@ implementing my own customisations.
 
 Additions:
 
+* Download of daily Guardian and Independent Cryptics.
 * Less crazy night mode colors and night mode by system theme.
 * Clues view on board page for smaller screens.
 * Update to androidx libraries.
 * History of viewed clues in clues lists.
-* Download of daily Guardian Cryptics.
 * Progress measures number of filled boxes instead of correctly filled
   boxes (no cheating).
 * Memory of last highlighted clue (implementation completed).
