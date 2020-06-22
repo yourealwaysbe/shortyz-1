@@ -913,6 +913,7 @@ public class PlayActivity extends PuzzleActivity
         if (clueTabs != null) {
             clueTabs.addListener(this);
             clueTabs.listenBoard();
+            clueTabs.refresh();
 
             if (prefs.getBoolean(SHOW_CLUES_TAB, false)) {
                 showClueTabs();

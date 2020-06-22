@@ -126,6 +126,7 @@ public class ClueListActivity extends PuzzleActivity
         if (clueTabs != null) {
             clueTabs.addListener(this);
             clueTabs.listenBoard();
+            clueTabs.refresh();
         }
 
         this.render();

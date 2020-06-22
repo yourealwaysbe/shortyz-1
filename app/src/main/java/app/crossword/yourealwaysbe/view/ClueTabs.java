@@ -198,6 +198,15 @@ public class ClueTabs extends LinearLayout
         }
     }
 
+    /**
+     * Refresh view to match current board state
+     */
+    public void refresh() {
+        // make sure up to date with board
+        if (viewPager != null)
+            viewPager.getAdapter().notifyDataSetChanged();
+    }
+
     public void addListener(ClueTabsListener listener) {
         listeners.add(listener);
     }
