@@ -915,6 +915,13 @@ public class PlayActivity extends PuzzleActivity
             clueTabs.listenBoard();
             clueTabs.refresh();
 
+            if (clueTabs.getBoardDelMeNotReallyNeeded() != board) {
+                Toast t = Toast.makeText(this,
+                                         "Clue tabs board not match app",
+                                         Toast.LENGTH_SHORT);
+                t.show();
+            }
+
             if (prefs.getBoolean(SHOW_CLUES_TAB, false)) {
                 showClueTabs();
             } else {

@@ -127,6 +127,13 @@ public class ClueListActivity extends PuzzleActivity
             clueTabs.addListener(this);
             clueTabs.listenBoard();
             clueTabs.refresh();
+
+            if (clueTabs.getBoardDelMeNotReallyNeeded() != getBoard()) {
+                Toast t = Toast.makeText(this,
+                                         "Clue tabs board not match app",
+                                         Toast.LENGTH_SHORT);
+                t.show();
+            }
         }
 
         this.render();

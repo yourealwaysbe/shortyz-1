@@ -16,6 +16,7 @@
     <color name="errorColor">#00f</color>
     <color name="currentWordHighlightColor">#743513</color>
     <color name="currentLetterHighlightColor">@color/accent</color>
+    <color name="cheatedColor">#553333</color>
     <color name="boardLetterColor">#aaa</color>
     <color name="titleTextColor">@color/textColorPrimary</color>
     <color name="progressNull">#b4b4b4</color>

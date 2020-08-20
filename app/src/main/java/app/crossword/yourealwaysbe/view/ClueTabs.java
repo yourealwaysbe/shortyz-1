@@ -120,6 +120,10 @@ public class ClueTabs extends LinearLayout
         LayoutInflater.from(context).inflate(R.layout.clue_tabs, this);
     }
 
+    public Playboard getBoardDelMeNotReallyNeeded() {
+        return board;
+    }
+
     public void setBoard(Playboard board) {
         if (board == null)
             return;
