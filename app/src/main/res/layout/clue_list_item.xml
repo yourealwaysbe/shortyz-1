@@ -11,4 +11,5 @@
     android:textColor="@color/textColorPrimary"
     android:focusable="true"
     android:clickable="true"
+    android:background="?android:attr/selectableItemBackground"
 />
