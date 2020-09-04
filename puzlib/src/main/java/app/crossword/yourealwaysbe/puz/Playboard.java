@@ -27,13 +27,18 @@ public class Playboard implements Serializable {
     private boolean showErrors;
     private boolean skipCompletedLetters;
     private boolean preserveCorrectLettersInShowErrors;
+    private boolean dontDeleteCrossing;
     private Set<PlayboardListener> listeners = WeakSet.buildSet();
     private int notificationDisabledDepth = 0;
     private Word previousWord = null;
 
-    public Playboard(Puzzle puzzle, MovementStrategy movementStrategy, boolean preserveCorrectLettersInShowErrors){
+    public Playboard(Puzzle puzzle,
+                     MovementStrategy movementStrategy,
+                     boolean preserveCorrectLettersInShowErrors,
+                     boolean dontDeleteCrossing){
         this(puzzle, movementStrategy);
         this.preserveCorrectLettersInShowErrors = preserveCorrectLettersInShowErrors;
+        this.dontDeleteCrossing = dontDeleteCrossing;
     }
 
     public Playboard(Puzzle puzzle, MovementStrategy movementStrategy) {
@@ -71,6 +76,13 @@ public class Playboard implements Serializable {
 
     public void setPreserveCorrectLettersInShowErrors(boolean value){
         this.preserveCorrectLettersInShowErrors = value;
+    }
+
+    /**
+     * Whether to delete characters from crossing words
+     */
+    public void setDontDeleteCrossing(boolean value){
+        this.dontDeleteCrossing = value;
     }
 
     public void setAcross(boolean across) {
@@ -127,17 +139,48 @@ public class Playboard implements Serializable {
     }
 
     public Box getCurrentBox() {
+        return getCurrentBoxOffset(0, 0);
+    }
+
+    /**
+     * Get the box to the left in the direction of the clue
+     *
+     * I.e. if across, get box one north, if down, get box one east
+     */
+    public Box getAdjacentBoxLeft() {
+        return getCurrentBoxOffset(across ? 0 : 1,
+                                   across ? -1 : 0);
+    }
+
+    /**
+     * Get the box to the right in the direction of the clue
+     *
+     * I.e. if across, get box one south, if down, get box one west
+     */
+    public Box getAdjacentBoxRight() {
+        return getCurrentBoxOffset(across ? 0 : -1,
+                                   across ? 1 : 0);
+    }
+
+    /**
+     * Get the box at the given offset from current box
+     *
+     * Null if no box
+     */
+    private Box getCurrentBoxOffset(int offsetAcross, int offsetDown) {
         Position currentPos = getHighlightLetter();
-        int across = currentPos.across;
-        int down = currentPos.down;
         Box[][] boxes = getBoxes();
 
-        if (0 <= across && across < boxes.length &&
-            0 <= down && down < boxes[across].length)
-            return boxes[across][down];
+        int offAcross = currentPos.across + offsetAcross;
+        int offDown = currentPos.down + offsetDown;
+
+        if (0 <= offAcross && offAcross < boxes.length &&
+            0 <= offDown && offDown < boxes[offAcross].length)
+            return boxes[offAcross][offDown];
         else
             return null;
     }
+
 
     /** Returns the 0 based index of the current clue based on the current across or down state
      *
@@ -457,19 +500,19 @@ public class Playboard implements Serializable {
      * -Delete the letter in the current box.
      */
     public Word deleteLetter() {
-        Box currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
+        Box currentBox = this.getCurrentBox();
         Word wordToReturn = this.getCurrentWord();
 
         pushNotificationDisabled();
 
-        if (currentBox.isBlank()) {
+
+        if (currentBox.isBlank() || isDontDeleteCurrent()) {
             wordToReturn = this.previousLetter();
             currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
         }
 
-        if (preserveCorrectLettersInShowErrors && currentBox.getResponse() == currentBox.getSolution() && this.isShowErrors()) {
-            // Prohibit deleting correct letters
-        } else {
+
+        if (!isDontDeleteCurrent()) {
             currentBox.setResponse(' ');
         }
 
@@ -478,6 +521,31 @@ public class Playboard implements Serializable {
         notifyChange();
 
         return wordToReturn;
+    }
+
+    /**
+     * Returns true if the current letter should not be deleted
+     *
+     * E.g. because it is correct and show errors is show
+     */
+    private boolean isDontDeleteCurrent() {
+        Box currentBox = getCurrentBox();
+
+        // Prohibit deleting correct letters
+        boolean skipCorrect
+            = (preserveCorrectLettersInShowErrors &&
+               currentBox.getResponse() == currentBox.getSolution() &&
+               this.isShowErrors());
+
+        // Don't delete letters from crossing words
+        Box adjacentLeft = getAdjacentBoxLeft();
+        Box adjacentRight = getAdjacentBoxRight();
+        boolean skipAdjacent
+            = (dontDeleteCrossing &&
+               ((adjacentLeft != null && !adjacentLeft.isBlank()) ||
+                (adjacentRight != null && !adjacentRight.isBlank())));
+
+        return skipCorrect || skipAdjacent;
     }
 
     public void jumpTo(int clueIndex, boolean across) {

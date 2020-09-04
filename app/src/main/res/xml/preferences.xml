@@ -211,6 +211,13 @@
             android:key="displayScratch"
             />
 
+        <androidx.preference.CheckBoxPreference
+            android:title="Don't delete crossing words"
+            android:defaultValue="true"
+            android:summary="When deleting, don't delete a letter if it is part of a filled-in crossing word"
+            android:key="dontDeleteCrossing"
+            />
+
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

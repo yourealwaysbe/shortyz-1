@@ -183,7 +183,8 @@ public class PlayActivity extends PuzzleActivity
                     new Playboard(puz,
                                   movement,
                                   prefs.getBoolean("preserveCorrectLettersInShowErrors",
-                                                   false)),
+                                                   false),
+                                  prefs.getBoolean("dontDeleteCrossing", true)),
                     baseFile
             );
             ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));

@@ -24,6 +24,9 @@ public abstract class PuzzleActivity
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
     public static final String SHOW_TIMER = "showTimer";
+    public static final String PRESERVE_CORRECT
+        = "preserveCorrectLettersInShowErrors";
+    public static final String DONT_DELETE_CROSSING = "dontDeleteCrossing";
 
     private File baseFile;
     private ImaginaryTimer timer;
@@ -59,6 +62,12 @@ public abstract class PuzzleActivity
         if (prefs.getBoolean(SHOW_TIMER, false)) {
             handler.post(updateTimeTask);
         }
+
+        Playboard board = getBoard();
+        boolean preserveCorrect = prefs.getBoolean(PRESERVE_CORRECT, true);
+        board.setPreserveCorrectLettersInShowErrors(preserveCorrect);
+        boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, true);
+        board.setDontDeleteCrossing(noDelCrossing);
     }
 
     public void onPlayboardChange(Word currentWord, Word previousWord) {

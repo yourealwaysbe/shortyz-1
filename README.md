@@ -23,6 +23,7 @@ Additions:
 * Highlight selected clue and grey-out completed clues in Clues List.
 * Reorganisation of game menu.
 * Scale clue size inside clue line.
+* Option to not delete characters of crossing words when deleting.
 
 Removals:
 
