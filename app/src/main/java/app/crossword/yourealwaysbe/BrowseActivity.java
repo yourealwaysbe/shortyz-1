@@ -660,7 +660,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         long lastDL = prefs.getLong("dlLast", 0);
 
-        if (prefs.getBoolean("dlOnStartup", true) &&
+        if (prefs.getBoolean("dlOnStartup", false) &&
                 ((System.currentTimeMillis() - (long) (12 * 60 * 60 * 1000)) > lastDL)) {
             this.download(new Date(), null, true);
             prefs.edit()
