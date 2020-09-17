@@ -95,9 +95,7 @@ public class PlayActivity extends PuzzleActivity
 
     private boolean showCount = false;
     private boolean showErrors = false;
-    private long lastKey;
     private long lastTap = 0;
-    private long resumedOn;
     private int screenWidthInInches;
     private Runnable fitToScreenTask = new Runnable() {
         @Override
@@ -542,63 +540,33 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if ((System.currentTimeMillis() - this.resumedOn) < 500) {
-            return true;
-        }
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
                 getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
-
                 return true;
 
             case KeyEvent.KEYCODE_BACK:
                 this.finish();
-
                 return true;
 
             case KeyEvent.KEYCODE_MENU:
                 return false;
 
             case KeyEvent.KEYCODE_DPAD_DOWN:
-
-                if ((System.currentTimeMillis() - lastKey) > 50) {
-                    getBoard().moveDown();
-                }
-
-
-                lastKey = System.currentTimeMillis();
-
+                getBoard().moveDown();
                 return true;
             case KeyEvent.KEYCODE_DPAD_UP:
-
-                if ((System.currentTimeMillis() - lastKey) > 50) {
-                    getBoard().moveUp();
-                }
-
-                lastKey = System.currentTimeMillis();
-
+                getBoard().moveUp();
                 return true;
 
             case KeyEvent.KEYCODE_DPAD_LEFT:
-
-                if ((System.currentTimeMillis() - lastKey) > 50) {
-                    getBoard().moveLeft();
-                }
-
-                lastKey = System.currentTimeMillis();
-
+                getBoard().moveLeft();
                 return true;
 
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-
-                if ((System.currentTimeMillis() - lastKey) > 50) {
-                    getBoard().moveRight();
-                }
-
-                lastKey = System.currentTimeMillis();
-
+                getBoard().moveRight();
                 return true;
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -606,41 +574,23 @@ public class PlayActivity extends PuzzleActivity
                 return true;
 
             case KeyEvent.KEYCODE_SPACE:
-
-                if ((System.currentTimeMillis() - lastKey) > 150) {
-                    if (prefs.getBoolean("spaceChangesDirection", true)) {
-                        getBoard().toggleDirection();
-                    } else {
-                        getBoard().playLetter(' ');
-                    }
+                if (prefs.getBoolean("spaceChangesDirection", true)) {
+                    getBoard().toggleDirection();
+                } else {
+                    getBoard().playLetter(' ');
                 }
-
-                lastKey = System.currentTimeMillis();
-
                 return true;
 
             case KeyEvent.KEYCODE_ENTER:
-
-                if ((System.currentTimeMillis() - lastKey) > 150) {
-                    if (prefs.getBoolean("enterChangesDirection", true)) {
-                        getBoard().toggleDirection();
-                    } else {
-                        getBoard().nextWord();
-                    }
+                if (prefs.getBoolean("enterChangesDirection", true)) {
+                    getBoard().toggleDirection();
+                } else {
+                    getBoard().nextWord();
                 }
-
-                lastKey = System.currentTimeMillis();
-
                 return true;
 
             case KeyEvent.KEYCODE_DEL:
-
-                if ((System.currentTimeMillis() - lastKey) > 150) {
-                    getBoard().deleteLetter();
-                }
-
-                lastKey = System.currentTimeMillis();
-
+                getBoard().deleteLetter();
                 return true;
         }
 
@@ -895,8 +845,6 @@ public class PlayActivity extends PuzzleActivity
     @Override
     protected void onResume() {
         super.onResume();
-        this.resumedOn = System.currentTimeMillis();
-
         Playboard board = getBoard();
 
         if (board != null) {
