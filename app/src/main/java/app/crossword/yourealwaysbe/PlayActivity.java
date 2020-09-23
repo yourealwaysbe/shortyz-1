@@ -9,15 +9,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.core.content.ContextCompat;
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import android.text.SpannableString;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
@@ -27,20 +21,27 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
-import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
@@ -897,9 +898,11 @@ public class PlayActivity extends PuzzleActivity
     }
 
     private void setClueSize(int dps) {
-        this.clue.setAutoSizeTextTypeUniformWithConfiguration(
-            5, dps, 1, TypedValue.COMPLEX_UNIT_SP
-        );
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            this.clue.setAutoSizeTextTypeUniformWithConfiguration(
+                5, dps, 1, TypedValue.COMPLEX_UNIT_SP
+            );
+        }
 
         if (prefs.getInt("clueSize", 12) != dps) {
             this.prefs.edit().putInt("clueSize", dps).apply();

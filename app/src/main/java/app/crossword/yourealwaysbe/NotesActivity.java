@@ -5,22 +5,23 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import android.os.Bundle;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.util.TypedValue;
-import android.view.MenuItem;
-import androidx.core.content.ContextCompat;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
-import android.content.Intent;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.content.Context;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -98,9 +99,12 @@ public class NotesActivity extends PuzzleActivity {
                 R.layout.clue_line_only).findViewById(R.id.clueLine);
         }
 
-        clue.setAutoSizeTextTypeUniformWithConfiguration(
-            5, prefs.getInt("clueSize", 12), 1, TypedValue.COMPLEX_UNIT_SP
-        );
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+            clue.setAutoSizeTextTypeUniformWithConfiguration(
+                5, prefs.getInt("clueSize", 12), 1,
+                TypedValue.COMPLEX_UNIT_SP
+            );
+        }
 
         clue.setText("("
             + (board.isAcross() ? "across" : "down")
