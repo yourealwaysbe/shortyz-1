@@ -1,5 +1,6 @@
 package app.crossword.yourealwaysbe.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +10,8 @@ import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.Build;
+
 import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -25,6 +28,10 @@ import java.util.logging.Logger;
 public class PlayboardRenderer {
     private static final float BASE_BOX_SIZE_INCHES = 0.25F;
     private static final Logger LOG = Logger.getLogger(PlayboardRenderer.class.getCanonicalName());
+    @SuppressLint("NewApi")
+    private static final Typeface TYPEFACE_SEMI_BOLD_SANS = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+                ? Typeface.create(Typeface.SANS_SERIF, 600, false) // semi-bold if available
+                : Typeface.create("sans-serif", Typeface.BOLD); // or fallback to bold
     private final Paint blackBox = new Paint();
     private final Paint blackCircle = new Paint();
     private final Paint blackLine = new Paint();
@@ -50,6 +57,7 @@ public class PlayboardRenderer {
     private final int currentLetterHighlightColor;
     private final int cheatedColor;
     private final int boardLetterColor;
+    private final int boardNoteColor;
 
     // colors are gotten from context
     public PlayboardRenderer(Playboard board,
@@ -69,6 +77,7 @@ public class PlayboardRenderer {
         errorColor = ContextCompat.getColor(context, R.color.errorColor);
         cheatedColor = ContextCompat.getColor(context, R.color.cheatedColor);
         boardLetterColor = ContextCompat.getColor(context, R.color.boardLetterColor);
+        boardNoteColor = ContextCompat.getColor(context, R.color.boardNoteColor);
 
         blackLine.setColor(blankColor);
         blackLine.setStrokeWidth(2.0F);
@@ -78,10 +87,10 @@ public class PlayboardRenderer {
         numberText.setAntiAlias(true);
         numberText.setTypeface(Typeface.MONOSPACE);
 
-        noteText.setTextAlign(Align.LEFT);
-        noteText.setColor(boardLetterColor);
+        noteText.setTextAlign(Align.CENTER);
+        noteText.setColor(boardNoteColor);
         noteText.setAntiAlias(true);
-        noteText.setTypeface(Typeface.MONOSPACE);
+        noteText.setTypeface(TYPEFACE_SEMI_BOLD_SANS);
 
         letterText.setTextAlign(Align.CENTER);
         letterText.setColor(boardLetterColor);
@@ -348,12 +357,12 @@ public class PlayboardRenderer {
                          Position highlight,
                          boolean displayScratchAcross, boolean displayScratchDown) {
         int numberTextSize = boxSize / 4;
-        int noteTextSize = boxSize / 3;
+        int miniNoteTextSize = boxSize / 2;
+        int noteTextSize = Math.round(boxSize * 0.6F);
         int letterTextSize = Math.round(boxSize * 0.7F);
 
         // scale paints
         numberText.setTextSize(numberTextSize);
-        noteText.setTextSize(noteTextSize);
         letterText.setTextSize(letterTextSize);
         red.setTextSize(letterTextSize);
         white.setTextSize(letterTextSize);
@@ -393,6 +402,9 @@ public class PlayboardRenderer {
             }
 
             thisLetter = this.letterText;
+            String letterString = box.isBlank() ? null : Character.toString(box.getResponse());
+            String noteStringAcross = null;
+            String noteStringDown = null;
 
             if (board.isShowErrors() &&
                 (box.hasSolution() &&
@@ -407,12 +419,7 @@ public class PlayboardRenderer {
                 }
             }
 
-            if (!box.isBlank()) {
-                canvas.drawText(Character.toString(box.getResponse()),
-                                x + (boxSize / 2),
-                                y + (int) (letterTextSize * 1.25),
-                                thisLetter);
-            } else {
+            if (box.isBlank()) {
                 if (displayScratchAcross && box.isPartOfAcross()) {
                     int clueNumber = box.getPartOfAcrossClueNumber();
                     Note note = board.getPuzzle().getNote(clueNumber, true);
@@ -420,10 +427,8 @@ public class PlayboardRenderer {
                         String scratch = note.getScratch();
                         int pos = box.getAcrossPosition();
                         if (scratch != null && pos < scratch.length()) {
-                            canvas.drawText(Character.toString(scratch.charAt(pos)),
-                                            x + (boxSize / 3),
-                                            y + boxSize - (noteTextSize / 2),
-                                            this.noteText);
+                            char noteChar = scratch.charAt(pos);
+                            if (noteChar != ' ') noteStringAcross = Character.toString(noteChar);
                         }
                     }
                 }
@@ -434,12 +439,60 @@ public class PlayboardRenderer {
                         String scratch = note.getScratch();
                         int pos = box.getDownPosition();
                         if (scratch != null && pos < scratch.length()) {
-                            canvas.drawText(Character.toString(scratch.charAt(pos)),
-                                            x + boxSize - noteTextSize - 2,
-                                            y + 2 + (boxSize / 2),
-                                            this.noteText);
+                            char noteChar = scratch.charAt(pos);
+                            if (noteChar != ' ') noteStringDown = Character.toString(noteChar);
                         }
                     }
+                }
+            }
+
+
+            if (letterString != null) {
+                // Full size letter in normal font
+                canvas.drawText(letterString,
+                        x + (boxSize / 2),
+                        y + (int)(boxSize / 2 - thisLetter.ascent() * 0.6),
+                        thisLetter);
+            } else {
+                float[] mWidth = new float[1];
+                letterText.getTextWidths("M", mWidth);
+                float letterTextHalfWidth = mWidth[0] / 2;
+
+                if (noteStringAcross != null && noteStringDown != null) {
+                    if (noteStringAcross.equals(noteStringDown)) {
+                        // Same scratch letter in both directions - align letter with across and
+                        // down answers
+                        noteText.setTextSize(noteTextSize);
+                        canvas.drawText(noteStringAcross,
+                                x + (int)(boxSize - letterTextHalfWidth),
+                                y + (boxSize * 9 / 10),
+                                noteText);
+                    } else {
+                        // Conflicting scratch letters - display both letters side by side
+                        noteText.setTextSize(miniNoteTextSize);
+                        canvas.drawText(noteStringAcross,
+                                x + (int)(boxSize * 0.05 + letterTextHalfWidth),
+                                y + (boxSize * 9 / 10),
+                                noteText);
+                        canvas.drawText(noteStringDown,
+                                x + (int)(boxSize - letterTextHalfWidth),
+                                y + (boxSize * 1 / 10) - noteText.ascent(),
+                                noteText);
+                    }
+                } else if (noteStringAcross != null) {
+                    // Across scratch letter only - display in bottom left
+                    noteText.setTextSize(noteTextSize);
+                    canvas.drawText(noteStringAcross,
+                            x + (boxSize / 2),
+                            y + (boxSize * 9 / 10),
+                            noteText);
+                } else if (noteStringDown != null) {
+                    // Down scratch letter only - display in bottom right
+                    noteText.setTextSize(noteTextSize);
+                    canvas.drawText(noteStringDown,
+                            x + (int)(boxSize - letterTextHalfWidth),
+                            y + (boxSize - noteText.ascent())  / 2,
+                            noteText);
                 }
             }
         }

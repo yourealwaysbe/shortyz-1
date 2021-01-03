@@ -18,6 +18,7 @@
     <color name="currentLetterHighlightColor">#EB6000</color>
     <color name="cheatedColor">#FFE0E0</color>
     <color name="boardLetterColor">#000</color>
+    <color name="boardNoteColor">#60000000</color>
     <color name="titleTextColor">#fff</color>
     <color name="progressNull">#b4b4b4</color>
     <color name="progressInProgress">#d5a518</color>
