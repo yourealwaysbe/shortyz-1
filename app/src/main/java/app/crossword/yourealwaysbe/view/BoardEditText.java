@@ -212,11 +212,13 @@ public class BoardEditText extends ScrollingImageView {
             return true;
 
         case KeyEvent.KEYCODE_DEL:
-            if (boxes != null && canDelete(selection)) {
-                boxes[selection.across].setBlank();
-                if (selection.across > 0) {
-                    selection.across--;
+            if (boxes != null) {
+                if (boxes[selection.across].isBlank() || !canDelete(selection)) {
+                    if (selection.across > 0) {
+                        selection.across--;
+                    }
                 }
+                boxes[selection.across].setBlank();
                 this.render();
             }
             return true;
