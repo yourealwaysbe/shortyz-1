@@ -173,7 +173,7 @@ public class BoardEditText extends ScrollingImageView {
 
     public void clear() {
         for (Box box : boxes)
-            box.setResponse(' ');
+            box.setBlank();
         render();
     }
 
@@ -213,7 +213,7 @@ public class BoardEditText extends ScrollingImageView {
 
         case KeyEvent.KEYCODE_DEL:
             if (boxes != null && canDelete(selection)) {
-                boxes[selection.across].setResponse(' ');
+                boxes[selection.across].setBlank();
                 if (selection.across > 0) {
                     selection.across--;
                 }
@@ -223,7 +223,7 @@ public class BoardEditText extends ScrollingImageView {
 
         case KeyEvent.KEYCODE_SPACE:
             if (boxes != null && canDelete(selection)) {
-                boxes[selection.across].setResponse(' ');
+                boxes[selection.across].setBlank();
 
                 if (selection.across < boxes.length - 1) {
                     selection.across++;

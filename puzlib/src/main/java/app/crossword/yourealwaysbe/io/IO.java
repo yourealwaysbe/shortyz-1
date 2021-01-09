@@ -151,7 +151,7 @@ public class IO {
                 if (answer == '.') {
                     continue;
                 } else if (answer == '-') {
-                    boxes[x][y].setResponse(' ');
+                    boxes[x][y].setBlank();
                 } else if (boxes[x][y] != null) {
                     boxes[x][y].setResponse(answer);
                 } else {

@@ -513,7 +513,7 @@ public class Playboard implements Serializable {
 
 
         if (!isDontDeleteCurrent()) {
-            currentBox.setResponse(' ');
+            currentBox.setBlank();
         }
 
         popNotificationDisabled();

@@ -230,6 +230,8 @@ public class Box implements Serializable {
      */
     public boolean isBlank() { return getResponse() == BLANK; }
 
+    public void setBlank() { setResponse(BLANK); }
+
     /**
      * @param clueNumber across clue that box is a part of
      */

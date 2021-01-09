@@ -149,7 +149,7 @@ public class IndependentXMLIO {
 
                             if (solution.length() > 0)
                                 box.setSolution(solution.charAt(0));
-                            box.setResponse(' ');
+                            box.setBlank();
 
                             IndependentXMLParser.this.boxes[y][x] = box;
                         }

@@ -101,7 +101,7 @@ public class UclickXMLIO {
 					if (sol != '-') {
 						boxesList[i] = new Box();
 						boxesList[i].setSolution(sol);
-						boxesList[i].setResponse(' ');
+						boxesList[i].setBlank();
 					}
 				}
 				puz.setBoxesList(boxesList);

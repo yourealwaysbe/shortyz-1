@@ -102,7 +102,7 @@ public class KingFeaturesPlaintextIO {
 				if (row[y] != '#') {
 					boxes[x][y] = new Box();
 					boxes[x][y].setSolution(row[y]);
-					boxes[x][y].setResponse(' ');
+					boxes[x][y].setBlank();
 				}
 			}
 		}
