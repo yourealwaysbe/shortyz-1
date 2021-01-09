@@ -97,6 +97,13 @@
             android:entryValues="@array/cleanupAgeValues" />
 
         <androidx.preference.CheckBoxPreference
+            android:title="Don't Hide Keyboard"
+            android:defaultValue="false"
+            android:summary="Don't Hide the Keyboard when Changing Clues"
+            android:key="dontHideKeyboard"
+        />
+
+        <androidx.preference.CheckBoxPreference
             android:title="Snap to Current Word"
             android:defaultValue="true"
             android:summary="Toggles the auto-scrolling of the playboard to the current play position"

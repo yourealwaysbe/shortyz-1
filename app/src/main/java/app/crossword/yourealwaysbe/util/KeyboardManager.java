@@ -8,8 +8,10 @@ import java.util.logging.Logger;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.View;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.View.OnFocusChangeListener;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -18,6 +20,7 @@ public class KeyboardManager {
     private static final Logger LOG = Logger.getLogger(KeyboardManager.class.getCanonicalName());
 
     private Activity activity;
+    private SharedPreferences prefs;
 
     /**
      * Create a new manager to handle the keyboard
@@ -28,68 +31,57 @@ public class KeyboardManager {
      */
     public KeyboardManager(Activity activity) {
         this.activity = activity;
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
     }
 
     /**
      * Call this from the activities onResume method
      */
-    public void onResume() { }
+    public void onResume() {
+        // do nothing
+    }
 
     /**
      * Call this when the activity receives an onPause
      */
-    public void onPause() {
-        hideKeyboard();
-    }
+    public void onPause() { hideKeyboard(true); }
 
     /**
      * Call this when the activity receives an onStop
      */
-    public void onStop() {
-        hideKeyboard();
-    }
+    public void onStop() { hideKeyboard(true); }
 
     /**
      * Call this when the activity receives an onDestroy
      */
-    public void onDestroy() {
-        hideKeyboard();
-    }
+    public void onDestroy() { hideKeyboard(true); }
 
     /**
-     * Show the keyboard
+     * Show the keyboard -- must be called after UI drawn
      */
     public void showKeyboard() {
-        InputMethodManager imm
-            = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        View focus = activity.getCurrentFocus();
+        if (focus != null) {
+            InputMethodManager imm
+                = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(focus, InputMethodManager.SHOW_FORCED);
 
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
-                InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
-    /**
-     * Hide the keyboard when the given view in focus
-     *
-     * @param view the view to disable the keyboard for
-     */
-    public void disableForView(View view) {
-        view.setOnFocusChangeListener(new OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean gainFocus) {
-                if (!gainFocus) {
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
-            }
-        });
-    }
+    public void hideKeyboard() { hideKeyboard(false); }
 
     /**
      * Hide the keyboard unless the user always wants it
+     *
+     * @param force force hide the keyboard, even if user has set always
+     * show
      */
-    public void hideKeyboard() {
+    public void hideKeyboard(boolean force) {
+        boolean ignoreHide
+            = !force && prefs.getBoolean("dontHideKeyboard", false);
         View focus = activity.getCurrentFocus();
-        if (focus != null) {
+        if (focus != null && !ignoreHide) {
             InputMethodManager imm
                 = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);

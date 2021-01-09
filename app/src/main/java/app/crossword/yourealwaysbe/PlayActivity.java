@@ -854,8 +854,6 @@ public class PlayActivity extends PuzzleActivity
             board.addListener(this);
         }
 
-        keyboardManager.onResume();
-
         this.showCount = prefs.getBoolean("showCount", false);
         this.onConfigurationChanged(getBaseContext().getResources()
                                                     .getConfiguration());
@@ -880,6 +878,8 @@ public class PlayActivity extends PuzzleActivity
         }
 
         render(true);
+
+        keyboardManager.onResume();
     }
 
     @Override

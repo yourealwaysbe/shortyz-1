@@ -296,8 +296,6 @@ public class NotesActivity extends PuzzleActivity {
             }
         });
 
-        keyboardManager.disableForView(this.findViewById(R.id.notesBox));
-
         this.render();
     }
 
