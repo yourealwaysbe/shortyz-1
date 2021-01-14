@@ -18,6 +18,7 @@
     <color name="currentLetterHighlightColor">@color/accent</color>
     <color name="cheatedColor">#553333</color>
     <color name="boardLetterColor">#aaa</color>
+    <color name="boardNoteColor">#80aaaaaa</color>
     <color name="titleTextColor">@color/textColorPrimary</color>
     <color name="progressNull">#b4b4b4</color>
     <color name="progressInProgress">#d5a518</color>
