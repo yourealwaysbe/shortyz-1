@@ -253,7 +253,7 @@ public class NotesActivity extends PuzzleActivity {
             public boolean delete(char oldChar, int pos) {
                 if (Character.isLetter(oldChar)) {
                     for (int i = 0; i < curWordLen; i++) {
-                        if (anagramSourceView.getResponse(i) == ' ') {
+                        if (anagramSourceView.isBlank(i)) {
                             anagramSourceView.setResponse(i, oldChar);
                             return true;
                         }
