@@ -3,7 +3,6 @@ package app.crossword.yourealwaysbe;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,35 +12,25 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.SpannableString;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
@@ -58,15 +47,12 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
-import app.crossword.yourealwaysbe.view.SeparatedListAdapter;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -478,6 +464,28 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        if (getRenderer() == null || getRenderer().getScale() >= getRenderer().getDeviceMaxScale())
+            menu.removeItem(R.id.menu_zoom_in_max);
+
+        Puzzle puz = getPuzzle();
+        if (puz == null || puz.isUpdatable()) {
+            menu.findItem(R.id.menu_show_errors).setEnabled(false);
+            menu.findItem(R.id.menu_reveal).setEnabled(false);
+        } else {
+            menu.findItem(R.id.menu_show_errors).setChecked(this.showErrors);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (ForkyzApplication.isTabletish(metrics)) {
+                    menu.findItem(R.id.menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                    menu.findItem(R.id.menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                }
+            }
+        }
+        return true;
+        /*
         menu.add("Clues").setIcon(android.R.drawable.ic_menu_agenda);
         menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
 
@@ -526,6 +534,8 @@ public class PlayActivity extends PuzzleActivity
         menu.add("Settings").setIcon(android.R.drawable.ic_menu_preferences);
 
         return true;
+
+         */
     }
 
     private SpannableString createSpannableForMenu(String value){
@@ -613,70 +623,71 @@ public class PlayActivity extends PuzzleActivity
     @SuppressWarnings("deprecation")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getTitle() == null) {
+        switch (item.getItemId()) {
+        case android.R.id.home:
             finish();
             return true;
-        }
-        if (item.getTitle().toString().equals("Letter")) {
+        case R.id.menu_reveal_letter:
             getBoard().revealLetter();
             return true;
-        } else if (item.getTitle().toString().equals("Word")) {
+        case R.id.menu_reveal_word:
             getBoard().revealWord();
             return true;
-        } else if (item.getTitle().toString().equals("Errors")) {
+        case R.id.menu_reveal_errors:
             getBoard().revealErrors();
             return true;
-        } else if (item.getTitle().toString().equals("Puzzle")) {
+        case R.id.menu_reveal_puzzle:
             this.showDialog(REVEAL_PUZZLE_DIALOG);
-
             return true;
-        } else if (item.getTitle().toString().equals("Show Errors")
-                || item.getTitle().toString().equals("Hide Errors")) {
+        case R.id.menu_show_errors:
             getBoard().toggleShowErrors();
-            item.setTitle(getBoard().isShowErrors() ? "Hide Errors" : "Show Errors");
+            item.setChecked(getBoard().isShowErrors());
             this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
                     .apply();
             return true;
-        } else if (item.getTitle().toString().equals("Settings")) {
+        case R.id.menu_settings:
             Intent i = new Intent(this, PreferencesActivity.class);
             this.startActivity(i);
 
             return true;
-        } else if (item.getTitle().toString().equals("Zoom In")) {
+        case R.id.menu_zoom_in:
             this.boardView.scrollTo(0, 0);
-
-            float newScale = getRenderer().zoomIn();
-            this.prefs.edit().putFloat(SCALE, newScale).apply();
-            this.fitToScreen = false;
-            boardView.setCurrentScale(newScale);
+            {
+                float newScale = getRenderer().zoomIn();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                this.fitToScreen = false;
+                boardView.setCurrentScale(newScale);
+            }
             this.render(true);
 
             return true;
-        } else if (item.getTitle().toString().equals("Zoom In Max")) {
+        case R.id.menu_zoom_in_max:
             this.boardView.scrollTo(0, 0);
-
-            float newScale = getRenderer().zoomInMax();
-            this.prefs.edit().putFloat(SCALE, newScale).apply();
-            this.fitToScreen = false;
-            boardView.setCurrentScale(newScale);
+            {
+                float newScale = getRenderer().zoomInMax();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                this.fitToScreen = false;
+                boardView.setCurrentScale(newScale);
+            }
             this.render(true);
 
             return true;
-        } else if (item.getTitle().toString().equals("Zoom Out")) {
+        case R.id.menu_zoom_out:
             this.boardView.scrollTo(0, 0);
-
-            float newScale = getRenderer().zoomOut();
-            this.prefs.edit().putFloat(SCALE, newScale).apply();
-            this.fitToScreen = false;
-            boardView.setCurrentScale(newScale);
+            {
+                float newScale = getRenderer().zoomOut();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                this.fitToScreen = false;
+                boardView.setCurrentScale(newScale);
+            }
             this.render(true);
 
             return true;
-        } else if (item.getTitle().toString().equals("Fit to Screen")) {
+        case R.id.menu_zoom_fit:
             fitToScreen();
 
             return true;
-        } else if (item.getTitle().toString().equals("Zoom Reset")) {
+        case R.id.menu_zoom_reset:
             float newScale = getRenderer().zoomReset();
             boardView.setCurrentScale(newScale);
             this.prefs.edit().putFloat(SCALE, newScale).apply();
@@ -684,7 +695,7 @@ public class PlayActivity extends PuzzleActivity
             this.boardView.scrollTo(0, 0);
 
             return true;
-        } else if (item.getTitle().toString().equals("Info")) {
+        case R.id.menu_info:
             if (dialog != null) {
                 TextView view = (TextView) dialog
                         .findViewById(R.id.puzzle_info_time);
@@ -707,27 +718,30 @@ public class PlayActivity extends PuzzleActivity
             this.showDialog(INFO_DIALOG);
 
             return true;
-        } else if (item.getTitle().toString().equals("Clues")) {
-            Intent i = new Intent(PlayActivity.this, ClueListActivity.class);
-            PlayActivity.this.startActivityForResult(i, 0);
+        case R.id.menu_clues:
+            Intent clueIntent = new Intent(PlayActivity.this, ClueListActivity.class);
+            PlayActivity.this.startActivityForResult(clueIntent, 0);
             return true;
-        } else if (item.getTitle().toString().equals("Notes")) {
+        case R.id.menu_notes:
             launchNotes();
             return true;
-        } else if (item.getTitle().toString().equals("Help")) {
-            Intent i = new Intent(Intent.ACTION_VIEW,
+        case R.id.menu_help:
+            Intent helpIntent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse("file:///android_asset/playscreen.html"), this,
                     HTMLActivity.class);
-            this.startActivity(i);
-        } else if (item.getTitle().toString().equals("Small")) {
+            this.startActivity(helpIntent);
+            return true;
+        case R.id.menu_clue_size_s:
             this.setClueSize(12);
-        } else if (item.getTitle().toString().equals("Medium")) {
+            return true;
+        case R.id.menu_clue_size_m:
             this.setClueSize(14);
-        } else if (item.getTitle().toString().equals("Large")) {
+            return true;
+        case R.id.menu_clue_size_l:
             this.setClueSize(16);
+            return true;
         }
-
-        return false;
+        return super.onOptionsItemSelected(item);
     }
 
     public void onClueTabsClick(Clue clue,
