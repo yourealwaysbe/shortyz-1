@@ -3,7 +3,7 @@ package app.crossword.yourealwaysbe.puz;
 import java.io.Serializable;
 
 public class Box implements Serializable {
-    private static final char BLANK = ' ';
+    public static final char BLANK = ' ';
     private static final int NOCLUE = -1;
 
     private String responder;

@@ -28,6 +28,7 @@ public class Playboard implements Serializable {
     private boolean skipCompletedLetters;
     private boolean preserveCorrectLettersInShowErrors;
     private boolean dontDeleteCrossing;
+    private boolean scratchMode = false;
     private Set<PlayboardListener> listeners = WeakSet.buildSet();
     private int notificationDisabledDepth = 0;
     private Word previousWord = null;
@@ -138,6 +139,11 @@ public class Playboard implements Serializable {
         return clue;
     }
 
+    public Note getNote() {
+        Clue c = this.getClue();
+        return this.puzzle.getNote(c.number, this.across);
+    }
+
     public Box getCurrentBox() {
         return getCurrentBoxOffset(0, 0);
     }
@@ -226,6 +232,16 @@ public class Playboard implements Serializable {
         }
 
         return result;
+    }
+
+    public String getCurrentWordResponse() {
+        Box[] boxes = getCurrentWordBoxes();
+        char[] letters = new char[boxes.length];
+
+        for (int i = 0; i < boxes.length; i++) {
+            letters[i] = boxes[i].getResponse();
+        }
+        return new String(letters);
     }
 
     public Position[] getCurrentWordPositions() {
@@ -500,6 +516,7 @@ public class Playboard implements Serializable {
      * -Delete the letter in the current box.
      */
     public Word deleteLetter() {
+        // TODO: Handle deletion of scratch letters
         Box currentBox = this.getCurrentBox();
         Word wordToReturn = this.getCurrentWord();
 
@@ -732,7 +749,30 @@ public class Playboard implements Serializable {
             return null;
         }
 
-        if (preserveCorrectLettersInShowErrors && b.getResponse() == b.getSolution() && isShowErrors()) {
+        if (this.scratchMode) {
+            pushNotificationDisabled();
+
+            Note note = this.getNote();
+            String response = this.getCurrentWordResponse();
+
+            // Create a note for this clue if we don't already have one
+            if (note == null) {
+                note = new Note(response);
+                Clue c = this.getClue();
+                this.puzzle.setNote(note, c.number, this.across);
+            }
+
+            // Update the scratch text
+            int pos = this.across ? b.getAcrossPosition() : b.getDownPosition();
+            if (pos >= 0 && pos < response.length())
+                note.setScratchLetter(pos, letter);
+
+            Word next = this.nextLetter();
+            popNotificationDisabled();
+
+            notifyChange();
+            return next;
+        } else if (preserveCorrectLettersInShowErrors && b.getResponse() == b.getSolution() && isShowErrors()) {
             // Prohibit replacing correct letters
             return this.getCurrentWord();
         } else {

@@ -1,6 +1,7 @@
 package app.crossword.yourealwaysbe.puz;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Note implements Serializable {
     private String scratch;
@@ -16,6 +17,16 @@ public class Note implements Serializable {
         this.scratch = scratch;
         this.anagramSource = anagramSource;
         this.anagramSolution = anagramSolution;
+    }
+
+    public Note(String text) {
+        this.text = text;
+
+        String blankString = createBlankString(text.length());
+        this.scratch
+                = this.anagramSource
+                = this.anagramSolution
+                = blankString;
     }
 
     public String getText() {
@@ -92,5 +103,28 @@ public class Note implements Serializable {
         } else {
             return s1.equals(s2);
         }
+    }
+
+    private String createBlankString(int len) {
+        if (len == 0) return "";
+
+        char[] padding = new char[len];
+        Arrays.fill(padding, Box.BLANK);
+        return new String(padding);
+    }
+
+    public void setScratchLetter(int pos, char letter) {
+        String letterText = Character.toString(letter);
+        String newScratchText;
+
+        int len = scratch.length();
+        if (pos == 0) {
+            newScratchText = letterText + scratch.substring(1);
+        } else if (pos == len - 1) {
+            newScratchText = scratch.substring(0, pos) + letterText;
+        } else {
+            newScratchText = scratch.substring(0, pos) + letterText + scratch.substring(pos + 1);
+        }
+        scratch = newScratchText;
     }
 }
