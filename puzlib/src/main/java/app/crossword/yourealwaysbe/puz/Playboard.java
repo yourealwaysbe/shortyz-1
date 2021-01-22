@@ -396,6 +396,14 @@ public class Playboard implements Serializable {
         return responder;
     }
 
+    public boolean isScratchMode() {
+        return scratchMode;
+    }
+
+    public void toggleScratchMode() {
+        this.scratchMode = !this.scratchMode;
+    }
+
     public void setShowErrors(boolean showErrors) {
         boolean changed = (this.showErrors != showErrors);
         this.showErrors = showErrors;

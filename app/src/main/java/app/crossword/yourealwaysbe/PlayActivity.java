@@ -82,6 +82,7 @@ public class PlayActivity extends PuzzleActivity
 
     private boolean showCount = false;
     private boolean showErrors = false;
+    private boolean scratchMode = false;
     private long lastTap = 0;
     private int screenWidthInInches;
     private Runnable fitToScreenTask = new Runnable() {
@@ -140,6 +141,7 @@ public class PlayActivity extends PuzzleActivity
         utils.finishOnHomeButton(this);
 
         this.showErrors = this.prefs.getBoolean("showErrors", false);
+        this.scratchMode = this.prefs.getBoolean("scratchMode", false);
         setDefaultKeyMode(Activity.DEFAULT_KEYS_DISABLE);
 
         MovementStrategy movement = this.getMovementStrategy();
@@ -417,6 +419,10 @@ public class PlayActivity extends PuzzleActivity
             getBoard().toggleShowErrors();
         }
 
+        if (getBoard().isScratchMode() != this.scratchMode) {
+            getBoard().toggleScratchMode();
+        }
+
         this.clueTabs = this.findViewById(R.id.playClueTab);
         this.clueTabs.setBoard(getBoard());
         this.clueTabs.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -484,6 +490,8 @@ public class PlayActivity extends PuzzleActivity
                 }
             }
         }
+
+        menu.findItem(R.id.play_menu_scratch_mode).setChecked(this.scratchMode);
         return true;
     }
 
@@ -593,6 +601,11 @@ public class PlayActivity extends PuzzleActivity
             item.setChecked(getBoard().isShowErrors());
             this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
                     .apply();
+            return true;
+        case R.id.play_menu_scratch_mode:
+            getBoard().toggleScratchMode();
+            item.setChecked(getBoard().isScratchMode());
+            this.prefs.edit().putBoolean("scratchMode", getBoard().isScratchMode()).apply();
             return true;
         case R.id.play_menu_settings:
             Intent i = new Intent(this, PreferencesActivity.class);
