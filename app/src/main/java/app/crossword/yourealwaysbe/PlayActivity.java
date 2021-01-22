@@ -465,22 +465,22 @@ public class PlayActivity extends PuzzleActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
+        inflater.inflate(R.menu.play_menu, menu);
 
         if (getRenderer() == null || getRenderer().getScale() >= getRenderer().getDeviceMaxScale())
-            menu.removeItem(R.id.menu_zoom_in_max);
+            menu.removeItem(R.id.play_menu_zoom_in_max);
 
         Puzzle puz = getPuzzle();
         if (puz == null || puz.isUpdatable()) {
-            menu.findItem(R.id.menu_show_errors).setEnabled(false);
-            menu.findItem(R.id.menu_reveal).setEnabled(false);
+            menu.findItem(R.id.play_menu_show_errors).setEnabled(false);
+            menu.findItem(R.id.play_menu_reveal).setEnabled(false);
         } else {
-            menu.findItem(R.id.menu_show_errors).setChecked(this.showErrors);
+            menu.findItem(R.id.play_menu_show_errors).setChecked(this.showErrors);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 if (ForkyzApplication.isTabletish(metrics)) {
-                    menu.findItem(R.id.menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-                    menu.findItem(R.id.menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                    menu.findItem(R.id.play_menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                    menu.findItem(R.id.play_menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
                 }
             }
         }
@@ -576,30 +576,30 @@ public class PlayActivity extends PuzzleActivity
         case android.R.id.home:
             finish();
             return true;
-        case R.id.menu_reveal_letter:
+        case R.id.play_menu_reveal_letter:
             getBoard().revealLetter();
             return true;
-        case R.id.menu_reveal_word:
+        case R.id.play_menu_reveal_word:
             getBoard().revealWord();
             return true;
-        case R.id.menu_reveal_errors:
+        case R.id.play_menu_reveal_errors:
             getBoard().revealErrors();
             return true;
-        case R.id.menu_reveal_puzzle:
+        case R.id.play_menu_reveal_puzzle:
             this.showDialog(REVEAL_PUZZLE_DIALOG);
             return true;
-        case R.id.menu_show_errors:
+        case R.id.play_menu_show_errors:
             getBoard().toggleShowErrors();
             item.setChecked(getBoard().isShowErrors());
             this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
                     .apply();
             return true;
-        case R.id.menu_settings:
+        case R.id.play_menu_settings:
             Intent i = new Intent(this, PreferencesActivity.class);
             this.startActivity(i);
 
             return true;
-        case R.id.menu_zoom_in:
+        case R.id.play_menu_zoom_in:
             this.boardView.scrollTo(0, 0);
             {
                 float newScale = getRenderer().zoomIn();
@@ -610,7 +610,7 @@ public class PlayActivity extends PuzzleActivity
             this.render(true);
 
             return true;
-        case R.id.menu_zoom_in_max:
+        case R.id.play_menu_zoom_in_max:
             this.boardView.scrollTo(0, 0);
             {
                 float newScale = getRenderer().zoomInMax();
@@ -621,7 +621,7 @@ public class PlayActivity extends PuzzleActivity
             this.render(true);
 
             return true;
-        case R.id.menu_zoom_out:
+        case R.id.play_menu_zoom_out:
             this.boardView.scrollTo(0, 0);
             {
                 float newScale = getRenderer().zoomOut();
@@ -632,11 +632,11 @@ public class PlayActivity extends PuzzleActivity
             this.render(true);
 
             return true;
-        case R.id.menu_zoom_fit:
+        case R.id.play_menu_zoom_fit:
             fitToScreen();
 
             return true;
-        case R.id.menu_zoom_reset:
+        case R.id.play_menu_zoom_reset:
             float newScale = getRenderer().zoomReset();
             boardView.setCurrentScale(newScale);
             this.prefs.edit().putFloat(SCALE, newScale).apply();
@@ -644,7 +644,7 @@ public class PlayActivity extends PuzzleActivity
             this.boardView.scrollTo(0, 0);
 
             return true;
-        case R.id.menu_info:
+        case R.id.play_menu_info:
             if (dialog != null) {
                 TextView view = (TextView) dialog
                         .findViewById(R.id.puzzle_info_time);
@@ -667,26 +667,26 @@ public class PlayActivity extends PuzzleActivity
             this.showDialog(INFO_DIALOG);
 
             return true;
-        case R.id.menu_clues:
+        case R.id.play_menu_clues:
             Intent clueIntent = new Intent(PlayActivity.this, ClueListActivity.class);
             PlayActivity.this.startActivityForResult(clueIntent, 0);
             return true;
-        case R.id.menu_notes:
+        case R.id.play_menu_notes:
             launchNotes();
             return true;
-        case R.id.menu_help:
+        case R.id.play_menu_help:
             Intent helpIntent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse("file:///android_asset/playscreen.html"), this,
                     HTMLActivity.class);
             this.startActivity(helpIntent);
             return true;
-        case R.id.menu_clue_size_s:
+        case R.id.play_menu_clue_size_s:
             this.setClueSize(12);
             return true;
-        case R.id.menu_clue_size_m:
+        case R.id.play_menu_clue_size_m:
             this.setClueSize(14);
             return true;
-        case R.id.menu_clue_size_l:
+        case R.id.play_menu_clue_size_l:
             this.setClueSize(16);
             return true;
         }
