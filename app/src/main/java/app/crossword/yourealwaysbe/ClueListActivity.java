@@ -9,6 +9,7 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,15 +43,15 @@ public class ClueListActivity extends PuzzleActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item == null || item.getItemId() == android.R.id.home) {
+        switch (item.getItemId()) {
+        case android.R.id.home:
             finish();
             return true;
-        } else if (item.getTitle().toString().equals("Notes")) {
+        case R.id.clue_list_menu_notes:
             launchNotes();
             return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -141,7 +142,8 @@ public class ClueListActivity extends PuzzleActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.clue_list_menu, menu);
         return true;
     }
 
