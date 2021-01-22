@@ -485,57 +485,6 @@ public class PlayActivity extends PuzzleActivity
             }
         }
         return true;
-        /*
-        menu.add("Clues").setIcon(android.R.drawable.ic_menu_agenda);
-        menu.add("Notes").setIcon(android.R.drawable.ic_menu_agenda);
-
-        Menu zoom = menu.addSubMenu("Zoom");
-        zoom.add(createSpannableForMenu("Zoom In")).setTitleCondensed("Zoom In");
-
-        if (getRenderer() != null && getRenderer().getScale() < getRenderer().getDeviceMaxScale())
-            zoom.add(createSpannableForMenu("Zoom In Max")).setTitleCondensed("Zoom In Max");
-
-        zoom.add(createSpannableForMenu("Zoom Out")).setTitleCondensed("Zoom Out");
-        zoom.add(createSpannableForMenu("Fit to Screen")).setTitleCondensed("Fit to Screen");
-        zoom.add(createSpannableForMenu("Zoom Reset")).setTitleCondensed("Zoom Reset");
-
-        Menu clueSize = menu.addSubMenu("Clue Text Size");
-        clueSize.add(createSpannableForMenu("Small")).setTitleCondensed("Small");
-        clueSize.add(createSpannableForMenu("Medium")).setTitleCondensed("Medium");
-        clueSize.add(createSpannableForMenu("Large")).setTitleCondensed("Large");
-
-        Puzzle puz = getPuzzle();
-        if (puz != null && !puz.isUpdatable()) {
-            MenuItem showItem = menu.add(
-                    this.showErrors ? "Hide Errors" : "Show Errors").setIcon(
-                    android.R.drawable.ic_menu_view);
-            if (ForkyzApplication.isTabletish(metrics)) {
-                utils.onActionBarWithText(showItem);
-            }
-
-            SubMenu reveal = menu.addSubMenu("Reveal").setIcon(
-                    android.R.drawable.ic_menu_view);
-            reveal.add(createSpannableForMenu("Letter")).setTitleCondensed("Letter");
-            reveal.add(createSpannableForMenu("Word")).setTitleCondensed("Word");
-            reveal.add(createSpannableForMenu("Errors")).setTitleCondensed("Errors");
-            reveal.add(createSpannableForMenu("Puzzle")).setTitleCondensed("Puzzle");
-            if (ForkyzApplication.isTabletish(metrics)) {
-                utils.onActionBarWithText(reveal);
-            }
-        } else {
-            menu.add("Show Errors").setEnabled(false)
-                    .setIcon(android.R.drawable.ic_menu_view);
-            menu.add("Reveal").setIcon(android.R.drawable.ic_menu_view)
-                    .setEnabled(false);
-        }
-
-        menu.add("Info").setIcon(android.R.drawable.ic_menu_info_details);
-        menu.add("Help").setIcon(android.R.drawable.ic_menu_help);
-        menu.add("Settings").setIcon(android.R.drawable.ic_menu_preferences);
-
-        return true;
-
-         */
     }
 
     private SpannableString createSpannableForMenu(String value){

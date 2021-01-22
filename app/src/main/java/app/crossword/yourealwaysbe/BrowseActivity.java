@@ -26,8 +26,8 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -195,28 +195,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        if(utils.isNightModeAvailable()) {
-            utils.onActionBarWithoutText(menu.add("App Theme")
-                    .setIcon(getNightModeIcon()));
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.browse_menu, menu);
+
+        if (utils.isNightModeAvailable()) {
+            MenuItem item = menu.findItem(R.id.browse_menu_app_theme);
+            if (item != null) item.setIcon(getNightModeIcon());
+        } else {
+            menu.removeItem(R.id.browse_menu_app_theme);
         }
-        SubMenu sortMenu = menu.addSubMenu("Sort")
-                               .setIcon(android.R.drawable.ic_menu_sort_alphabetically);
-        sortMenu.add("By Date (Descending)")
-                .setIcon(android.R.drawable.ic_menu_day);
-        sortMenu.add("By Date (Ascending)")
-                .setIcon(android.R.drawable.ic_menu_day);
-        sortMenu.add("By Source")
-                .setIcon(android.R.drawable.ic_menu_upload);
-        utils.onActionBarWithText(sortMenu);
-        menu.add("Cleanup")
-            .setIcon(android.R.drawable.ic_menu_manage);
-        menu.add(MENU_ARCHIVES)
-            .setIcon(android.R.drawable.ic_menu_view);
-        menu.add("Help")
-            .setIcon(android.R.drawable.ic_menu_help);
-        menu.add("Settings")
-            .setIcon(android.R.drawable.ic_menu_preferences);
 
         return true;
     }
@@ -244,26 +231,17 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @SuppressWarnings("deprecation")
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item == null || item.getTitle() == null){
-            return false;
-        }
-        if(item.getTitle().equals("App Theme")){
+        switch (item.getItemId()) {
+        case R.id.browse_menu_app_theme:
             this.utils.nextNightMode(this);
             item.setIcon(getNightModeIcon());
-        }else if (item.getTitle()
-                    .equals("Download")) {
-	showDialog(DOWNLOAD_DIALOG_ID);
+            return true;
+        case R.id.browse_menu_settings:
+            Intent settingsIntent = new Intent(this, PreferencesActivity.class);
+            this.startActivity(settingsIntent);
 
             return true;
-        } else if (item.getTitle()
-                           .equals("Settings")) {
-            Intent i = new Intent(this, PreferencesActivity.class);
-            this.startActivity(i);
-
-            return true;
-        } else if (item.getTitle()
-                           .equals("Crosswords") || item.getTitle()
-                                                            .equals(MENU_ARCHIVES)) {
+        case R.id.browse_menu_archives:
             this.viewArchive = !viewArchive;
             item.setTitle(viewArchive ? "Crosswords" : MENU_ARCHIVES); //menu item title
             this.setTitle(!viewArchive ? "Puzzles" : MENU_ARCHIVES); //activity title
@@ -271,44 +249,44 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             render();
 
             return true;
-        } else if (item.getTitle()
-                           .equals("Cleanup")) {
+        case R.id.browse_menu_cleanup:
             this.cleanup();
 
             return true;
-        } else if (item.getTitle()
-                           .equals("Help")) {
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/filescreen.html"), this,
+        case R.id.browse_menu_help:
+            Intent helpIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/filescreen.html"), this,
                     HTMLActivity.class);
-            this.startActivity(i);
-        } else if (item.getTitle()
-                           .equals("By Source")) {
+            this.startActivity(helpIntent);
+            return true;
+        case R.id.browse_menu_sort_source:
             this.accessor = Accessor.SOURCE;
             prefs.edit()
                  .putInt("sort", 2)
                  .apply();
             this.render();
-        } else if (item.getTitle()
-                           .equals("By Date (Ascending)")) {
+            return true;
+        case R.id.browse_menu_sort_date_asc:
             this.accessor = Accessor.DATE_ASC;
             prefs.edit()
                  .putInt("sort", 1)
                  .apply();
             this.render();
-        } else if (item.getTitle()
-                           .equals("By Date (Descending)")) {
+            return true;
+        case R.id.browse_menu_sort_date_desc:
             this.accessor = Accessor.DATE_DESC;
             prefs.edit()
                  .putInt("sort", 0)
                  .apply();
             this.render();
+            return true;
         }
 
-        return false;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if ((resultCode == RESULT_OK) && (downloadDialog != null) && downloadDialog.isShowing()) {
             // If the user hit close in the browser download activity, we close the dialog.
             downloadDialog.dismiss();
