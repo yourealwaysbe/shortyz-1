@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -530,7 +529,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         this.checkDownload();
     }
 
-    private SeparatedRecyclerViewAdapter buildList(final Dialog dialog, File directory, Accessor accessor) {
+    private SeparatedRecyclerViewAdapter buildList(File directory, Accessor accessor) {
         directory.mkdirs();
 
         long incept = System.currentTimeMillis();
@@ -556,19 +555,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         HashSet<String> sourcesTemp = new HashSet<String>();
 
         for (File f : directory.listFiles()) {
-            // if this is taking a while and we are off the EDT, pop up the dialog.
-            if ((dialog != null) && ((System.currentTimeMillis() - incept) > 2000) && !dialog.isShowing()) {
-                handler.post(new Runnable() {
-                        public void run() {
-                            try {
-                                dialog.show();
-                            } catch (RuntimeException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-            }
-
             if (f.getName()
                      .endsWith(".puz")) {
                 PuzzleMeta m = null;
@@ -803,10 +789,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 });
         }
 
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setMessage("Please Wait...");
-        dialog.setCancelable(false);
-
         final File directory = viewArchive ? BrowseActivity.this.archiveFolder : BrowseActivity.this.crosswordsFolder;
         directory.mkdirs();
         //Only spawn a thread if there are a lot of puzzles.
@@ -814,24 +796,26 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (((android.os.Build.VERSION.SDK_INT >= 5) && directory.exists() && (directory.list().length > 500)) ||
                 ((android.os.Build.VERSION.SDK_INT < 5) && directory.exists() && (directory.list().length > 160))) {
-            Runnable r = new Runnable() {
-                    public void run() {
-                        currentAdapter = BrowseActivity.this.buildList(dialog, directory, BrowseActivity.this.accessor);
-                        BrowseActivity.this.handler.post(new Runnable() {
-                                public void run() {
-                                    BrowseActivity.this.puzzleList.setAdapter(currentAdapter);
 
-                                    if (dialog.isShowing()) {
-                                        dialog.hide();
-                                    }
-                                }
-                            });
-                    }
-                };
+            final View progressBar
+                = BrowseActivity.this.findViewById( R.id.please_wait_notice);
+            progressBar.setVisibility(View.VISIBLE);
+
+            Runnable r = new Runnable() {
+                public void run() {
+                    currentAdapter = BrowseActivity.this.buildList(directory, BrowseActivity.this.accessor);
+                    BrowseActivity.this.handler.post(new Runnable() {
+                        public void run() {
+                            BrowseActivity.this.puzzleList.setAdapter(currentAdapter);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            };
 
             new Thread(r).start();
         } else {
-            this.puzzleList.setAdapter(currentAdapter = this.buildList(null, directory, accessor));
+            this.puzzleList.setAdapter(currentAdapter = this.buildList(directory, accessor));
         }
     }
 

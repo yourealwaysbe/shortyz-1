@@ -14,4 +14,5 @@
     <string name="notes_lab">Notes:</string>
     <string name="tap_to_show_full_notes">Tap to show full notes.</string>
     <string name="tap_to_hide_full_notes">Tap to hide full notes.</string>
+    <string name="please_wait">Please wait...</string>
 </resources>

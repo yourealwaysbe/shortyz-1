@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -113,10 +112,6 @@ public class HttpDownloadActivity extends Activity {
                     .getData();
         String filename = u.toString();
         filename = filename.substring(filename.lastIndexOf('/') + 1);
-
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setMessage("Downloading...\n" + filename);
-        dialog.setCancelable(false);
 
         OkHttpClient client = new OkHttpClient();
 
