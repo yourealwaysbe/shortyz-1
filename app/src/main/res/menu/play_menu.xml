@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/play_menu_clues"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Clues" />
+    <item
+        android:id="@+id/play_menu_notes"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Notes" />
+    <item
+        android:id="@+id/play_menu_zoom"
+        android:title="Zoom" >
+        <menu>
+            <item
+                android:id="@+id/play_menu_zoom_in"
+                android:title="Zoom In" />
+            <item
+                android:id="@+id/play_menu_zoom_in_max"
+                android:title="Zoom In Max" />
+            <item
+                android:id="@+id/play_menu_zoom_out"
+                android:title="Zoom Out" />
+            <item
+                android:id="@+id/play_menu_zoom_fit"
+                android:title="Fit to Screen" />
+            <item
+                android:id="@+id/play_menu_zoom_reset"
+                android:title="Zoom Reset" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/play_menu_clue_size"
+        android:title="Clue Text Size" >
+        <menu>
+            <item
+                android:id="@+id/play_menu_clue_size_s"
+                android:title="Small" />
+            <item
+                android:id="@+id/play_menu_clue_size_m"
+                android:title="Medium" />
+            <item
+                android:id="@+id/play_menu_clue_size_l"
+                android:title="Large" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/play_menu_show_errors"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Show Errors"
+        android:checkable="true" />
+    <item
+        android:id="@+id/play_menu_reveal"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Reveal" >
+        <menu>
+            <item
+                android:id="@+id/play_menu_reveal_letter"
+                android:title="Letter" />
+            <item
+                android:id="@+id/play_menu_reveal_word"
+                android:title="Word" />
+            <item
+                android:id="@+id/play_menu_reveal_errors"
+                android:title="Errors" />
+            <item
+                android:id="@+id/play_menu_reveal_puzzle"
+                android:title="Puzzle" />
+
+        </menu>
+    </item>
+    <item
+        android:id="@+id/play_menu_info"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="Info" />
+    <item
+        android:id="@+id/play_menu_help"
+        android:icon="@android:drawable/ic_menu_help"
+        android:title="Help" />
+    <item
+        android:id="@+id/play_menu_settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:title="Settings" />
+</menu>
