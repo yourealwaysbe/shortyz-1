@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent">
-  <androidx.recyclerview.widget.RecyclerView
-  		android:id="@+id/puzzleList"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/puzzleList"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-  		android:layout_width="fill_parent"
-  		android:layout_height="fill_parent"
-  	/>
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+    />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/button_floating_action"
@@ -20,7 +21,7 @@
         app:backgroundTint="#ff669900"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="16dp"/>
-
+        android:layout_margin="16dp"
+    />
 
 </RelativeLayout>
