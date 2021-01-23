@@ -516,20 +516,29 @@ public class Playboard implements Serializable {
      * -Delete the letter in the current box.
      */
     public Word deleteLetter() {
-        // TODO: Handle deletion of scratch letters
         Box currentBox = this.getCurrentBox();
         Word wordToReturn = this.getCurrentWord();
 
         pushNotificationDisabled();
 
+        if (this.scratchMode && currentBox.isBlank()) {
+            Note note = this.getNote();
+            if (note != null) {
+                // Update the scratch text
+                int pos = this.across ? currentBox.getAcrossPosition() : currentBox.getDownPosition();
+                String response = this.getCurrentWordResponse();
+                if (pos >= 0 && pos < response.length())
+                    note.deleteScratchLetterAt(pos);
+            }
+        }
 
-        if (currentBox.isBlank() || isDontDeleteCurrent()) {
+        if (currentBox.isBlank() || isDontDeleteCurrent() || this.scratchMode) {
             wordToReturn = this.previousLetter();
             currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
         }
 
 
-        if (!isDontDeleteCurrent()) {
+        if (!isDontDeleteCurrent() && !this.scratchMode) {
             currentBox.setBlank();
         }
 
@@ -765,7 +774,7 @@ public class Playboard implements Serializable {
             // Update the scratch text
             int pos = this.across ? b.getAcrossPosition() : b.getDownPosition();
             if (pos >= 0 && pos < response.length())
-                note.setScratchLetter(pos, letter);
+                note.setScratchLetter(pos, letter, response.length());
 
             Word next = this.nextLetter();
             popNotificationDisabled();

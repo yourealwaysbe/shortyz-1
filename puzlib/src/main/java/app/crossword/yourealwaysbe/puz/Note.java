@@ -2,8 +2,12 @@ package app.crossword.yourealwaysbe.puz;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
+import app.crossword.yourealwaysbe.io.charset.Surrogate;
 
 public class Note implements Serializable {
+    private static final Logger LOG = Logger.getLogger(Note.class.getCanonicalName());
     private String scratch;
     private String text;
     private String anagramSource;
@@ -113,9 +117,19 @@ public class Note implements Serializable {
         return new String(padding);
     }
 
-    public void setScratchLetter(int pos, char letter) {
+    public void setScratchLetter(int pos, char letter, int wordLength) {
         String letterText = Character.toString(letter);
         String newScratchText;
+
+        if (scratch == null && wordLength > 0)
+            scratch = createBlankString(wordLength);
+
+        // If a wordLength isn't supplied and we don't have a scratch already created, we can't do
+        // anything.  Swallow the error and log it.
+        if (scratch == null) {
+            LOG.warning("Can't set scratch letter because scratch text not created");
+            return;
+        }
 
         int len = scratch.length();
         if (pos == 0) {
@@ -126,5 +140,9 @@ public class Note implements Serializable {
             newScratchText = scratch.substring(0, pos) + letterText + scratch.substring(pos + 1);
         }
         scratch = newScratchText;
+    }
+
+    public void deleteScratchLetterAt(int pos) {
+        setScratchLetter(pos, Box.BLANK, 0);
     }
 }
