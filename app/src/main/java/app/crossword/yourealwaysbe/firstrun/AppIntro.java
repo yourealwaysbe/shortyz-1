@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Vibrator;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,9 +31,6 @@ public abstract class AppIntro extends FragmentActivity {
     private List<Fragment> fragments = new Vector<>();
     private List<ImageView> dots;
     private int slidesNumber;
-    private Vibrator mVibrator;
-    private boolean isVibrateOn = false;
-    private int vibrateIntensity = 20;
     private boolean showSkip = true;
 
     private static final int FIRST_PAGE_NUM = 0;
@@ -50,14 +46,10 @@ public abstract class AppIntro extends FragmentActivity {
         final TextView skipButton = (TextView) findViewById(R.id.skip);
         final ImageView nextButton = (ImageView) findViewById(R.id.next);
         final TextView doneButton = (TextView) findViewById(R.id.done);
-        mVibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
 
         skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(@NonNull View v) {
-                if (isVibrateOn) {
-                    mVibrator.vibrate(vibrateIntensity);
-                }
                 onSkipPressed();
             }
         });
@@ -65,9 +57,6 @@ public abstract class AppIntro extends FragmentActivity {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(@NonNull View v) {
-                if (isVibrateOn) {
-                    mVibrator.vibrate(vibrateIntensity);
-                }
                 pager.setCurrentItem(pager.getCurrentItem() + 1);
             }
         });
@@ -75,9 +64,6 @@ public abstract class AppIntro extends FragmentActivity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(@NonNull View v) {
-                if (isVibrateOn) {
-                    mVibrator.vibrate(vibrateIntensity);
-                }
                 onDonePressed();
             }
         });
@@ -183,14 +169,6 @@ public abstract class AppIntro extends FragmentActivity {
             TextView skip = (TextView) findViewById(R.id.skip);
             skip.setVisibility(View.INVISIBLE);
         }
-    }
-
-    public void setVibrate(boolean vibrate) {
-        this.isVibrateOn = vibrate;
-    }
-
-    public void setVibrateIntensity(int intensity) {
-        this.vibrateIntensity = intensity;
     }
 
     public void setCustomTransformer(@Nullable ViewPager.PageTransformer transformer) {
