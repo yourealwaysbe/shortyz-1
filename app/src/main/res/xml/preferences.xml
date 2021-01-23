@@ -235,10 +235,6 @@
          android:key="releaseNotes"/>
 
     <androidx.preference.Preference
-            android:title="First Run Screens"
-            android:key="firstRun"/>
-
-    <androidx.preference.Preference
      android:title="License" 
      android:key="license"/>
 

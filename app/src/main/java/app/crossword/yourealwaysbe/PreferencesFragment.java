@@ -10,7 +10,6 @@ import androidx.preference.Preference.OnPreferenceClickListener;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceFragmentCompat;
 
-import app.crossword.yourealwaysbe.firstrun.FirstrunActivity;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.service.BackgroundDownloadService;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
@@ -51,17 +50,6 @@ public class PreferencesFragment
                     return true;
                 }
             });
-
-        findPreference("firstRun")
-                .setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference arg0) {
-                Intent i = new Intent(Intent.ACTION_VIEW, null,
-                        getActivity(), FirstrunActivity.class);
-                getActivity().startActivity(i);
-
-                return true;
-            }
-        });
     }
 
     protected void onResumePreferences() {

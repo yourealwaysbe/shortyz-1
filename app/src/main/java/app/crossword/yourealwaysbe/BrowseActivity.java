@@ -34,7 +34,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import app.crossword.yourealwaysbe.firstrun.FirstrunActivity;
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.net.Downloader;
 import app.crossword.yourealwaysbe.net.Downloaders;
@@ -295,12 +294,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(!((ForkyzApplication) getApplication()).getSettings().getBoolean("didFirstRun", false)){
-            Intent i = new Intent(Intent.ACTION_VIEW, null, this, FirstrunActivity.class);
-            this.startActivity(i);
-            finish();
-            return;
-        }
         this.setTitle("Puzzles");
         //this.utils.hideTitleOnPortrait(this);
         setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);

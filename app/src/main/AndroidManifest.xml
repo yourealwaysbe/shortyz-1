@@ -134,11 +134,6 @@
             android:exported="true">
         </service>
 
-        <activity android:name="app.crossword.yourealwaysbe.firstrun.FirstrunActivity"
-            android:exported="true"
-            android:label="Welcome"
-            android:theme="@style/NYT"/>
-
         <activity android:name="app.crossword.yourealwaysbe.nyt.ErrorActivity"
             android:theme="@style/NYT"
             />
