@@ -774,7 +774,7 @@ public class Playboard implements Serializable {
 
             // Create a note for this clue if we don't already have one
             if (note == null) {
-                note = new Note(response);
+                note = new Note(response.length());
                 Clue c = this.getClue();
                 this.puzzle.setNote(note, c.number, this.across);
             }
@@ -782,7 +782,7 @@ public class Playboard implements Serializable {
             // Update the scratch text
             int pos = this.across ? b.getAcrossPosition() : b.getDownPosition();
             if (pos >= 0 && pos < response.length())
-                note.setScratchLetter(pos, letter, response.length());
+                note.setScratchLetter(pos, letter);
 
             Word next = this.nextLetter();
             popNotificationDisabled();

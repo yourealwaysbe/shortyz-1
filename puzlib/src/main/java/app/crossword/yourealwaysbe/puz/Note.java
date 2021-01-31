@@ -23,14 +23,8 @@ public class Note implements Serializable {
         this.anagramSolution = anagramSolution;
     }
 
-    public Note(String text) {
-        this.text = text;
-
-        String blankString = createBlankString(text.length());
-        this.scratch
-                = this.anagramSource
-                = this.anagramSolution
-                = blankString;
+    public Note(int wordLength) {
+        this.scratch = createBlankString(wordLength);
     }
 
     public String getText() {
@@ -117,15 +111,10 @@ public class Note implements Serializable {
         return new String(padding);
     }
 
-    public void setScratchLetter(int pos, char letter, int wordLength) {
+    public void setScratchLetter(int pos, char letter) {
         String letterText = Character.toString(letter);
         String newScratchText;
 
-        if (scratch == null && wordLength > 0)
-            scratch = createBlankString(wordLength);
-
-        // If a wordLength isn't supplied and we don't have a scratch already created, we can't do
-        // anything.  Swallow the error and log it.
         if (scratch == null) {
             LOG.warning("Can't set scratch letter because scratch text not created");
             return;
@@ -143,6 +132,6 @@ public class Note implements Serializable {
     }
 
     public void deleteScratchLetterAt(int pos) {
-        setScratchLetter(pos, Box.BLANK, 0);
+        setScratchLetter(pos, Box.BLANK);
     }
 }
