@@ -400,6 +400,8 @@ public class Playboard implements Serializable {
         return scratchMode;
     }
 
+    public void setScratchMode(boolean scratchMode) { this.scratchMode = scratchMode; }
+
     public void toggleScratchMode() {
         this.scratchMode = !this.scratchMode;
     }

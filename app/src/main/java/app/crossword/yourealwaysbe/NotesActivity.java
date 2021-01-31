@@ -82,6 +82,7 @@ public class NotesActivity extends PuzzleActivity {
             this.renderer.setScale((float) 1);
 
         Playboard board = getBoard();
+        board.setScratchMode(false);
         Puzzle puz = board.getPuzzle();
 
         setContentView(R.layout.notes);
