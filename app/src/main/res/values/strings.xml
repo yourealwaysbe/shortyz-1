@@ -15,4 +15,7 @@
     <string name="tap_to_show_full_notes">Tap to show full notes.</string>
     <string name="tap_to_hide_full_notes">Tap to hide full notes.</string>
     <string name="please_wait">Please wait...</string>
+    <string name="copy_conflict">Copy Conflict</string>
+    <string name="overlay_board_to_scratch_warning">Overlaying the board onto the scratch will overwrite scratch characters. Continue?</string>
+    <string name="copy_board_view_to_board_warning">The new solution conflicts with existing entries. Overwrite anyway?</string>
 </resources>

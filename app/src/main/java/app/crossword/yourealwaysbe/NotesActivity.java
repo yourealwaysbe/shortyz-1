@@ -119,7 +119,8 @@ public class NotesActivity extends PuzzleActivity {
         imageView.setAllowOverScroll(false);
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
-                // TODO Auto-generated method stub
+                NotesActivity.this.copyBoardToScratch();
+                NotesActivity.this.copyBoardToAnagramSol();
             }
 
             public void onTap(Point e) {
@@ -465,41 +466,13 @@ public class NotesActivity extends PuzzleActivity {
         final Box[] curWordBoxes = board.getCurrentWordBoxes();
         final String response = view.toString();
 
-        boolean conflicts = false;
-
-        for (int i = 0; i < curWordBoxes.length && i < response.length(); i++) {
-            char oldResponse = curWordBoxes[i].getResponse();
-            if (Character.isLetter(oldResponse) &&
-                response.charAt(i) != oldResponse) {
-                conflicts = true;
-                break;
-            }
-        }
-
-        if (conflicts) {
-            AlertDialog.Builder builder
-                = new AlertDialog.Builder(
-                    new ContextThemeWrapper(this, R.style.dialogStyle)
-                );
-
-            builder.setTitle("Copy Conflict");
-            builder.setMessage("The new solution conflicts with existing entries.  Overwrite anyway?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    board.setCurrentWord(response);
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            AlertDialog alert = builder.create();
-            alert.show();
+        if (hasConflict(curWordBoxes, response)) {
+            askYesNo(
+                getString(R.string.copy_conflict),
+                getString(R.string.copy_board_view_to_board_warning),
+                () -> { board.setCurrentWord(response); },
+                () -> { }
+            );
         } else {
             board.setCurrentWord(response);
         }
@@ -519,5 +492,84 @@ public class NotesActivity extends PuzzleActivity {
         notesBox.setText(notesText);
 
         render();
+    }
+
+    private void copyBoardToScratch() {
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        final Box[] curWordBoxes = board.getCurrentWordBoxes();
+        String scratchResponse = scratchView.toString();
+
+        if (hasConflict(curWordBoxes, scratchResponse)) {
+            askYesNo(
+                getString(R.string.copy_conflict),
+                getString(R.string.overlay_board_to_scratch_warning),
+                () -> { overlayBoxesOnBoardView(curWordBoxes, scratchView); },
+                () -> { }
+            );
+        } else {
+            overlayBoxesOnBoardView(curWordBoxes, scratchView);
+        }
+    }
+
+    private void copyBoardToAnagramSol() {
+        // TODO
+    }
+
+    private boolean hasConflict(Box[] boxes, String word) {
+        int length = Math.min(boxes.length, word.length());
+        for (int i = 0; i < length; i++) {
+            char boxResponse = boxes[i].getResponse();
+            char wordResponse = word.charAt(i);
+            if (Character.isLetter(boxResponse) &&
+                Character.isLetter(wordResponse) &&
+                wordResponse != boxResponse) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void askYesNo(String title, String msg,
+                          Runnable onYes, Runnable onNo) {
+        AlertDialog.Builder builder
+            = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, R.style.dialogStyle)
+            );
+
+        builder.setTitle(title);
+        builder.setMessage(msg);
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onYes.run();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onNo.run();
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * Copies non-blank characters from response to the view
+     */
+    private void overlayBoxesOnBoardView(Box[] boxes,
+                                         BoardEditText view) {
+        int length = Math.min(boxes.length, view.getLength());
+        for (int i = 0; i < length; i++) {
+            if (!boxes[i].isBlank()) {
+                view.setResponse(i, boxes[i].getResponse());
+            }
+        }
     }
 }
