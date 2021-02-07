@@ -785,8 +785,10 @@ public class IO {
                 }
             }
 
-            Note n = new Note(scratch, text, anagramSrc, anagramSol);
-            puz.setNoteRaw(n, x, isAcross);
+            if (scratch != null || text != null || anagramSrc != null || anagramSol != null) {
+                Note n = new Note(scratch, text, anagramSrc, anagramSol);
+                puz.setNoteRaw(n, x, isAcross);
+            }
         }
     }
 }
