@@ -514,10 +514,12 @@ public class NotesActivity extends PuzzleActivity {
 
         Box[] curWordBoxes = board.getCurrentWordBoxes();
         for (int i = 0; i < curWordBoxes.length; i++) {
-            char newChar = curWordBoxes[i].getResponse();
-            boolean allowed = preAnagramSolResponse(i, newChar);
-            if (allowed)
-                anagramSolView.setResponse(i, newChar);
+            if (!curWordBoxes[i].isBlank()) {
+                char newChar = curWordBoxes[i].getResponse();
+                boolean allowed = preAnagramSolResponse(i, newChar);
+                if (allowed)
+                    anagramSolView.setResponse(i, newChar);
+            }
         }
     }
 
