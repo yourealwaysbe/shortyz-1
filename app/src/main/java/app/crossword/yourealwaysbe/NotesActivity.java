@@ -546,14 +546,16 @@ public class NotesActivity extends PuzzleActivity {
 
         builder.setTitle(title);
         builder.setMessage(msg);
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(getString(R.string.yes),
+                                  new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 onYes.run();
                 dialog.dismiss();
             }
         });
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.no),
+                                  new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 onNo.run();
