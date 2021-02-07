@@ -304,8 +304,18 @@ public class Playboard implements Serializable {
 
     public void setCurrentWord(String response) {
         Box[] boxes = getCurrentWordBoxes();
-        for (int i = 0; i < boxes.length && i < response.length(); i++) {
+        int length = Math.min(boxes.length, response.length());
+        for (int i = 0; i < length; i++) {
             boxes[i].setResponse(response.charAt(i));
+        }
+        notifyChange();
+    }
+
+    public void setCurrentWord(Box[] response) {
+        Box[] boxes = getCurrentWordBoxes();
+        int length = Math.min(boxes.length, response.length);
+        for (int i = 0; i < length; i++) {
+            boxes[i].setResponse(response[i].getResponse());
         }
         notifyChange();
     }

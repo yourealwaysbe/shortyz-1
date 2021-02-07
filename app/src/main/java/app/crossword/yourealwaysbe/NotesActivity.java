@@ -119,8 +119,15 @@ public class NotesActivity extends PuzzleActivity {
         imageView.setAllowOverScroll(false);
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
-                NotesActivity.this.copyBoardToScratch();
-                NotesActivity.this.copyBoardToAnagramSol();
+                View focused = getWindow().getCurrentFocus();
+                switch (focused.getId()) {
+                case R.id.scratchMiniboard:
+                    NotesActivity.this.copyBoardToScratch();
+                    break;
+                case R.id.anagramSolution:
+                    NotesActivity.this.copyBoardToAnagramSol();
+                    break;
+                }
             }
 
             public void onTap(Point e) {
@@ -264,23 +271,9 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public char filter(char oldChar, char newChar, int pos) {
-                if (Character.isLetter(newChar)) {
-                    for (int i = 0; i < curWordLen; i++) {
-                        if (anagramSourceView.getResponse(i) == newChar) {
-                            anagramSourceView.setResponse(i, oldChar);
-                            return newChar;
-                        }
-                    }
-                    // if failed to find it in the source view, see if we can
-                    // find one to swap it with one in the solution
-                    for (int i = 0; i < curWordLen; i++) {
-                        if (anagramSolView.getResponse(i) == newChar) {
-                            anagramSolView.setResponse(i, oldChar);
-                            return newChar;
-                        }
-                    }
-                }
-                return '\0';
+                boolean changed
+                    = NotesActivity.this.preAnagramSolResponse(pos, newChar);
+                return changed ? newChar : '\0';
             }
         };
 
@@ -464,17 +457,17 @@ public class NotesActivity extends PuzzleActivity {
             return;
 
         final Box[] curWordBoxes = board.getCurrentWordBoxes();
-        final String response = view.toString();
+        final Box[] srcBoxes = view.getBoxes();
 
-        if (hasConflict(curWordBoxes, response)) {
+        if (hasConflict(srcBoxes, curWordBoxes, true)) {
             askYesNo(
                 getString(R.string.copy_conflict),
                 getString(R.string.copy_board_view_to_board_warning),
-                () -> { board.setCurrentWord(response); },
+                () -> { board.setCurrentWord(srcBoxes); },
                 () -> { }
             );
         } else {
-            board.setCurrentWord(response);
+            board.setCurrentWord(srcBoxes);
         }
     }
 
@@ -500,9 +493,9 @@ public class NotesActivity extends PuzzleActivity {
             return;
 
         final Box[] curWordBoxes = board.getCurrentWordBoxes();
-        String scratchResponse = scratchView.toString();
+        final Box[] scratchBoxes = scratchView.getBoxes();
 
-        if (hasConflict(curWordBoxes, scratchResponse)) {
+        if (hasConflict(curWordBoxes, scratchBoxes, false)) {
             askYesNo(
                 getString(R.string.copy_conflict),
                 getString(R.string.overlay_board_to_scratch_warning),
@@ -515,17 +508,27 @@ public class NotesActivity extends PuzzleActivity {
     }
 
     private void copyBoardToAnagramSol() {
-        // TODO
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        Box[] curWordBoxes = board.getCurrentWordBoxes();
+        for (int i = 0; i < curWordBoxes.length; i++) {
+            char newChar = curWordBoxes[i].getResponse();
+            boolean allowed = preAnagramSolResponse(i, newChar);
+            if (allowed)
+                anagramSolView.setResponse(i, newChar);
+        }
     }
 
-    private boolean hasConflict(Box[] boxes, String word) {
-        int length = Math.min(boxes.length, word.length());
+    private boolean hasConflict(Box[] source,
+                                Box[] dest,
+                                boolean copyBlanks) {
+        int length = Math.min(source.length, dest.length);
         for (int i = 0; i < length; i++) {
-            char boxResponse = boxes[i].getResponse();
-            char wordResponse = word.charAt(i);
-            if (Character.isLetter(boxResponse) &&
-                Character.isLetter(wordResponse) &&
-                wordResponse != boxResponse) {
+            if ((copyBlanks || !source[i].isBlank()) &&
+                !dest[i].isBlank() &&
+                source[i].getResponse() != dest[i].getResponse()) {
                 return true;
             }
         }
@@ -571,5 +574,35 @@ public class NotesActivity extends PuzzleActivity {
                 view.setResponse(i, boxes[i].getResponse());
             }
         }
+    }
+
+    /**
+     * Make arrangements for anagram letter to be played
+     *
+     * Changes source/sol boxes by moving required letters around.
+     *
+     * @return true if play of letter can proceed
+     */
+    private boolean preAnagramSolResponse(int pos, char newChar) {
+        char oldChar = anagramSolView.getResponse(pos);
+        if (Character.isLetter(newChar)) {
+            int sourceLen = anagramSourceView.getLength();
+            for (int i = 0; i < sourceLen; i++) {
+                if (anagramSourceView.getResponse(i) == newChar) {
+                    anagramSourceView.setResponse(i, oldChar);
+                    return true;
+                }
+            }
+            // if failed to find it in the source view, see if we can
+            // find one to swap it with one in the solution
+            int solLen = anagramSolView.getLength();
+            for (int i = 0; i < solLen; i++) {
+                if (anagramSolView.getResponse(i) == newChar) {
+                    anagramSolView.setResponse(i, oldChar);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

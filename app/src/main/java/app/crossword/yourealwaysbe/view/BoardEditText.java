@@ -143,6 +143,10 @@ public class BoardEditText extends ScrollingImageView {
         return (boxes == null) ? 0 : boxes.length;
     }
 
+    public Box[] getBoxes() {
+        return boxes;
+    }
+
     public boolean isBlank(int pos) {
         if (boxes != null && 0 <= pos && pos < boxes.length) {
             return boxes[pos].isBlank();
