@@ -4,10 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import app.crossword.yourealwaysbe.util.WeakSet;
@@ -28,7 +26,6 @@ public class Playboard implements Serializable {
     private boolean skipCompletedLetters;
     private boolean preserveCorrectLettersInShowErrors;
     private boolean dontDeleteCrossing;
-    private boolean scratchMode = false;
     private Set<PlayboardListener> listeners = WeakSet.buildSet();
     private int notificationDisabledDepth = 0;
     private Word previousWord = null;
@@ -396,16 +393,6 @@ public class Playboard implements Serializable {
         return responder;
     }
 
-    public boolean isScratchMode() {
-        return scratchMode;
-    }
-
-    public void setScratchMode(boolean scratchMode) { this.scratchMode = scratchMode; }
-
-    public void toggleScratchMode() {
-        this.scratchMode = !this.scratchMode;
-    }
-
     public void setShowErrors(boolean showErrors) {
         boolean changed = (this.showErrors != showErrors);
         this.showErrors = showErrors;
@@ -531,24 +518,14 @@ public class Playboard implements Serializable {
 
         pushNotificationDisabled();
 
-        if (this.scratchMode && currentBox.isBlank()) {
-            Note note = this.getNote();
-            if (note != null) {
-                // Update the scratch text
-                int pos = this.across ? currentBox.getAcrossPosition() : currentBox.getDownPosition();
-                String response = this.getCurrentWordResponse();
-                if (pos >= 0 && pos < response.length())
-                    note.deleteScratchLetterAt(pos);
-            }
-        }
 
-        if (currentBox.isBlank() || isDontDeleteCurrent() || this.scratchMode) {
+        if (currentBox.isBlank() || isDontDeleteCurrent()) {
             wordToReturn = this.previousLetter();
             currentBox = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
         }
 
 
-        if (!isDontDeleteCurrent() && !this.scratchMode) {
+        if (!isDontDeleteCurrent()) {
             currentBox.setBlank();
         }
 
@@ -557,6 +534,27 @@ public class Playboard implements Serializable {
         notifyChange();
 
         return wordToReturn;
+    }
+
+    public void deleteScratchLetter() {
+        Box currentBox = this.getCurrentBox();
+
+        pushNotificationDisabled();
+
+        if (currentBox.isBlank()) {
+            Note note = this.getNote();
+            if (note != null) {
+                int pos = this.across ? currentBox.getAcrossPosition() : currentBox.getDownPosition();
+                String response = this.getCurrentWordResponse();
+                if (pos >= 0 && pos < response.length())
+                    note.deleteScratchLetterAt(pos);
+            }
+        }
+
+        this.previousLetter();
+
+        popNotificationDisabled();
+        notifyChange();
     }
 
     /**
@@ -768,30 +766,7 @@ public class Playboard implements Serializable {
             return null;
         }
 
-        if (this.scratchMode) {
-            pushNotificationDisabled();
-
-            Note note = this.getNote();
-            String response = this.getCurrentWordResponse();
-
-            // Create a note for this clue if we don't already have one
-            if (note == null) {
-                note = new Note(response.length());
-                Clue c = this.getClue();
-                this.puzzle.setNote(note, c.number, this.across);
-            }
-
-            // Update the scratch text
-            int pos = this.across ? b.getAcrossPosition() : b.getDownPosition();
-            if (pos >= 0 && pos < response.length())
-                note.setScratchLetter(pos, letter);
-
-            Word next = this.nextLetter();
-            popNotificationDisabled();
-
-            notifyChange();
-            return next;
-        } else if (preserveCorrectLettersInShowErrors && b.getResponse() == b.getSolution() && isShowErrors()) {
+        if (preserveCorrectLettersInShowErrors && b.getResponse() == b.getSolution() && isShowErrors()) {
             // Prohibit replacing correct letters
             return this.getCurrentWord();
         } else {
@@ -805,6 +780,36 @@ public class Playboard implements Serializable {
 
             return next;
         }
+    }
+
+    public void playScratchLetter(char letter) {
+        Box b = this.boxes[this.highlightLetter.across][this.highlightLetter.down];
+
+        if (b == null) {
+            return;
+        }
+
+        pushNotificationDisabled();
+
+        Note note = this.getNote();
+        String response = this.getCurrentWordResponse();
+
+        // Create a note for this clue if we don't already have one
+        if (note == null) {
+            note = new Note(response.length());
+            Clue c = this.getClue();
+            this.puzzle.setNote(note, c.number, this.across);
+        }
+
+        // Update the scratch text
+        int pos = this.across ? b.getAcrossPosition() : b.getDownPosition();
+        if (pos >= 0 && pos < response.length())
+            note.setScratchLetter(pos, letter);
+
+        this.nextLetter();
+        popNotificationDisabled();
+
+        notifyChange();
     }
 
     public Word previousLetter() {
