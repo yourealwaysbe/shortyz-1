@@ -20,4 +20,9 @@
     <string name="copy_board_view_to_board_warning">The new solution conflicts with existing entries. Overwrite anyway?</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
+    <string name="reveal_puzzle">Reveal Entire Puzzle</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="elapsed_time">Elapsed Time: %1$s</string>
 </resources>

@@ -16,6 +16,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
@@ -72,7 +74,6 @@ public class PlayActivity extends PuzzleActivity
     private AlertDialog revealPuzzleDialog;
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
-    private Dialog dialog;
     private Handler handler = new Handler();
     private KeyboardManager keyboardManager;
     private MovementStrategy movement = null;
@@ -357,22 +358,6 @@ public class PlayActivity extends PuzzleActivity
             return;
         }
 
-        revealPuzzleDialog = new AlertDialog.Builder(this).create();
-        revealPuzzleDialog.setTitle("Reveal Entire Puzzle");
-        revealPuzzleDialog.setMessage("Are you sure?");
-
-        revealPuzzleDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        getBoard().revealPuzzle();
-                    }
-                });
-        revealPuzzleDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
         this.boardView.setFocusable(true);
         this.boardView.setScaleListener(new ScaleListener() {
             TimerTask t;
@@ -597,7 +582,7 @@ public class PlayActivity extends PuzzleActivity
             getBoard().revealErrors();
             return true;
         case R.id.play_menu_reveal_puzzle:
-            this.showDialog(REVEAL_PUZZLE_DIALOG);
+            showRevealPuzzleDialog();
             return true;
         case R.id.play_menu_show_errors:
             getBoard().toggleShowErrors();
@@ -661,27 +646,7 @@ public class PlayActivity extends PuzzleActivity
 
             return true;
         case R.id.play_menu_info:
-            if (dialog != null) {
-                TextView view = (TextView) dialog
-                        .findViewById(R.id.puzzle_info_time);
-
-                ImaginaryTimer timer = getTimer();
-                if (timer != null) {
-                    timer.stop();
-                    view.setText("Elapsed Time: " + getTimer().time());
-                    timer.start();
-                } else {
-                    Puzzle puz = getPuzzle();
-                    if (puz != null)
-                        view.setText("Elapsed Time: "
-                                + new ImaginaryTimer(puz.getTime()).time());
-                    else
-                        view.setText("No puzzle time available.");
-                }
-            }
-
-            this.showDialog(INFO_DIALOG);
-
+            showInfoDialog();
             return true;
         case R.id.play_menu_clues:
             Intent clueIntent = new Intent(PlayActivity.this, ClueListActivity.class);
@@ -788,22 +753,6 @@ public class PlayActivity extends PuzzleActivity
         this.render(true);
     }
 
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case INFO_DIALOG:
-
-                // This is weird. I don't know why a rotate resets the dialog.
-                // Whatevs.
-                return createInfoDialog();
-
-            case REVEAL_PUZZLE_DIALOG:
-                return revealPuzzleDialog;
-
-            default:
-                return null;
-        }
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -908,91 +857,6 @@ public class PlayActivity extends PuzzleActivity
 
             return movement;
         }
-    }
-
-    private Dialog createInfoDialog() {
-        if (dialog == null) {
-            dialog = new Dialog(this);
-        }
-
-        dialog.setTitle("Puzzle Info");
-        dialog.setContentView(R.layout.puzzle_info_dialog);
-
-        Puzzle puz = getPuzzle();
-        if (puz == null)
-            return dialog;
-
-        TextView view = dialog.findViewById(R.id.puzzle_info_title);
-        view.setText(puz.getTitle());
-        view = dialog.findViewById(R.id.puzzle_info_author);
-        view.setText(puz.getAuthor());
-        view = dialog.findViewById(R.id.puzzle_info_copyright);
-        view.setText(puz.getCopyright());
-        view = dialog.findViewById(R.id.puzzle_info_time);
-
-        ImaginaryTimer timer = getTimer();
-        if (timer != null) {
-            timer.stop();
-            view.setText("Elapsed Time: " + timer.time());
-            timer.start();
-        } else {
-            view.setText("Elapsed Time: "
-                    + new ImaginaryTimer(puz.getTime()).time());
-        }
-
-        ProgressBar progress = (ProgressBar) dialog
-                .findViewById(R.id.puzzle_info_progress);
-        progress.setProgress(puz.getPercentComplete());
-
-        view = dialog.findViewById(R.id.puzzle_info_filename);
-        view.setText(Uri.fromFile(getBaseFile()).toString());
-
-        addNotes(dialog);
-
-        return dialog;
-    }
-
-    private void addNotes(Dialog infoDialog) {
-        TextView view = dialog.findViewById(R.id.puzzle_info_notes);
-
-        Puzzle puz = getPuzzle();
-        if (puz == null)
-            return;
-
-        String puzNotes = puz.getNotes();
-        if (puzNotes == null)
-            puzNotes = "";
-
-        final String notes = puzNotes;
-
-        String[] split = notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\s*\\d))", 2);
-
-        final String text = (split.length > 1) ? split[0].trim() : null;
-
-        String tapShow = getString(R.string.tap_to_show_full_notes);
-        if (text != null && text.length() > 0)
-            view.setText(text + "\n(" + tapShow + ")");
-        else
-            view.setText("(" + tapShow + ")");
-
-        view.setOnClickListener(new OnClickListener() {
-            private boolean showAll = true;
-            private String tapShow = getString(R.string.tap_to_show_full_notes);
-            private String tapHide = getString(R.string.tap_to_hide_full_notes);
-
-            public void onClick(View view) {
-                TextView tv = (TextView) view;
-
-                if (showAll)
-                    tv.setText(notes + "\n(" + tapHide + ")");
-                else if (text == null || text.length() == 0)
-                    tv.setText("(" + tapShow + ")");
-                else
-                    tv.setText(text + "\n(" + tapShow + ")");
-
-                showAll = !showAll;
-            }
-        });
     }
 
     /**
@@ -1135,5 +999,149 @@ public class PlayActivity extends PuzzleActivity
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(SHOW_CLUES_TAB, false);
         editor.apply();
+    }
+
+    private void showInfoDialog() {
+        DialogFragment dialog = new InfoDialog();
+        dialog.show(getSupportFragmentManager(), "InfoDialog");
+    }
+
+    private void showRevealPuzzleDialog() {
+        DialogFragment dialog = new RevealPuzzleDialog();
+        dialog.show(getSupportFragmentManager(), "RevealPuzzleDialog");
+    }
+
+    public static class InfoDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder
+                = new AlertDialog.Builder(getActivity());
+            LayoutInflater inflater = requireActivity().getLayoutInflater();
+
+            View view = inflater.inflate(R.layout.puzzle_info_dialog, null);
+
+            PlayActivity activity = (PlayActivity) getActivity();
+
+            Puzzle puz = activity.getPuzzle();
+            if (puz != null) {
+                TextView title = view.findViewById(R.id.puzzle_info_title);
+                title.setText(puz.getTitle());
+
+                TextView author = view.findViewById(R.id.puzzle_info_author);
+                author .setText(puz.getAuthor());
+
+                TextView copyright
+                    = view.findViewById(R.id.puzzle_info_copyright);
+                copyright.setText(puz.getCopyright());
+
+                TextView time = view.findViewById(R.id.puzzle_info_time);
+
+                ImaginaryTimer timer = activity.getTimer();
+                if (timer != null) {
+                    timer.stop();
+                    time.setText(getString(
+                        R.string.elapsed_time, timer.time()
+                    ));
+                    timer.start();
+                } else {
+                    time.setText(getString(
+                        R.string.elapsed_time,
+                        new ImaginaryTimer(puz.getTime()).time()
+                    ));
+                }
+
+                ProgressBar progress = (ProgressBar) view
+                        .findViewById(R.id.puzzle_info_progress);
+                progress.setProgress(puz.getPercentComplete());
+
+                TextView filename
+                    = view.findViewById(R.id.puzzle_info_filename);
+                filename.setText(
+                    Uri.fromFile(activity.getBaseFile()).toString()
+                );
+
+                addNotes(view);
+            }
+
+            builder.setView(view);
+
+            return builder.create();
+        }
+
+        private void addNotes(View dialogView) {
+            TextView view = dialogView.findViewById(R.id.puzzle_info_notes);
+
+            Puzzle puz = ((PlayActivity) getActivity()).getPuzzle();
+            if (puz == null)
+                return;
+
+            String puzNotes = puz.getNotes();
+            if (puzNotes == null)
+                puzNotes = "";
+
+            final String notes = puzNotes;
+
+            String[] split =
+                notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\s*\\d))", 2);
+
+            final String text = (split.length > 1) ? split[0].trim() : null;
+
+            String tapShow = getString(R.string.tap_to_show_full_notes);
+            if (text != null && text.length() > 0)
+                view.setText(text + "\n(" + tapShow + ")");
+            else
+                view.setText("(" + tapShow + ")");
+
+            view.setOnClickListener(new OnClickListener() {
+                private boolean showAll = true;
+                private String tapShow
+                    = getString(R.string.tap_to_show_full_notes);
+                private String tapHide
+                    = getString(R.string.tap_to_hide_full_notes);
+
+                public void onClick(View view) {
+                    TextView tv = (TextView) view;
+
+                    if (showAll)
+                        tv.setText(notes + "\n(" + tapHide + ")");
+                    else if (text == null || text.length() == 0)
+                        tv.setText("(" + tapShow + ")");
+                    else
+                        tv.setText(text + "\n(" + tapShow + ")");
+
+                    showAll = !showAll;
+                }
+            });
+        }
+    }
+
+    public static class RevealPuzzleDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final PlayActivity activity = (PlayActivity) getActivity();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+            builder.setTitle(getString(R.string.reveal_puzzle))
+                .setMessage(getString(R.string.are_you_sure))
+                .setPositiveButton(
+                    R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            activity.getBoard().revealPuzzle();
+                        }
+                    }
+                )
+                .setNegativeButton(
+                    R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }
+                );
+
+            return builder.create();
+        }
     }
 }
