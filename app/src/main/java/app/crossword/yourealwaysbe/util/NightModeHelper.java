@@ -98,7 +98,7 @@ public class NightModeHelper {
                 break;
             case SYSTEM:
                 activity.getDelegate()
-                        .setLocalNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+                        .setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
             }
         }
