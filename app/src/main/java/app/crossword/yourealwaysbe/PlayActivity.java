@@ -82,6 +82,7 @@ public class PlayActivity extends PuzzleActivity
 
     private boolean showCount = false;
     private boolean showErrors = false;
+    private boolean scratchMode = false;
     private long lastTap = 0;
     private int screenWidthInInches;
     private Runnable fitToScreenTask = new Runnable() {
@@ -140,6 +141,7 @@ public class PlayActivity extends PuzzleActivity
         utils.finishOnHomeButton(this);
 
         this.showErrors = this.prefs.getBoolean("showErrors", false);
+        this.scratchMode = this.prefs.getBoolean("scratchMode", false);
         setDefaultKeyMode(Activity.DEFAULT_KEYS_DISABLE);
 
         MovementStrategy movement = this.getMovementStrategy();
@@ -484,6 +486,8 @@ public class PlayActivity extends PuzzleActivity
                 }
             }
         }
+
+        menu.findItem(R.id.play_menu_scratch_mode).setChecked(this.scratchMode);
         return true;
     }
 
@@ -536,6 +540,8 @@ public class PlayActivity extends PuzzleActivity
             case KeyEvent.KEYCODE_SPACE:
                 if (prefs.getBoolean("spaceChangesDirection", true)) {
                     getBoard().toggleDirection();
+                } else if (this.scratchMode) {
+                    getBoard().playScratchLetter(' ');
                 } else {
                     getBoard().playLetter(' ');
                 }
@@ -550,14 +556,22 @@ public class PlayActivity extends PuzzleActivity
                 return true;
 
             case KeyEvent.KEYCODE_DEL:
-                getBoard().deleteLetter();
+                if (this.scratchMode) {
+                    getBoard().deleteScratchLetter();
+                } else {
+                    getBoard().deleteLetter();
+                }
                 return true;
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
 
         if (ALPHA.indexOf(c) != -1) {
-            getBoard().playLetter(c);
+            if (this.scratchMode) {
+                getBoard().playScratchLetter(c);
+            } else {
+                getBoard().playLetter(c);
+            }
             return true;
         }
 
@@ -593,6 +607,11 @@ public class PlayActivity extends PuzzleActivity
             item.setChecked(getBoard().isShowErrors());
             this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
                     .apply();
+            return true;
+        case R.id.play_menu_scratch_mode:
+            this.scratchMode = !this.scratchMode;
+            item.setChecked(this.scratchMode);
+            this.prefs.edit().putBoolean("scratchMode", this.scratchMode).apply();
             return true;
         case R.id.play_menu_settings:
             Intent i = new Intent(this, PreferencesActivity.class);

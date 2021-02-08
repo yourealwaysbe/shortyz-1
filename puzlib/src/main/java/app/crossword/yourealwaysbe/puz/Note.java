@@ -1,8 +1,13 @@
 package app.crossword.yourealwaysbe.puz;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.logging.Logger;
+
+import app.crossword.yourealwaysbe.io.charset.Surrogate;
 
 public class Note implements Serializable {
+    private static final Logger LOG = Logger.getLogger(Note.class.getCanonicalName());
     private String scratch;
     private String text;
     private String anagramSource;
@@ -16,6 +21,10 @@ public class Note implements Serializable {
         this.scratch = scratch;
         this.anagramSource = anagramSource;
         this.anagramSolution = anagramSolution;
+    }
+
+    public Note(int wordLength) {
+        this.scratch = createBlankString(wordLength);
     }
 
     public String getText() {
@@ -92,5 +101,37 @@ public class Note implements Serializable {
         } else {
             return s1.equals(s2);
         }
+    }
+
+    private String createBlankString(int len) {
+        if (len == 0) return "";
+
+        char[] padding = new char[len];
+        Arrays.fill(padding, Box.BLANK);
+        return new String(padding);
+    }
+
+    public void setScratchLetter(int pos, char letter) {
+        String letterText = Character.toString(letter);
+        String newScratchText;
+
+        if (scratch == null) {
+            LOG.warning("Can't set scratch letter because scratch text not created");
+            return;
+        }
+
+        int len = scratch.length();
+        if (pos == 0) {
+            newScratchText = letterText + scratch.substring(1);
+        } else if (pos == len - 1) {
+            newScratchText = scratch.substring(0, pos) + letterText;
+        } else {
+            newScratchText = scratch.substring(0, pos) + letterText + scratch.substring(pos + 1);
+        }
+        scratch = newScratchText;
+    }
+
+    public void deleteScratchLetterAt(int pos) {
+        setScratchLetter(pos, Box.BLANK);
     }
 }

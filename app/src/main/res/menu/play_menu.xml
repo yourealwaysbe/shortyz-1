@@ -52,6 +52,10 @@
         android:title="Show Errors"
         android:checkable="true" />
     <item
+        android:id="@+id/play_menu_scratch_mode"
+        android:title="Scratch Mode"
+        android:checkable="true" />
+    <item
         android:id="@+id/play_menu_reveal"
         android:icon="@android:drawable/ic_menu_view"
         android:title="Reveal" >
