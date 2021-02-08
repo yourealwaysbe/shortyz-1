@@ -119,7 +119,15 @@ public class NotesActivity extends PuzzleActivity {
         imageView.setAllowOverScroll(false);
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
-                // TODO Auto-generated method stub
+                View focused = getWindow().getCurrentFocus();
+                switch (focused.getId()) {
+                case R.id.scratchMiniboard:
+                    NotesActivity.this.copyBoardToScratch();
+                    break;
+                case R.id.anagramSolution:
+                    NotesActivity.this.copyBoardToAnagramSol();
+                    break;
+                }
             }
 
             public void onTap(Point e) {
@@ -263,23 +271,9 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public char filter(char oldChar, char newChar, int pos) {
-                if (Character.isLetter(newChar)) {
-                    for (int i = 0; i < curWordLen; i++) {
-                        if (anagramSourceView.getResponse(i) == newChar) {
-                            anagramSourceView.setResponse(i, oldChar);
-                            return newChar;
-                        }
-                    }
-                    // if failed to find it in the source view, see if we can
-                    // find one to swap it with one in the solution
-                    for (int i = 0; i < curWordLen; i++) {
-                        if (anagramSolView.getResponse(i) == newChar) {
-                            anagramSolView.setResponse(i, oldChar);
-                            return newChar;
-                        }
-                    }
-                }
-                return '\0';
+                boolean changed
+                    = NotesActivity.this.preAnagramSolResponse(pos, newChar);
+                return changed ? newChar : '\0';
             }
         };
 
@@ -463,45 +457,17 @@ public class NotesActivity extends PuzzleActivity {
             return;
 
         final Box[] curWordBoxes = board.getCurrentWordBoxes();
-        final String response = view.toString();
+        final Box[] srcBoxes = view.getBoxes();
 
-        boolean conflicts = false;
-
-        for (int i = 0; i < curWordBoxes.length && i < response.length(); i++) {
-            char oldResponse = curWordBoxes[i].getResponse();
-            if (Character.isLetter(oldResponse) &&
-                response.charAt(i) != oldResponse) {
-                conflicts = true;
-                break;
-            }
-        }
-
-        if (conflicts) {
-            AlertDialog.Builder builder
-                = new AlertDialog.Builder(
-                    new ContextThemeWrapper(this, R.style.dialogStyle)
-                );
-
-            builder.setTitle("Copy Conflict");
-            builder.setMessage("The new solution conflicts with existing entries.  Overwrite anyway?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    board.setCurrentWord(response);
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            AlertDialog alert = builder.create();
-            alert.show();
+        if (hasConflict(srcBoxes, curWordBoxes, true)) {
+            askYesNo(
+                getString(R.string.copy_conflict),
+                getString(R.string.copy_board_view_to_board_warning),
+                () -> { board.setCurrentWord(srcBoxes); },
+                () -> { }
+            );
         } else {
-            board.setCurrentWord(response);
+            board.setCurrentWord(srcBoxes);
         }
     }
 
@@ -519,5 +485,128 @@ public class NotesActivity extends PuzzleActivity {
         notesBox.setText(notesText);
 
         render();
+    }
+
+    private void copyBoardToScratch() {
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        final Box[] curWordBoxes = board.getCurrentWordBoxes();
+        final Box[] scratchBoxes = scratchView.getBoxes();
+
+        if (hasConflict(curWordBoxes, scratchBoxes, false)) {
+            askYesNo(
+                getString(R.string.copy_conflict),
+                getString(R.string.overlay_board_to_scratch_warning),
+                () -> { overlayBoxesOnBoardView(curWordBoxes, scratchView); },
+                () -> { }
+            );
+        } else {
+            overlayBoxesOnBoardView(curWordBoxes, scratchView);
+        }
+    }
+
+    private void copyBoardToAnagramSol() {
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        Box[] curWordBoxes = board.getCurrentWordBoxes();
+        for (int i = 0; i < curWordBoxes.length; i++) {
+            if (!curWordBoxes[i].isBlank()) {
+                char newChar = curWordBoxes[i].getResponse();
+                boolean allowed = preAnagramSolResponse(i, newChar);
+                if (allowed)
+                    anagramSolView.setResponse(i, newChar);
+            }
+        }
+    }
+
+    private boolean hasConflict(Box[] source,
+                                Box[] dest,
+                                boolean copyBlanks) {
+        int length = Math.min(source.length, dest.length);
+        for (int i = 0; i < length; i++) {
+            if ((copyBlanks || !source[i].isBlank()) &&
+                !dest[i].isBlank() &&
+                source[i].getResponse() != dest[i].getResponse()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void askYesNo(String title, String msg,
+                          Runnable onYes, Runnable onNo) {
+        AlertDialog.Builder builder
+            = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, R.style.dialogStyle)
+            );
+
+        builder.setTitle(title);
+        builder.setMessage(msg);
+        builder.setPositiveButton(getString(R.string.yes),
+                                  new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onYes.run();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(getString(R.string.no),
+                                  new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onNo.run();
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    /**
+     * Copies non-blank characters from response to the view
+     */
+    private void overlayBoxesOnBoardView(Box[] boxes,
+                                         BoardEditText view) {
+        int length = Math.min(boxes.length, view.getLength());
+        for (int i = 0; i < length; i++) {
+            if (!boxes[i].isBlank()) {
+                view.setResponse(i, boxes[i].getResponse());
+            }
+        }
+    }
+
+    /**
+     * Make arrangements for anagram letter to be played
+     *
+     * Changes source/sol boxes by moving required letters around.
+     *
+     * @return true if play of letter can proceed
+     */
+    private boolean preAnagramSolResponse(int pos, char newChar) {
+        char oldChar = anagramSolView.getResponse(pos);
+        if (Character.isLetter(newChar)) {
+            int sourceLen = anagramSourceView.getLength();
+            for (int i = 0; i < sourceLen; i++) {
+                if (anagramSourceView.getResponse(i) == newChar) {
+                    anagramSourceView.setResponse(i, oldChar);
+                    return true;
+                }
+            }
+            // if failed to find it in the source view, see if we can
+            // find one to swap it with one in the solution
+            int solLen = anagramSolView.getLength();
+            for (int i = 0; i < solLen; i++) {
+                if (anagramSolView.getResponse(i) == newChar) {
+                    anagramSolView.setResponse(i, oldChar);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
