@@ -45,7 +45,7 @@ public class     ForkyzActivity extends BaseGameActivity {
         StatFs stats = new StatFs(Environment.getExternalStorageDirectory()
                 .getAbsolutePath());
 
-        if ( (long) stats.getAvailableBlocks() * (long) stats.getBlockSize() < 1024L * 1024L) {
+        if ( stats.getAvailableBlocksLong() * stats.getBlockSizeLong() < 1024L * 1024L) {
             showSDCardFull();
             finish();
 
