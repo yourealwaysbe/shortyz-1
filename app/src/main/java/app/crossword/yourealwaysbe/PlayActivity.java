@@ -130,9 +130,6 @@ public class PlayActivity extends PuzzleActivity
                         utils.hideWindowTitle(this);
                     }
                 }
-
-            } else {
-                supportRequestWindowFeature(Window.FEATURE_PROGRESS);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -784,9 +781,6 @@ public class PlayActivity extends PuzzleActivity
 
         if (puz != null && timer != null) {
             getWindow().setTitle(timer.time());
-            //noinspection deprecation
-            getWindow().setFeatureInt(Window.FEATURE_PROGRESS,
-                    puz.getPercentComplete() * 100);
         }
     }
 
