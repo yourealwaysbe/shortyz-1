@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,16 +14,19 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import android.widget.Toast;
+import androidx.fragment.app.DialogFragment;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
 
-public class HttpDownloadActivity extends Activity {
+public class HttpDownloadActivity extends AppCompatActivity {
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1001;
 
@@ -69,17 +71,16 @@ public class HttpDownloadActivity extends Activity {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                new AlertDialog.Builder(this)
-                        .setTitle("Allow Permissions")
-                        .setMessage("Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(HttpDownloadActivity.this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_EXTERNAL_STORAGE);
-                            }
-                        })
-                        .create()
-                        .show();
+                DialogFragment dialog = new StoragePermissionDialog();
+                Bundle args = new Bundle();
+                args.putInt(
+                    StoragePermissionDialog.RESULT_CODE_KEY,
+                    REQUEST_EXTERNAL_STORAGE
+                );
+                dialog.setArguments(args);
+                dialog.show(
+                    getSupportFragmentManager(), "StoragePermissionDialog"
+                );
             } else {
                 ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_EXTERNAL_STORAGE);
             }

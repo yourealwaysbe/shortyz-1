@@ -1,11 +1,9 @@
 package app.crossword.yourealwaysbe;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -14,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +46,7 @@ import app.crossword.yourealwaysbe.view.recycler.RecyclerItemClickListener;
 import app.crossword.yourealwaysbe.view.recycler.RemovableRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.SeparatedRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.ShowHideOnScroll;
+import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -374,9 +372,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 DialogFragment dialog = new StoragePermissionDialog();
+                Bundle args = new Bundle();
+                args.putInt(
+                    StoragePermissionDialog.RESULT_CODE_KEY,
+                    REQUEST_WRITE_STORAGE
+                );
+                dialog.setArguments(args);
                 dialog.show(
-                    getSupportFragmentManager(),
-                    "StoragePermissionDialog"
+                    getSupportFragmentManager(), "StoragePermissionDialog"
                 );
             } else {
                 ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
@@ -887,37 +890,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private class FileViewHolder extends RecyclerView.ViewHolder {
         public FileViewHolder(View itemView) {
             super(itemView);
-        }
-    }
-
-    public static class StoragePermissionDialog extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(
-                new ContextThemeWrapper(getActivity(), R.style.dialogStyle)
-            );
-
-            builder.setTitle(R.string.allow_permissions)
-                .setMessage(R.string.please_allow_storage)
-                .setPositiveButton(
-                    android.R.string.ok,
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(
-                            DialogInterface dialogInterface, int i
-                        ) {
-                            ActivityCompat.requestPermissions(
-                                getActivity(),
-                                new String[] {
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                },
-                                REQUEST_WRITE_STORAGE
-                            );
-                        }
-                    }
-                );
-
-            return builder.create();
         }
     }
 
