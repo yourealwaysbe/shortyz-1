@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,6 +23,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -44,6 +46,16 @@ import app.crossword.yourealwaysbe.util.KeyboardManager;
 
 public class NotesActivity extends PuzzleActivity {
     private static final Logger LOG = Logger.getLogger(NotesActivity.class.getCanonicalName());
+
+    private static final String TRANSFER_RESPONSE_REQUEST_KEY
+        = "transferResponseRequest";
+
+    private enum TransferResponseRequest {
+        SCRATCH_TO_BOARD,
+        ANAGRAM_SOL_TO_BOARD,
+        BOARD_TO_SCRATCH,
+        BOARD_TO_ANAGRAM_SOL
+    }
 
     protected KeyboardManager keyboardManager;
     private ScrollingImageView imageView;
@@ -122,10 +134,14 @@ public class NotesActivity extends PuzzleActivity {
                 View focused = getWindow().getCurrentFocus();
                 switch (focused.getId()) {
                 case R.id.scratchMiniboard:
-                    NotesActivity.this.copyBoardToScratch();
+                    NotesActivity.this.executeTransferResponseRequest(
+                        TransferResponseRequest.BOARD_TO_SCRATCH, true
+                    );
                     break;
                 case R.id.anagramSolution:
-                    NotesActivity.this.copyBoardToAnagramSol();
+                    NotesActivity.this.executeTransferResponseRequest(
+                        TransferResponseRequest.BOARD_TO_ANAGRAM_SOL, true
+                    );
                     break;
                 }
             }
@@ -177,7 +193,9 @@ public class NotesActivity extends PuzzleActivity {
         scratchView.setLength(curWordLen);
         scratchView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
-                copyBoardViewToBoard(scratchView);
+                executeTransferResponseRequest(
+                    TransferResponseRequest.SCRATCH_TO_BOARD, true
+                );
             }
 
             public void onTap(Point e) {
@@ -282,7 +300,9 @@ public class NotesActivity extends PuzzleActivity {
         anagramSolView.setFilters(new BoardEditFilter[]{solFilter});
         anagramSolView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
-                copyBoardViewToBoard(anagramSolView);
+                executeTransferResponseRequest(
+                    TransferResponseRequest.ANAGRAM_SOL_TO_BOARD, true
+                );
             }
 
             public void onTap(Point e) {
@@ -451,26 +471,6 @@ public class NotesActivity extends PuzzleActivity {
                                                    displayScratchDown));
     }
 
-    private void copyBoardViewToBoard(final BoardEditText view) {
-        Playboard board = getBoard();
-        if (board == null)
-            return;
-
-        final Box[] curWordBoxes = board.getCurrentWordBoxes();
-        final Box[] srcBoxes = view.getBoxes();
-
-        if (hasConflict(srcBoxes, curWordBoxes, true)) {
-            askYesNo(
-                getString(R.string.copy_conflict),
-                getString(R.string.copy_board_view_to_board_warning),
-                () -> { board.setCurrentWord(srcBoxes); },
-                () -> { }
-            );
-        } else {
-            board.setCurrentWord(srcBoxes);
-        }
-    }
-
     private void moveScratchToNote() {
         EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
         String notesText = notesBox.getText().toString();
@@ -487,35 +487,10 @@ public class NotesActivity extends PuzzleActivity {
         render();
     }
 
-    private void copyBoardToScratch() {
-        Playboard board = getBoard();
-        if (board == null)
-            return;
-
-        final Box[] curWordBoxes = board.getCurrentWordBoxes();
-        final Box[] scratchBoxes = scratchView.getBoxes();
-
-        if (hasConflict(curWordBoxes, scratchBoxes, false)) {
-            askYesNo(
-                getString(R.string.copy_conflict),
-                getString(R.string.overlay_board_to_scratch_warning),
-                () -> { overlayBoxesOnBoardView(curWordBoxes, scratchView); },
-                () -> { }
-            );
-        } else {
-            overlayBoxesOnBoardView(curWordBoxes, scratchView);
-        }
-    }
-
-    private void copyBoardToAnagramSol() {
-        Playboard board = getBoard();
-        if (board == null)
-            return;
-
-        Box[] curWordBoxes = board.getCurrentWordBoxes();
-        for (int i = 0; i < curWordBoxes.length; i++) {
-            if (!curWordBoxes[i].isBlank()) {
-                char newChar = curWordBoxes[i].getResponse();
+    private void copyBoxesToAnagramSol(Box[] boxes) {
+        for (int i = 0; i < boxes.length; i++) {
+            if (!boxes[i].isBlank()) {
+                char newChar = boxes[i].getResponse();
                 boolean allowed = preAnagramSolResponse(i, newChar);
                 if (allowed)
                     anagramSolView.setResponse(i, newChar);
@@ -535,36 +510,6 @@ public class NotesActivity extends PuzzleActivity {
             }
         }
         return false;
-    }
-
-    private void askYesNo(String title, String msg,
-                          Runnable onYes, Runnable onNo) {
-        AlertDialog.Builder builder
-            = new AlertDialog.Builder(
-                new ContextThemeWrapper(this, R.style.dialogStyle)
-            );
-
-        builder.setTitle(title);
-        builder.setMessage(msg);
-        builder.setPositiveButton(getString(R.string.yes),
-                                  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                onYes.run();
-                dialog.dismiss();
-            }
-        });
-        builder.setNegativeButton(getString(R.string.no),
-                                  new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                onNo.run();
-                dialog.dismiss();
-            }
-        });
-
-        AlertDialog alert = builder.create();
-        alert.show();
     }
 
     /**
@@ -609,4 +554,118 @@ public class NotesActivity extends PuzzleActivity {
         }
         return false;
     }
+
+    /**
+     * Transfer one board view to another
+     *
+     * Somewhat inelegant as a dialog confirmation has to be robust
+     * against activity recreation, so it all gets funnelled through
+     * here with little external state.
+     *
+     * The alternative is to copy-paste the dialog construction several
+     * times. I'm not sure which is better.
+     */
+    private void executeTransferResponseRequest(
+        TransferResponseRequest request,
+        boolean confirmOverwrite
+    ) {
+        Playboard board = getBoard();
+        if (board == null)
+            return;
+
+        boolean conflict = false;
+        Box[] curWordBoxes = board.getCurrentWordBoxes();
+
+        if (confirmOverwrite) {
+            switch (request) {
+            case SCRATCH_TO_BOARD:
+                conflict = hasConflict(
+                    scratchView.getBoxes(), curWordBoxes, true
+                );
+                break;
+            case ANAGRAM_SOL_TO_BOARD:
+                conflict = hasConflict(
+                    anagramSolView.getBoxes(), curWordBoxes, true
+                );
+                break;
+            case BOARD_TO_SCRATCH:
+                conflict = hasConflict(
+                    curWordBoxes, scratchView.getBoxes(), false
+                );
+                break;
+            case BOARD_TO_ANAGRAM_SOL:
+                conflict = false;
+            }
+        }
+
+        if (conflict) {
+            confirmAndExecuteTransferRequest(request);
+        } else {
+            switch (request) {
+            case SCRATCH_TO_BOARD:
+                board.setCurrentWord(scratchView.getBoxes());
+                break;
+            case ANAGRAM_SOL_TO_BOARD:
+                board.setCurrentWord(anagramSolView.getBoxes());
+                break;
+            case BOARD_TO_SCRATCH:
+                overlayBoxesOnBoardView(curWordBoxes, scratchView);
+                break;
+            case BOARD_TO_ANAGRAM_SOL:
+                copyBoxesToAnagramSol(curWordBoxes);
+                break;
+            }
+        }
+    }
+
+    private void confirmAndExecuteTransferRequest(
+        TransferResponseRequest request
+    ) {
+        DialogFragment dialog = new TransferResponseRequestDialog();
+        Bundle args = new Bundle();
+        args.putSerializable(TRANSFER_RESPONSE_REQUEST_KEY, request);
+        dialog.setArguments(args);
+        dialog.show(
+            getSupportFragmentManager(), "TransferResponseRequestDialog"
+        );
+    }
+
+    public static class TransferResponseRequestDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final NotesActivity activity = (NotesActivity) getActivity();
+
+            Bundle args = getArguments();
+            TransferResponseRequest request
+                = (TransferResponseRequest)
+                    args.getSerializable(TRANSFER_RESPONSE_REQUEST_KEY);
+
+            AlertDialog.Builder builder
+                = new AlertDialog.Builder(
+                    new ContextThemeWrapper(activity, R.style.dialogStyle)
+                );
+
+            builder.setTitle(R.string.copy_conflict)
+                .setMessage(R.string.transfer_overwrite_warning)
+                .setPositiveButton(R.string.yes,
+                                      new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        NotesActivity activity = ((NotesActivity) getActivity());
+                        activity.executeTransferResponseRequest(request, false);
+                    }
+                })
+                .setNegativeButton(R.string.no,
+                                          new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+            return builder.create();
+        }
+    }
+
 }
