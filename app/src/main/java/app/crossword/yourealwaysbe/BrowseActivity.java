@@ -938,12 +938,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private class FileViewHolder extends RecyclerView.ViewHolder {
-
         public FileViewHolder(View itemView) {
             super(itemView);
         }
-
-
     }
 
     public static class StoragePermissionDialog extends DialogFragment {
