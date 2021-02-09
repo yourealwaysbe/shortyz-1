@@ -15,6 +15,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -1120,7 +1121,9 @@ public class PlayActivity extends PuzzleActivity
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final PlayActivity activity = (PlayActivity) getActivity();
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(activity, R.style.dialogStyle)
+            );
 
             builder.setTitle(getString(R.string.reveal_puzzle))
                 .setMessage(getString(R.string.are_you_sure))
