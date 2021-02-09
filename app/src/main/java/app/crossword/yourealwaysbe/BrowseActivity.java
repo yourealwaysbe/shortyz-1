@@ -67,13 +67,11 @@ import java.util.logging.Logger;
 @SuppressWarnings("SimpleDateFormat")
 public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
     private static final String MENU_ARCHIVES = "Archives";
-    private static final int DOWNLOAD_DIALOG_ID = 0;
     private static final int REQUEST_WRITE_STORAGE = 1002;
     private static final long DAY = 24L * 60L * 60L * 1000L;
     private static final Logger LOGGER = Logger.getLogger(BrowseActivity.class.getCanonicalName());
     private Accessor accessor = Accessor.DATE_DESC;
     private SeparatedRecyclerViewAdapter currentAdapter = null;
-    private Dialog downloadDialog;
     private File archiveFolder = new File(Environment.getExternalStorageDirectory(), "crosswords/archive");
     private File contextFile;
     private File crosswordsFolder = new File(Environment.getExternalStorageDirectory(), "crosswords");
@@ -284,15 +282,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if ((resultCode == RESULT_OK) && (downloadDialog != null) && downloadDialog.isShowing()) {
-            // If the user hit close in the browser download activity, we close the dialog.
-            downloadDialog.dismiss();
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setTitle("Puzzles");
@@ -369,7 +358,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             download.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    BrowseActivity.this.showDialog(DOWNLOAD_DIALOG_ID);
+                    DialogFragment dialog = new DownloadDialog();
+                    dialog.show(getSupportFragmentManager(), "DownloadDialog");
                 }
             });
             download.setImageBitmap(createBitmap("icons1.ttf", ","));
@@ -435,49 +425,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         render();
         this.checkDownload();
         puzzleList.invalidate();
-    }
-
-
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-        case DOWNLOAD_DIALOG_ID:
-
-            DownloadPickerDialogBuilder.OnDownloadSelectedListener downloadButtonListener = new DownloadPickerDialogBuilder.OnDownloadSelectedListener() {
-                    public void onDownloadSelected(Date d, List<Downloader> downloaders, int selected) {
-                        List<Downloader> toDownload = new LinkedList<Downloader>();
-                        boolean scrape;
-                        LOGGER.info("Downloaders: " + selected + " of " + downloaders);
-
-                        if (selected == 0) {
-                            // Download all available.
-                            toDownload.addAll(downloaders);
-                            toDownload.remove(0);
-                            scrape = true;
-                        } else {
-                            // Only download selected.
-                            toDownload.add(downloaders.get(selected));
-                            scrape = false;
-                        }
-
-                        download(d, toDownload, scrape);
-                    }
-                };
-
-            Date d = new Date();
-
-            @SuppressWarnings("deprecation")
-			DownloadPickerDialogBuilder dpd = new DownloadPickerDialogBuilder(this, downloadButtonListener,
-                    d.getYear() + 1900, d.getMonth(), d.getDate(),
-                  new Downloaders(prefs, nm, BrowseActivity.this)
-            );
-
-            downloadDialog = dpd.getInstance();
-
-            return downloadDialog;
-        }
-
-        return null;
     }
 
     @Override
@@ -971,6 +918,55 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 );
 
             return builder.create();
+        }
+    }
+
+    public static class DownloadDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            DownloadPickerDialogBuilder.OnDownloadSelectedListener downloadButtonListener = new DownloadPickerDialogBuilder.OnDownloadSelectedListener() {
+                public void onDownloadSelected(
+                    Date d,
+                    List<Downloader> downloaders,
+                    int selected
+                ) {
+                    List<Downloader> toDownload
+                        = new LinkedList<Downloader>();
+                    boolean scrape;
+                    LOGGER.info(
+                        "Downloaders: " + selected + " of " + downloaders
+                    );
+
+                    if (selected == 0) {
+                        // Download all available.
+                        toDownload.addAll(downloaders);
+                        toDownload.remove(0);
+                        scrape = true;
+                    } else {
+                        // Only download selected.
+                        toDownload.add(downloaders.get(selected));
+                        scrape = false;
+                    }
+
+                    BrowseActivity activity = (BrowseActivity) getActivity();
+                    activity.download(d, toDownload, scrape);
+                }
+            };
+
+            Date d = new Date();
+            BrowseActivity activity = (BrowseActivity) getActivity();
+
+            DownloadPickerDialogBuilder dpd
+                = new DownloadPickerDialogBuilder(
+                    activity,
+                    downloadButtonListener,
+                    d.getYear() + 1900,
+                    d.getMonth(),
+                    d.getDate(),
+                    new Downloaders(activity.prefs, activity.nm, activity)
+            );
+
+            return dpd.getInstance();
         }
     }
 }
