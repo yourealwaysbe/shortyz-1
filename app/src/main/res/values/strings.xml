@@ -24,4 +24,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="elapsed_time">Elapsed Time: %1$s</string>
+    <string name="allow_permissions">Allow Permissions</string>
+    <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
 </resources>

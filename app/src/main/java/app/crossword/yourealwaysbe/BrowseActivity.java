@@ -14,14 +14,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import androidx.annotation.NonNull;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.view.ActionMode;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,10 +21,19 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.view.ActionMode;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.net.Downloader;
@@ -382,18 +383,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                new AlertDialog.Builder(
-                    new ContextThemeWrapper(this, R.style.dialogStyle)
-                ).setTitle("Allow Permissions")
-                 .setMessage("Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.")
-                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                     @Override
-                     public void onClick(DialogInterface dialogInterface, int i) {
-                         ActivityCompat.requestPermissions(BrowseActivity.this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
-                     }
-                 })
-                 .create()
-                 .show();
+                DialogFragment dialog = new StoragePermissionDialog();
+                dialog.show(
+                    getSupportFragmentManager(),
+                    "StoragePermissionDialog"
+                );
             } else {
                 ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_STORAGE);
             }
@@ -950,5 +944,36 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
 
 
+    }
+
+    public static class StoragePermissionDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                new ContextThemeWrapper(getActivity(), R.style.dialogStyle)
+            );
+
+            builder.setTitle(R.string.allow_permissions)
+                .setMessage(R.string.please_allow_storage)
+                .setPositiveButton(
+                    android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(
+                            DialogInterface dialogInterface, int i
+                        ) {
+                            ActivityCompat.requestPermissions(
+                                getActivity(),
+                                new String[] {
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                },
+                                REQUEST_WRITE_STORAGE
+                            );
+                        }
+                    }
+                );
+
+            return builder.create();
+        }
     }
 }
