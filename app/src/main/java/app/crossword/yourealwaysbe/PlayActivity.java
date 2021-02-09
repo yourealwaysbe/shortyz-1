@@ -63,8 +63,6 @@ public class PlayActivity extends PuzzleActivity
                           implements Playboard.PlayboardListener,
                                      ClueTabs.ClueTabsListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
-    private static final int INFO_DIALOG = 0;
-    private static final int REVEAL_PUZZLE_DIALOG = 2;
     private static final double BOARD_DIM_RATIO = 1.0;
     private static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
     private static final String CLUE_TABS_PAGE = "playActivityClueTabsPage";
@@ -72,7 +70,6 @@ public class PlayActivity extends PuzzleActivity
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
 
-    private AlertDialog revealPuzzleDialog;
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
     private Handler handler = new Handler();
@@ -1119,10 +1116,8 @@ public class PlayActivity extends PuzzleActivity
     public static class RevealPuzzleDialog extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final PlayActivity activity = (PlayActivity) getActivity();
-
             AlertDialog.Builder builder = new AlertDialog.Builder(
-                new ContextThemeWrapper(activity, R.style.dialogStyle)
+                new ContextThemeWrapper(getActivity(), R.style.dialogStyle)
             );
 
             builder.setTitle(getString(R.string.reveal_puzzle))
@@ -1131,6 +1126,8 @@ public class PlayActivity extends PuzzleActivity
                     R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
+                            PlayActivity activity
+                                = (PlayActivity) getActivity();
                             activity.getBoard().revealPuzzle();
                         }
                     }
