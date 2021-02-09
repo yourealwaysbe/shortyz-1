@@ -17,13 +17,14 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
 
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 
 import java.lang.reflect.Field;
 
-public class     ForkyzActivity extends BaseGameActivity {
+public class ForkyzActivity extends AppCompatActivity {
     protected AndroidVersionUtils utils = AndroidVersionUtils.Factory
             .getInstance();
     protected SharedPreferences prefs;
@@ -123,17 +124,6 @@ public class     ForkyzActivity extends BaseGameActivity {
         }
     }
 
-    public void onSignInFailed() {
-        //Toast.makeText(this, "Not signed in.", Toast.LENGTH_SHORT);
-    }
-
-    public void onSignInSucceeded() {
-        //Toast.makeText(this, "Signed in", Toast.LENGTH_SHORT);
-        if(this.mHelper != null && !this.mHelper.getGamesClient().isConnected()){
-            this.mHelper.getGamesClient().connect();
-        }
-    }
-
     protected Bitmap createBitmap(String fontFile, String character){
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -150,6 +140,5 @@ public class     ForkyzActivity extends BaseGameActivity {
         p.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(character, size/2, size - size / 9, p );
         return bitmap;
-
     }
 }
