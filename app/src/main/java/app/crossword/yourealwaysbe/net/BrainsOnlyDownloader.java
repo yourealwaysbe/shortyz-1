@@ -10,17 +10,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 
 /**
  * Created by keber_000 on 2/9/14.
  */
-@SuppressWarnings("SimpleDateFormat")
 public class BrainsOnlyDownloader extends AbstractDownloader {
 
-    private final SimpleDateFormat df = new SimpleDateFormat("yyMMdd");
+    private final DateTimeFormatter df
+        = DateTimeFormatter.ofPattern("yyMMdd");
     private final String fullName;
 
     public BrainsOnlyDownloader(String baseUrl, String fullName) {
@@ -29,11 +30,11 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
+    protected String createUrlSuffix(LocalDate date) {
         return df.format(date);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return Downloader.DATE_DAILY;
     }
 
@@ -41,7 +42,7 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
         return this.fullName;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         File downloadTo = new File(this.downloadDirectory, this.createFileName(date));
 
         if (downloadTo.exists()) {

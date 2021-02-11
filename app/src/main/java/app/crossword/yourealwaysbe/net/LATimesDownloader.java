@@ -2,7 +2,8 @@ package app.crossword.yourealwaysbe.net;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.HashMap;
 
 public class LATimesDownloader extends AbstractJPZDownloader {
@@ -29,7 +30,7 @@ public class LATimesDownloader extends AbstractJPZDownloader {
 		
 	}
 
-	public int[] getDownloadDates() {
+	public DayOfWeek[] getDownloadDates() {
 		return LATimesDownloader.DATE_DAILY;
 
 	}
@@ -38,18 +39,18 @@ public class LATimesDownloader extends AbstractJPZDownloader {
 		return NAME;
 	}
 
-	public File download(Date date) {
+	public File download(LocalDate date) {
 		return download(date, this.createUrlSuffix(date), headers);
 	}
 
 	@Override
-	protected String createUrlSuffix(Date date) {
+	protected String createUrlSuffix(LocalDate date) {
         String val = "la";
-        if(date.before(new Date(114, 0, 27))){
+        if(date.isBefore(LocalDate.of(114, 0, 27))){
             val = "puzzle_";
         }
-		return val + (date.getYear() - 100)
-				+ nf.format(date.getMonth() + 1) + nf.format(date.getDate())
+		return val + (date.getYear() % 100)
+				+ nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth())
 				+ ".xml";
 	}
 

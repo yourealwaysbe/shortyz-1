@@ -9,7 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 
 /**
@@ -27,7 +28,7 @@ public class AVClubDownloader extends AbstractDownloader {
         nf.setMaximumFractionDigits(0);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_WEDNESDAY;
     }
 
@@ -35,18 +36,18 @@ public class AVClubDownloader extends AbstractDownloader {
         return NAME;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return this.download(date, this.createUrlSuffix(date));
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
-        return "av" + this.nf.format(date.getYear() - 100) + this.nf.format(date.getMonth() + 1) +
-        this.nf.format(date.getDate()) + ".puz";
+    protected String createUrlSuffix(LocalDate date) {
+        return "av" + this.nf.format(date.getYear() % 100) + this.nf.format(date.getMonthValue()) +
+        this.nf.format(date.getDayOfMonth()) + ".puz";
     }
 
     @Override
-    protected File download(Date date, String urlSuffix) {
+    protected File download(LocalDate date, String urlSuffix) {
         try {
             URL url = new URL(this.baseUrl + urlSuffix);
             System.out.println(url);

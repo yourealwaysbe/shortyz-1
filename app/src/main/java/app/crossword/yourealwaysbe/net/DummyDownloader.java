@@ -1,7 +1,8 @@
 package app.crossword.yourealwaysbe.net;
 
 import java.io.File;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 import android.content.Context;
 
@@ -14,7 +15,7 @@ public class DummyDownloader implements Downloader {
     public void setContext(Context context) {}
 
     @Override
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return null;
     }
 
@@ -24,17 +25,17 @@ public class DummyDownloader implements Downloader {
     }
 
     @Override
-    public String createFileName(Date date) {
+    public String createFileName(LocalDate date) {
         return null;
     }
 
     @Override
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return null;
     }
 
     @Override
-    public String sourceUrl(Date date) {
+    public String sourceUrl(LocalDate date) {
         return null;
     }
 
@@ -49,12 +50,12 @@ public class DummyDownloader implements Downloader {
     }
 
     @Override
-    public Date getGoodThrough() {
-        return new Date();
+    public LocalDate getGoodThrough() {
+        return LocalDate.now();
     }
 
     @Override
-    public Date getGoodFrom() {
-        return new Date(0L);
+    public LocalDate getGoodFrom() {
+        return LocalDate.ofEpochDay(0L);
     }
 }

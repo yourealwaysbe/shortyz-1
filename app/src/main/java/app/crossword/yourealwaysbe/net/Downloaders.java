@@ -19,10 +19,11 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,26 +58,21 @@ public class Downloaders {
         this.supressMessages = prefs.getBoolean("supressMessages", false);
     }
 
-
-    private static Date clearTimeInDate(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
-    }
-
-    public List<Downloader> getDownloaders(Date date) {
-        date = clearTimeInDate(date);
-        int dayOfWeek = date.getDay();
+    public List<Downloader> getDownloaders(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
         List<Downloader> retVal = new LinkedList<Downloader>();
 
         for (Downloader d : getDownloadersFromPrefs()) {
             // TODO: Downloader.getGoodThrough() should account for the day of week.
             if (Arrays.binarySearch(d.getDownloadDates(), dayOfWeek) >= 0) {
-                if(date.getTime() >= d.getGoodFrom().getTime() && date.getTime() <= d.getGoodThrough().getTime()) {
+                LocalDate dGoodFrom = d.getGoodFrom();
+                boolean isGoodFrom
+                    = date.isEqual(dGoodFrom) || date.isAfter(dGoodFrom);
+                LocalDate dGoodThrough = d.getGoodThrough();
+                boolean isGoodThrough
+                    = date.isBefore(dGoodThrough) || date.isEqual(dGoodThrough);
+
+                if(isGoodFrom && isGoodThrough) {
                     retVal.add(d);
                 }
             }
@@ -85,7 +81,7 @@ public class Downloaders {
         return retVal;
     }
 
-    public void download(Date date) {
+    public void download(LocalDate date) {
         download(date, getDownloaders(date));
     }
 
@@ -93,9 +89,7 @@ public class Downloaders {
     // downloaders.
     //
     // If downloaders is null, then the full list of downloaders will be used.
-    public void downloadLatestIfNewerThanDate(Date oldestDate, List<Downloader> downloaders) {
-        oldestDate = clearTimeInDate(oldestDate);
-
+    public void downloadLatestIfNewerThanDate(LocalDate oldestDate, List<Downloader> downloaders) {
         if (downloaders == null) {
             downloaders = new ArrayList<Downloader>();
         }
@@ -104,12 +98,18 @@ public class Downloaders {
             downloaders.addAll(getDownloadersFromPrefs());
         }
 
-        HashMap<Downloader, Date> puzzlesToDownload = new HashMap<Downloader, Date>();
+        HashMap<Downloader, LocalDate> puzzlesToDownload = new HashMap<Downloader, LocalDate>();
         for (Downloader d : downloaders) {
-            Date goodThrough = clearTimeInDate(d.getGoodThrough());
-            int goodThroughDayOfWeek = goodThrough.getDay();
-            if ((Arrays.binarySearch(d.getDownloadDates(), goodThroughDayOfWeek) >= 0) &&
-                    goodThrough.getTime() >= oldestDate.getTime()) {
+            LocalDate goodThrough = d.getGoodThrough();
+            DayOfWeek goodThroughDayOfWeek = goodThrough.getDayOfWeek();
+            boolean isDay
+                = Arrays.binarySearch(
+                    d.getDownloadDates(), goodThroughDayOfWeek
+                ) >= 0;
+            boolean isGoodThrough
+                = goodThrough.isEqual(oldestDate)
+                    || goodThrough.isAfter(oldestDate);
+            if (isDay && isGoodThrough) {
                 LOG.info("Will try to download puzzle " + d + " @ " + goodThrough);
                 puzzlesToDownload.put(d, goodThrough);
             }
@@ -120,14 +120,12 @@ public class Downloaders {
         }
     }
 
-    public void download(Date date, List<Downloader> downloaders) {
-        date = clearTimeInDate(date);
-
+    public void download(LocalDate date, List<Downloader> downloaders) {
         if ((downloaders == null) || (downloaders.size() == 0)) {
             downloaders = getDownloaders(date);
         }
 
-        HashMap<Downloader, Date> puzzlesToDownload = new HashMap<Downloader, Date>();
+        HashMap<Downloader, LocalDate> puzzlesToDownload = new HashMap<Downloader, LocalDate>();
         for (Downloader d : downloaders) {
             puzzlesToDownload.put(d, date);
         }
@@ -135,7 +133,7 @@ public class Downloaders {
         download(puzzlesToDownload);
     }
 
-    private void download(Map<Downloader, Date> puzzlesToDownload) {
+    private void download(Map<Downloader, LocalDate> puzzlesToDownload) {
         String contentTitle = "Downloading Puzzles";
 
         NotificationCompat.Builder not =
@@ -161,7 +159,7 @@ public class Downloaders {
         HashSet<File> newlyDownloaded = new HashSet<File>();
 
         int nextNotificationId = 1;
-        for (Map.Entry<Downloader, Date> puzzle : puzzlesToDownload.entrySet()) {
+        for (Map.Entry<Downloader, LocalDate> puzzle : puzzlesToDownload.entrySet()) {
             File downloaded = downloadPuzzle(puzzle.getKey(),
                     puzzle.getValue(),
                     not,
@@ -225,7 +223,7 @@ public class Downloaders {
     }
 
     private File downloadPuzzle(Downloader d,
-                                Date date,
+                                LocalDate date,
                                 NotificationCompat.Builder not,
                                 int notificationId,
                                 File crosswords,

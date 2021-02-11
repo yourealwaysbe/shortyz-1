@@ -3,8 +3,8 @@ package app.crossword.yourealwaysbe.puz;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -23,7 +23,7 @@ public class Puzzle implements Serializable{
     private String[] downClues;
     private Integer[] downCluesLookup;
     private int numberOfClues;
-    private Date pubdate = new Date();
+    private LocalDate pubdate = LocalDate.now();
     private String source;
     private String sourceUrl = "";
     private Box[][] boxes;
@@ -250,11 +250,11 @@ public class Puzzle implements Serializable{
         return copyright;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.pubdate = date;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return pubdate;
     }
 

@@ -9,7 +9,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.logging.Level;
 
 import app.crossword.yourealwaysbe.io.KingFeaturesPlaintextIO;
@@ -28,9 +29,9 @@ public class KFSDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
     private String author;
     private String fullName;
-    private int[] days;
+    private DayOfWeek[] days;
 
-    public KFSDownloader(String shortName, String fullName, String author, int[] days) {
+    public KFSDownloader(String shortName, String fullName, String author, DayOfWeek[] days) {
         super("http://puzzles.kingdigital.com/javacontent/clues/"+shortName+"/", DOWNLOAD_DIR, fullName);
         this.fullName = fullName;
         this.author = author;
@@ -39,7 +40,7 @@ public class KFSDownloader extends AbstractDownloader {
         nf.setMaximumFractionDigits(0);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return days;
     }
 
@@ -47,7 +48,7 @@ public class KFSDownloader extends AbstractDownloader {
         return fullName;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         File downloadTo = new File(this.downloadDirectory, this.createFileName(date));
 
         if (downloadTo.exists()) {
@@ -60,7 +61,7 @@ public class KFSDownloader extends AbstractDownloader {
             return null;
         }
 
-        String copyright = "\u00a9 " + (date.getYear() + 1900) + " King Features Syndicate.";
+        String copyright = "\u00a9 " + date.getYear() + " King Features Syndicate.";
 
         try {
             InputStream is = new FileInputStream(plainText);
@@ -86,8 +87,8 @@ public class KFSDownloader extends AbstractDownloader {
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
-        return (date.getYear() + 1900) + nf.format(date.getMonth() + 1) + nf.format(date.getDate()) + ".txt";
+    protected String createUrlSuffix(LocalDate date) {
+        return date.getYear() + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + ".txt";
     }
 
 

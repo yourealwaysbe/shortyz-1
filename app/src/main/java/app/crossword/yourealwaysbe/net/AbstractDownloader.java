@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +30,7 @@ public abstract class AbstractDownloader implements Downloader {
     protected final AndroidVersionUtils utils = AndroidVersionUtils.Factory.getInstance();
     private String downloaderName;
     protected File tempFolder;
-    protected Date goodThrough = new Date();
+    protected LocalDate goodThrough = LocalDate.now();
 
     protected AbstractDownloader(String baseUrl, File downloadDirectory, String downloaderName) {
         this.baseUrl = baseUrl;
@@ -46,12 +46,16 @@ public abstract class AbstractDownloader implements Downloader {
 
 
 
-    public String createFileName(Date date) {
-        return (date.getYear() + 1900) + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "-" +
-        this.downloaderName.replaceAll(" ", "") + ".puz";
+    public String createFileName(LocalDate date) {
+        return (
+            date.getYear() + "-" +
+            date.getMonthValue() + "-" +
+            date.getDayOfMonth() + "-" +
+            this.downloaderName.replaceAll(" ", "") + ".puz"
+        );
     }
 
-    public String sourceUrl(Date date) {
+    public String sourceUrl(LocalDate date) {
         return this.baseUrl + this.createUrlSuffix(date);
     }
 
@@ -59,14 +63,14 @@ public abstract class AbstractDownloader implements Downloader {
         return getName();
     }
 
-    protected abstract String createUrlSuffix(Date date);
+    protected abstract String createUrlSuffix(LocalDate date);
 
-    protected File download(Date date, String urlSuffix, Map<String, String> headers){
+    protected File download(LocalDate date, String urlSuffix, Map<String, String> headers){
     	System.out.println("DL From ASD");
     	return download(date, urlSuffix, headers, true);
     }
     
-    protected File download(Date date, String urlSuffix, Map<String, String> headers, boolean canDefer) {
+    protected File download(LocalDate date, String urlSuffix, Map<String, String> headers, boolean canDefer) {
         LOG.info("Mkdirs: " + this.downloadDirectory.mkdirs());
         LOG.info("Exist: " + this.downloadDirectory.exists());
 
@@ -101,12 +105,12 @@ public abstract class AbstractDownloader implements Downloader {
         return null;
     }
 
-    protected File download(Date date, String urlSuffix) {
+    protected File download(LocalDate date, String urlSuffix) {
         return download(date, urlSuffix, EMPTY_MAP);
     }
 
 
-    protected File downloadToTempFile(String fullName, Date date) {
+    protected File downloadToTempFile(String fullName, LocalDate date) {
         File downloaded = new File(downloadDirectory, this.createFileName(date));
 
         try {
@@ -144,11 +148,11 @@ public abstract class AbstractDownloader implements Downloader {
         return false;
     }
 
-    public Date getGoodThrough(){
+    public LocalDate getGoodThrough(){
         return this.goodThrough;
     }
 
-    public Date getGoodFrom(){
-        return new Date(0L);
+    public LocalDate getGoodFrom(){
+        return LocalDate.ofEpochDay(0L);
     }
 }

@@ -24,8 +24,8 @@ import app.crossword.yourealwaysbe.net.Downloaders;
 import app.crossword.yourealwaysbe.net.DummyDownloader;
 import app.crossword.yourealwaysbe.forkyz.R;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -42,7 +42,7 @@ public class DownloadPickerDialogBuilder {
     private OnDateChangedListener dateChangedListener = new DatePicker.OnDateChangedListener() {
             public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 LOGGER.info("OnDateChanged " + year + " " + monthOfYear + " " + dayOfMonth);
-                downloadDate.set(year, monthOfYear, dayOfMonth);
+                downloadDate = LocalDate.of(year, monthOfYear + 1, dayOfMonth);
                 updateDayOfWeek();
                 updatePuzzleSelect();
             }
@@ -50,7 +50,7 @@ public class DownloadPickerDialogBuilder {
 
     private Downloaders downloaders;
     private Spinner mPuzzleSelect;
-    private Calendar downloadDate;
+    private LocalDate downloadDate;
     private int selectedItemPosition = 0;
     private final TextView dayOfWeek;
 
@@ -58,8 +58,7 @@ public class DownloadPickerDialogBuilder {
         int monthOfYear, int dayOfMonth, Downloaders downloaders) {
         mActivity = a;
 
-        downloadDate = Calendar.getInstance();
-        downloadDate.set(year, monthOfYear,  dayOfMonth);
+        downloadDate = LocalDate.of(year, monthOfYear,  dayOfMonth);
 
         this.downloaders = downloaders;
 
@@ -71,7 +70,7 @@ public class DownloadPickerDialogBuilder {
         dayOfWeek = layout.findViewById(R.id.dayOfWeek);
         updateDayOfWeek();
 
-        datePicker.init(year, monthOfYear, dayOfMonth, dateChangedListener);
+        datePicker.init(year, monthOfYear - 1, dayOfMonth, dateChangedListener);
 
         mPuzzleSelect = layout.findViewById(R.id.puzzleSelect);
         mPuzzleSelect.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -121,7 +120,9 @@ public class DownloadPickerDialogBuilder {
     private void updateDayOfWeek() {
         if (dayOfWeek == null) return;
 
-        String dayName = downloadDate.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
+        String dayName
+            = downloadDate.getDayOfWeek()
+                        .getDisplayName(TextStyle.FULL, Locale.getDefault());
         dayOfWeek.setText(dayName);
     }
 
@@ -129,8 +130,8 @@ public class DownloadPickerDialogBuilder {
         return mDialog;
     }
 
-	private Date getCurrentDate() {
-        return downloadDate.getTime();
+	private LocalDate getCurrentDate() {
+        return downloadDate;
     }
 
 
@@ -145,6 +146,6 @@ public class DownloadPickerDialogBuilder {
     }
 
     public interface OnDownloadSelectedListener {
-        void onDownloadSelected(Date date, List<Downloader> availableDownloaders, int selected);
+        void onDownloadSelected(LocalDate date, List<Downloader> availableDownloaders, int selected);
     }
 }

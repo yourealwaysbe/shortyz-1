@@ -2,7 +2,8 @@ package app.crossword.yourealwaysbe.net;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 
 /**
@@ -20,7 +21,7 @@ public class WaPoDownloader extends AbstractJPZDownloader {
         nf.setMaximumFractionDigits(0);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_DAILY;
     }
 
@@ -28,12 +29,12 @@ public class WaPoDownloader extends AbstractJPZDownloader {
         return NAME;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
-        return "cs" + (date.getYear() - 100) + nf.format(date.getMonth() + 1) + nf.format(date.getDate()) + ".jpz";
+    protected String createUrlSuffix(LocalDate date) {
+        return "cs" + (date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + ".jpz";
     }
 }

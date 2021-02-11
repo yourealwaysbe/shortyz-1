@@ -1,14 +1,14 @@
 package app.crossword.yourealwaysbe;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
 
 public interface Accessor extends Comparator<FileHandle> {
     Accessor DATE_ASC = new Accessor() {
-            @SuppressWarnings("SimpleDateFormat")
             public String getLabel(FileHandle o) {
-                SimpleDateFormat df = new SimpleDateFormat("EEEEEEEEE MMM dd, yyyy");
+                DateTimeFormatter df
+                    = DateTimeFormatter.ofPattern("EEEE MMM dd, yyyy");
 
                 return df.format(o.getDate());
             }
@@ -20,9 +20,9 @@ public interface Accessor extends Comparator<FileHandle> {
         };
 
     Accessor DATE_DESC = new Accessor() {
-            @SuppressWarnings("SimpleDateFormat")
             public String getLabel(FileHandle o) {
-                SimpleDateFormat df = new SimpleDateFormat("EEEEEEEEE MMM dd, yyyy");
+                DateTimeFormatter df
+                    = DateTimeFormatter.ofPattern("EEEE MMM dd, yyyy");
 
                 return df.format(o.getDate());
             }

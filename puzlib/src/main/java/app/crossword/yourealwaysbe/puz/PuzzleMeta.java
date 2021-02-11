@@ -4,7 +4,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class PuzzleMeta implements Serializable {
@@ -12,7 +12,7 @@ public class PuzzleMeta implements Serializable {
     public String author;
     public String title;
     public String source;
-    public Date date;
+    public LocalDate date;
     public int percentComplete;
     public int percentFilled;
     public boolean updatable;

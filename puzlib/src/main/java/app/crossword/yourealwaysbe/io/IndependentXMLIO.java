@@ -14,7 +14,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -340,7 +340,7 @@ public class IndependentXMLIO {
     public static boolean convertPuzzle(InputStream is,
                                         DataOutputStream os,
                                         String copyright,
-                                        Date d) {
+                                        LocalDate d) {
         Puzzle puz = new Puzzle();
         puz.setDate(d);
         puz.setCopyright(copyright);

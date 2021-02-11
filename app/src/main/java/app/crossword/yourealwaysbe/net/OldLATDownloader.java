@@ -2,7 +2,8 @@ package app.crossword.yourealwaysbe.net;
 
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.HashMap;
 
 
@@ -21,7 +22,7 @@ public class OldLATDownloader extends AbstractDownloader {
         nf.setMaximumFractionDigits(0);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_DAILY;
     }
 
@@ -29,18 +30,18 @@ public class OldLATDownloader extends AbstractDownloader {
         return OldLATDownloader.NAME;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return this.download(date, this.createUrlSuffix(date));
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
-        return "lat" + this.nf.format(date.getYear() - 100) + this.nf.format(date.getMonth() + 1) +
-        this.nf.format(date.getDate()) + ".puz";
+    protected String createUrlSuffix(LocalDate date) {
+        return "lat" + this.nf.format(date.getYear() % 100) + this.nf.format(date.getMonthValue()) +
+        this.nf.format(date.getDayOfMonth()) + ".puz";
     }
 
     @Override
-    protected File download(Date date, String urlSuffix) {
+    protected File download(LocalDate date, String urlSuffix) {
         HashMap<String, String> headers = new HashMap<String, String>();
         headers.put("Referer", "http://www.cruciverb.com/puzzles.php?op=showarch&pub=lat");
         headers.put("User-Agent",

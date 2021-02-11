@@ -10,7 +10,6 @@ import java.time.Month;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Period;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +49,7 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         super("https://www.theguardian.com/crosswords/cryptic/", DOWNLOAD_DIR, NAME);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_DAILY;
     }
 
@@ -58,11 +57,11 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return NAME;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
-    protected File download(Date date,
+    protected File download(LocalDate date,
                             String urlSuffix,
                             Map<String, String> headers,
                             boolean canDefer) {
@@ -74,7 +73,7 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
                 return canDefer ? Downloader.DEFERRED_FILE : null;
             }
 
-            Puzzle puz = readPuzzleFromJSON(cw);
+            Puzzle puz = readPuzzleFromJSON(cw, date);
 
             File f = new File(downloadDirectory, this.createFileName(date));
             DataOutputStream dos = new DataOutputStream(new FileOutputStream(f));
@@ -98,19 +97,13 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return null;
     }
 
-    protected String createUrlSuffix(Date date) {
-        // using deprecated methods because the rest of the code does.
-        // The date object is just carrying year/month/day.
-        LocalDate localDate = LocalDate.of(1900 + date.getYear(),
-                                           date.getMonth() + 1,
-                                           date.getDate());
-
+    protected String createUrlSuffix(LocalDate date) {
         LocalDate lower = BASE_CW_DATE;
-        LocalDate upper = localDate;
+        LocalDate upper = date;
         int direction = 1;
 
         if (lower.isAfter(upper)) {
-            lower = localDate;
+            lower = date;
             upper = BASE_CW_DATE;
             direction = -1;
         }
@@ -152,14 +145,17 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return null;
     }
 
-    private static Puzzle readPuzzleFromJSON(JSONObject json) throws JSONException {
+    // take date argument as reading from json date field brings
+    // timezones into play
+    private static Puzzle readPuzzleFromJSON(
+        JSONObject json, LocalDate date
+    ) throws JSONException {
         Puzzle puz = new Puzzle();
 
         puz.setTitle(json.getString("name"));
         puz.setAuthor(json.getJSONObject("creator").getString("name"));
         puz.setCopyright("Guardian / " + puz.getAuthor());
-        puz.setDate(new Date(json.getInt("date")));
-
+        puz.setDate(date);
         puz.setWidth(CW_WIDTH);
         puz.setHeight(CW_HEIGHT);
 

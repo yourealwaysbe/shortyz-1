@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         super("https://ams.cdn.arkadiumhosted.com/assets/gamesfeed/independent/daily-crossword/", DOWNLOAD_DIR, NAME);
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_DAILY;
     }
 
@@ -45,11 +44,11 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         return NAME;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
-    protected File download(Date date,
+    protected File download(LocalDate date,
                             String urlSuffix,
                             Map<String, String> headers,
                             boolean canDefer) {
@@ -89,10 +88,10 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         return null;
     }
 
-    protected String createUrlSuffix(Date date) {
+    protected String createUrlSuffix(LocalDate date) {
         return String.format("c_%02d%02d%02d.xml",
                              date.getYear() % 100,
-                             date.getMonth() + 1,
-                             date.getDate());
+                             date.getMonthValue(),
+                             date.getDayOfMonth());
     }
 }

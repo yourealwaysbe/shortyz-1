@@ -1,6 +1,7 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 /**
  * Created by rcooper on 9/28/15.
@@ -8,11 +9,11 @@ import java.util.Date;
 public class WSJSaturdayDownloader extends WSJFridayDownloader {
 
     @Override
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return DATE_SATURDAY;
     }
 
-    public Date getGoodFrom(){
-        return new Date(115, 8, 19, 0, 0, 0);
+    public LocalDate getGoodFrom(){
+        return LocalDate.of(115, 8, 19);
     }
 }

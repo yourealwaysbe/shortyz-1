@@ -50,11 +50,12 @@ import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +63,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-@SuppressWarnings("SimpleDateFormat")
 public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
     private static final String MENU_ARCHIVES = "Archives";
     private static final int REQUEST_WRITE_STORAGE = 1002;
@@ -563,7 +563,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (prefs.getBoolean("dlOnStartup", false) &&
                 ((System.currentTimeMillis() - (long) (12 * 60 * 60 * 1000)) > lastDL)) {
-            this.download(new Date(), null, true);
+            this.download(LocalDate.now(), null, true);
             prefs.edit()
                     .putLong("dlLast", System.currentTimeMillis())
                     .apply();
@@ -599,34 +599,37 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         return puzFiles;
     }
 
-    private long getMaxAgeMs(String preferenceValue) {
-        long cleanupValue = Long.parseLong(preferenceValue) + 1;
-        long maxAge = (cleanupValue == 0) ? 0 : (System.currentTimeMillis() - (cleanupValue * 24 * 60 * 60 * 1000));
-        return maxAge;
+    private LocalDate getMaxAge(String preferenceValue) {
+        int cleanupValue = Integer.parseInt(preferenceValue) + 1;
+        if (cleanupValue > 0)
+            return LocalDate.now().minus(Period.ofDays(cleanupValue));
+        else
+            return null;
     }
 
     private void cleanup() {
         boolean deleteOnCleanup = prefs.getBoolean("deleteOnCleanup", false);
-        long maxAge = getMaxAgeMs(prefs.getString("cleanupAge", "2"));
-        long archiveMaxAge = getMaxAgeMs(prefs.getString("archiveCleanupAge", "-1"));
+        LocalDate maxAge = getMaxAge(prefs.getString("cleanupAge", "2"));
+        LocalDate archiveMaxAge = getMaxAge(prefs.getString("archiveCleanupAge", "-1"));
 
         ArrayList<FileHandle> toArchive = new ArrayList<FileHandle>();
         ArrayList<FileHandle> toDelete = new ArrayList<FileHandle>();
 
-        for (FileHandle h : getFileHandlesFromDirectory(this.crosswordsFolder)) {
-            if ((h.getComplete() == 100) || (h.getDate()
-                                                  .getTime() < maxAge)) {
-                if (deleteOnCleanup) {
-                    toDelete.add(h);
-                } else {
-                    toArchive.add(h);
+        if (maxAge != null) {
+            for (FileHandle h : getFileHandlesFromDirectory(this.crosswordsFolder)) {
+                if ((h.getComplete() == 100) || (h.getDate().isBefore(maxAge))) {
+                    if (deleteOnCleanup) {
+                        toDelete.add(h);
+                    } else {
+                        toArchive.add(h);
+                    }
                 }
             }
         }
 
-        if (archiveMaxAge > 0) {
+        if (archiveMaxAge != null) {
             for (FileHandle h : getFileHandlesFromDirectory(this.archiveFolder)) {
-                if (h.getDate().getTime() < archiveMaxAge) {
+                if (h.getDate().isBefore(archiveMaxAge)) {
                     toDelete.add(h);
                 }
             }
@@ -658,7 +661,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         meta.renameTo(new File(directory, meta.getName()));
     }
 
-    private void download(final Date d, final List<Downloader> downloaders, final boolean scrape) {
+    private void download(final LocalDate d, final List<Downloader> downloaders, final boolean scrape) {
         if (!hasWritePermissions) return;
 
         final Downloaders dls = new Downloaders(prefs, nm, this);
@@ -693,10 +696,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     scrapes.supressMessages(true);
                     scrapes.scrape();
 
-                    Date d = new Date();
+                    LocalDate d = LocalDate.now();
 
                     for (int i = 0; i < 5; i++) {
-                        d = new Date(d.getTime() - DAY);
+                        d = d.minus(Period.ofDays(1));
                         dls.download(d);
                         handler.post(new Runnable() {
                                 public void run() {
@@ -830,7 +833,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
-        final SimpleDateFormat df = new SimpleDateFormat("EEEEEEEEE\n MMM dd, yyyy");
+        final DateTimeFormatter df
+            = DateTimeFormatter.ofPattern("EEEE\n MMM dd, yyyy");
         final ArrayList<FileHandle> objects;
 
         public FileAdapter(ArrayList<FileHandle> objects) {
@@ -898,7 +902,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             DownloadPickerDialogBuilder.OnDownloadSelectedListener downloadButtonListener = new DownloadPickerDialogBuilder.OnDownloadSelectedListener() {
                 public void onDownloadSelected(
-                    Date d,
+                    LocalDate d,
                     List<Downloader> downloaders,
                     int selected
                 ) {
@@ -925,16 +929,16 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
             };
 
-            Date d = new Date();
+            LocalDate d = LocalDate.now();
             BrowseActivity activity = (BrowseActivity) getActivity();
 
             DownloadPickerDialogBuilder dpd
                 = new DownloadPickerDialogBuilder(
                     activity,
                     downloadButtonListener,
-                    d.getYear() + 1900,
-                    d.getMonth(),
-                    d.getDate(),
+                    d.getYear(),
+                    d.getMonthValue(),
+                    d.getDayOfMonth(),
                     new Downloaders(activity.prefs, activity.nm, activity)
             );
 

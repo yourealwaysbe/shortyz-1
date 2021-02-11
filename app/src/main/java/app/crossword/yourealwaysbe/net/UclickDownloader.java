@@ -9,7 +9,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.logging.Level;
 
 import app.crossword.yourealwaysbe.io.UclickXMLIO;
@@ -31,9 +32,9 @@ public class UclickDownloader extends AbstractDownloader {
     private String copyright;
     private String fullName;
     private String shortName;
-    private int[] days;
+    private DayOfWeek[] days;
 
-    public UclickDownloader(String prefix, String shortName, String fullName, String copyright, int[] days){
+    public UclickDownloader(String prefix, String shortName, String fullName, String copyright, DayOfWeek[] days){
         super(prefix+shortName+"/data/", DOWNLOAD_DIR, fullName);
         this.shortName = shortName;
         this.fullName = fullName;
@@ -43,12 +44,12 @@ public class UclickDownloader extends AbstractDownloader {
         nf.setMaximumFractionDigits(0);
     }
 
-    public UclickDownloader(String shortName, String fullName, String copyright, int[] days) {
+    public UclickDownloader(String shortName, String fullName, String copyright, DayOfWeek[] days) {
         this("http://picayune.uclick.com/comics/",shortName, fullName, copyright, days);
 
     }
 
-    public int[] getDownloadDates() {
+    public DayOfWeek[] getDownloadDates() {
         return days;
     }
 
@@ -56,7 +57,7 @@ public class UclickDownloader extends AbstractDownloader {
         return fullName;
     }
 
-    public File download(Date date) {
+    public File download(LocalDate date) {
         File downloadTo = new File(this.downloadDirectory, this.createFileName(date));
 
         if (downloadTo.exists()) {
@@ -74,7 +75,7 @@ public class UclickDownloader extends AbstractDownloader {
             InputStream is = new FileInputStream(plainText);
             DataOutputStream os = new DataOutputStream(new FileOutputStream(downloadTo));   
             boolean retVal = UclickXMLIO.convertUclickPuzzle(is, os,
-                    "\u00a9 " + (date.getYear() + 1900) + " " + copyright, date);
+                    "\u00a9 " + date.getYear() + " " + copyright, date);
             os.close();
             is.close();
             plainText.delete();
@@ -94,12 +95,12 @@ public class UclickDownloader extends AbstractDownloader {
     }
 
     @Override
-    protected String createUrlSuffix(Date date) {
-        return this.shortName + nf.format(date.getYear() - 100) + nf.format(date.getMonth() + 1) +
-        nf.format(date.getDate()) + "-data.xml";
+    protected String createUrlSuffix(LocalDate date) {
+        return this.shortName + nf.format(date.getYear() % 100) + nf.format(date.getMonthValue()) +
+        nf.format(date.getDayOfMonth()) + "-data.xml";
     }
 
-    private File downloadToTempFile(Date date) {
+    private File downloadToTempFile(LocalDate date) {
         File f = new File(downloadDirectory, this.createFileName(date));
 
         try {

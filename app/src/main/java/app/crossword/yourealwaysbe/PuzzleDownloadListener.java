@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
+import java.time.LocalDate;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -110,7 +110,7 @@ public class PuzzleDownloadListener implements DownloadListener {
             in.close();
 
             PuzzleMeta meta = new PuzzleMeta();
-            meta.date = new Date();
+            meta.date = LocalDate.now();
 
             if (Downloaders.processDownloadedPuzzle(outputFile, meta)) {
                 sendMessage("Puzzle " + fileName + " downloaded successfully.");

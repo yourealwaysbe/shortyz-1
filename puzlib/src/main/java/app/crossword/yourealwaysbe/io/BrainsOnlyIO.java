@@ -9,8 +9,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +22,7 @@ import java.util.Date;
 public class BrainsOnlyIO {
 
 
-    public static boolean convertBrainsOnly(InputStream is, DataOutputStream os, Date date){
+    public static boolean convertBrainsOnly(InputStream is, DataOutputStream os, LocalDate date){
         try {
             Puzzle puz = parse(is);
             puz.setDate(date);

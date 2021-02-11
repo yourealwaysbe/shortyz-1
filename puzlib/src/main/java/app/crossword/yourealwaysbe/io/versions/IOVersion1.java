@@ -8,7 +8,9 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.Instant;
+import java.time.ZoneId;
 
 public class IOVersion1 implements IOVersion {
 
@@ -45,7 +47,10 @@ public class IOVersion1 implements IOVersion {
         meta.author = IO.readNullTerminatedString(dis);
         meta.source = IO.readNullTerminatedString(dis);
         meta.title = IO.readNullTerminatedString(dis);
-        meta.date = new Date( dis.readLong() );
+        meta.date =
+            Instant.ofEpochMilli(dis.readLong())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
         meta.percentComplete = dis.readInt();
         meta.percentFilled = meta.percentComplete;
         return meta;
@@ -71,7 +76,17 @@ public class IOVersion1 implements IOVersion {
         IO.writeNullTerminatedString(dos, puz.getAuthor());
         IO.writeNullTerminatedString(dos, puz.getSource());
         IO.writeNullTerminatedString(dos, puz.getTitle());
-        dos.writeLong(puz.getDate() == null ? 0 : puz.getDate().getTime());
+        LocalDate date = puz.getDate();
+        if (date == null) {
+            dos.writeLong(0);
+        } else {
+            dos.writeLong(
+                date.atStartOfDay()
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            );
+        }
         dos.writeInt(puz.getPercentComplete());
     }
 }

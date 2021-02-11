@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.net.Downloaders;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,7 +139,7 @@ public class BackgroundDownloadService extends JobService {
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             final Downloaders dls = new Downloaders(prefs, nm, context, false);
-            dls.downloadLatestIfNewerThanDate(new Date(), null);
+            dls.downloadLatestIfNewerThanDate(LocalDate.now(), null);
 
             // This is used to tell BrowseActivity that puzzles may have been updated while
             // paused.

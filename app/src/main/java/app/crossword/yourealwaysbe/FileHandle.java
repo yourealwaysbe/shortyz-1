@@ -1,7 +1,9 @@
 package app.crossword.yourealwaysbe;
 
 import java.io.File;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
@@ -19,8 +21,14 @@ public class FileHandle implements Comparable<FileHandle> {
         FileHandle h = (FileHandle) another;
 
         try {
-            return h.getDate()
-                    .compareTo(this.getDate());
+            // because LocalDate is day-month-year, fall back to file
+            // modification time
+            int dateCmp = h.getDate().compareTo(this.getDate());
+            if (dateCmp != 0)
+                return dateCmp;
+            return Long.compare(
+                this.file.lastModified(), another.file.lastModified()
+            );
         } catch (Exception e) {
             return 0;
         }
@@ -30,8 +38,14 @@ public class FileHandle implements Comparable<FileHandle> {
         return (meta == null) ? "" : meta.title;
     }
 
-    Date getDate() {
-        return (meta == null) ? new Date(file.lastModified()) : meta.date;
+    LocalDate getDate() {
+        if (meta == null) {
+            return Instant.ofEpochMilli(file.lastModified())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+        } else {
+            return meta.date;
+        }
     }
 
     int getComplete() {
