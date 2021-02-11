@@ -4,11 +4,12 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.View.OnKeyListener;
+import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -44,18 +45,22 @@ public class WebBrowserActivity extends ForkyzActivity {
             });
 
         mWebView = (WebView) findViewById(R.id.webview);
+        mWebView.setInitialScale(1);
 
         final WebSettings webSettings = mWebView.getSettings();
         webSettings.setBuiltInZoomControls(true);
-        webSettings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setLightTouchEnabled(true);
 
         mPDL = new PuzzleDownloadListener(this);
 
         mWebView.setWebViewClient(new WebViewClient() {
                 @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                public boolean shouldOverrideUrlLoading(
+                    WebView view, WebResourceRequest request
+                ) {
+                    String url = request.getUrl().toString();
                     if (url.endsWith(".puz")) {
                         // Misconfigured server not reporting download - start it anyway.
                         mPDL.onDownloadStart(url, webSettings.getUserAgentString(), null, null, 0);
