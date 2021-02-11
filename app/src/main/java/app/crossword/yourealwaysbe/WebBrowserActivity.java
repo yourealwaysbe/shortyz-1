@@ -32,7 +32,6 @@ public class WebBrowserActivity extends ForkyzActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        supportRequestWindowFeature(Window.FEATURE_PROGRESS);
 
         setContentView(R.layout.web_browser_view);
 
@@ -68,12 +67,6 @@ public class WebBrowserActivity extends ForkyzActivity {
                     mURL.setText(url);
 
                     return true;
-                }
-            });
-
-        mWebView.setWebChromeClient(new WebChromeClient() {
-                public void onProgressChanged(WebView view, int progress) {
-                    WebBrowserActivity.this.setProgress(progress * 100);
                 }
             });
 
