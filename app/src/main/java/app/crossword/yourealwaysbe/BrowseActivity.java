@@ -69,7 +69,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private static final long DAY = 24L * 60L * 60L * 1000L;
     private static final Logger LOGGER = Logger.getLogger(BrowseActivity.class.getCanonicalName());
     private Accessor accessor = Accessor.DATE_DESC;
-    private SeparatedRecyclerViewAdapter currentAdapter = null;
+    private SeparatedRecyclerViewAdapter<FileViewHolder> currentAdapter = null;
     private File archiveFolder = new File(Environment.getExternalStorageDirectory(), "crosswords/archive");
     private File contextFile;
     private File crosswordsFolder = new File(Environment.getExternalStorageDirectory(), "crosswords");
@@ -466,7 +466,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         this.checkDownload();
     }
 
-    private SeparatedRecyclerViewAdapter buildList(File directory, Accessor accessor) {
+    private SeparatedRecyclerViewAdapter<FileViewHolder> buildList(File directory, Accessor accessor) {
         directory.mkdirs();
 
         long incept = System.currentTimeMillis();
@@ -475,7 +475,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (!directory.exists()) {
             showSDCardHelp();
-            return new SeparatedRecyclerViewAdapter(R.layout.puzzle_list_header);
+            return new SeparatedRecyclerViewAdapter<FileViewHolder>(
+                R.layout.puzzle_list_header,
+                FileViewHolder.class
+            );
         }
 
 
@@ -519,7 +522,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             e.printStackTrace();
         }
 
-        SeparatedRecyclerViewAdapter adapter = new SeparatedRecyclerViewAdapter(R.layout.puzzle_list_header);
+        SeparatedRecyclerViewAdapter<FileViewHolder> adapter
+            = new SeparatedRecyclerViewAdapter<>(
+                R.layout.puzzle_list_header,
+                FileViewHolder.class
+            );
         String lastHeader = null;
         ArrayList<FileHandle> current = new ArrayList<FileHandle>();
 

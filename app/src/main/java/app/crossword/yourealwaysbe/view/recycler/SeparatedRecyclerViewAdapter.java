@@ -12,14 +12,21 @@ import java.util.Map;
 /**
  * Created by rcooper on 7/8/15.
  */
-public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Dismissable {
+public class SeparatedRecyclerViewAdapter<BodyHolder extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Dismissable {
     private static int HEADER = Integer.MIN_VALUE;
 
-    private LinkedHashMap<String, RemovableRecyclerViewAdapter> sections = new LinkedHashMap<>();
+    private LinkedHashMap<String, RemovableRecyclerViewAdapter<BodyHolder>> sections = new LinkedHashMap<>();
     private final int textViewId;
+    private Class<BodyHolder> bodyHolderClass;
 
-    public SeparatedRecyclerViewAdapter(int textViewId) {
+    /**
+     * Needs BodyHolder class for type safety
+     */
+    public SeparatedRecyclerViewAdapter(
+        int textViewId, Class<BodyHolder> bodyHolderClass
+    ) {
         this.textViewId = textViewId;
+        this.bodyHolderClass = bodyHolderClass;
     }
 
 
@@ -47,7 +54,7 @@ public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         int sectionPosition = 0;
-        for (Map.Entry<String, RemovableRecyclerViewAdapter> entry : this.sections.entrySet()) {
+        for (Map.Entry<String, RemovableRecyclerViewAdapter<BodyHolder>> entry : this.sections.entrySet()) {
             int size = entry.getValue().getItemCount() + 1;
             if(position < sectionPosition + size){
                 int index = position - sectionPosition;
@@ -55,7 +62,8 @@ public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
                     TextView view = (TextView) ((SimpleTextViewHolder) viewHolder).itemView;
                     view.setText(entry.getKey());
                 } else {
-                    entry.getValue().onBindViewHolder(viewHolder, index - 1);
+                    BodyHolder bodyHolder = bodyHolderClass.cast(viewHolder);
+                    entry.getValue().onBindViewHolder(bodyHolder, index - 1);
                 }
                 break;
             }
@@ -76,7 +84,7 @@ public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
     @Override
     public int getItemViewType(int position) {
         int sectionPosition = 0;
-        for (Map.Entry<String, RemovableRecyclerViewAdapter> entry : this.sections.entrySet()) {
+        for (Map.Entry<String, RemovableRecyclerViewAdapter<BodyHolder>> entry : this.sections.entrySet()) {
             int size = entry.getValue().getItemCount() + 1;
             if(position < sectionPosition + size){
                 int index = position - sectionPosition;
@@ -91,7 +99,7 @@ public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
         throw new RuntimeException("Unable to find anything for position "+position);
     }
 
-    public void addSection(String header, RemovableRecyclerViewAdapter adapter){
+    public void addSection(String header, RemovableRecyclerViewAdapter<BodyHolder> adapter){
         this.sections.put(header, adapter);
     }
 
@@ -99,7 +107,7 @@ public class SeparatedRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerV
     @Override
     public void onItemDismiss(int position) {
        int sectionPosition = 0;
-        for (Map.Entry<String, RemovableRecyclerViewAdapter> entry : new LinkedList<>(this.sections.entrySet())) {
+        for (Map.Entry<String, RemovableRecyclerViewAdapter<BodyHolder>> entry : new LinkedList<>(this.sections.entrySet())) {
             int size = entry.getValue().getItemCount() + 1;
             if (position < sectionPosition + size) {
                 int index = position - sectionPosition;
