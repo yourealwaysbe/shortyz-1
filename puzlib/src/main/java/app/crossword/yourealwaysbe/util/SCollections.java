@@ -10,7 +10,7 @@ public abstract class SCollections {
 
     public static <T, C extends Collection<T>> Collection<T> neverNull(C collection){
         if(collection == null){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             return collection;
         }
