@@ -26,4 +26,6 @@
     <string name="elapsed_time">Elapsed Time: %1$s</string>
     <string name="allow_permissions">Allow Permissions</string>
     <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
+    <string name="download_notification_channel_name">Downloads</string>
+    <string name="download_notification_channel_desc">Notifications about downloaded puzzles</string>
 </resources>

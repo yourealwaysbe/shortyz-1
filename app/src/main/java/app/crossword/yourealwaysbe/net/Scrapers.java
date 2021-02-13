@@ -10,6 +10,7 @@ import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 
 import app.crossword.yourealwaysbe.PlayActivity;
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,7 +51,10 @@ public class Scrapers {
         int i = 1;
         String contentTitle = "Downloading Scrape Puzzles";
 
-        NotificationCompat.Builder not = new NotificationCompat.Builder(context)
+        NotificationCompat.Builder not 
+            = new NotificationCompat.Builder(
+                    context, ForkyzApplication.PUZZLE_DOWNLOAD_CHANNEL_ID
+                )
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setContentTitle(contentTitle)
                 .setWhen(System.currentTimeMillis());
@@ -93,13 +97,15 @@ public class Scrapers {
         Intent notificationIntent = new Intent(Intent.ACTION_EDIT, Uri.fromFile(puzFile), context, PlayActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 
-        Notification not = new NotificationCompat.Builder(context)
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle(contentTitle)
-                .setContentText(puzFile.getName())
-                .setContentIntent(contentIntent)
-                .setWhen(System.currentTimeMillis())
-                .build();
+        Notification not = new NotificationCompat.Builder(
+                context, ForkyzApplication.PUZZLE_DOWNLOAD_CHANNEL_ID
+            )
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setContentTitle(contentTitle)
+            .setContentText(puzFile.getName())
+            .setContentIntent(contentIntent)
+            .setWhen(System.currentTimeMillis())
+            .build();
 
         if (this.notificationManager != null) {
             this.notificationManager.notify(i, not);
