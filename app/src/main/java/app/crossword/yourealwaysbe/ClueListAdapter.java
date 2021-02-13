@@ -19,7 +19,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 
-public class ClueListAdapter extends ArrayAdapter {
+public class ClueListAdapter extends ArrayAdapter<Clue> {
     private final int defaultBackground;
     private final int highlight;
     private final int highlightLine;
@@ -58,7 +58,7 @@ public class ClueListAdapter extends ArrayAdapter {
         this.highlightClue = c;
     }
 
-    public Object getItem(int i) {
+    public Clue getItem(int i) {
         return clues[i];
     }
 
