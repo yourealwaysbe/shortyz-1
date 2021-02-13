@@ -66,11 +66,11 @@ android {
         }
     }
 
-//    tasks.withType(JavaCompile) {
-//        configure(options) {
-//            options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
-//        }
-//    }
+    tasks.withType(JavaCompile) {
+        configure(options) {
+            options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+        }
+    }
 }
 
 dependencies {

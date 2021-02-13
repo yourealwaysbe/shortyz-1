@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.widget.TextView;
+import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 
@@ -27,10 +28,10 @@ public class HighlightTextView extends TextView {
                                                     .getSystemService(Context.WINDOW_SERVICE);
         manager.getDefaultDisplay()
                .getMetrics(metrics);
-        blackPaint.setColor(context.getResources().getColor(androidx.appcompat.R.color.primary_material_light));
+        blackPaint.setColor(ContextCompat.getColor(context, androidx.appcompat.R.color.primary_material_light));
         blackPaint.setAntiAlias(true);
         blackPaint.setStyle(Style.FILL_AND_STROKE);
-        highlight.setColor(context.getResources().getColor(R.color.primary_dark));
+        highlight.setColor(ContextCompat.getColor(context, R.color.primary_dark));
         highlight.setStyle(Style.FILL_AND_STROKE);
     }
 
