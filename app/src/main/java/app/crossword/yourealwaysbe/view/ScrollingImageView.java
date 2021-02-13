@@ -34,7 +34,7 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
 
     public ScrollingImageView(Context context, AttributeSet as) {
         super(context, as);
-        gestureDetector = new GestureDetector(this);
+        gestureDetector = new GestureDetector(context, this);
         gestureDetector.setIsLongpressEnabled(true);
         imageView = new ImageView(context);
 
