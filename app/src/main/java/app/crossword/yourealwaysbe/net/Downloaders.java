@@ -355,7 +355,7 @@ public class Downloaders {
     }
 
     private List<Downloader> getDownloadersFromPrefs() {
-        List downloaders = new LinkedList<Downloader>();
+        List<Downloader> downloaders = new LinkedList<>();
 
         if (prefs.getBoolean("downloadGuardianDailyCryptic", true)) {
             downloaders.add(new GuardianDailyCrypticDownloader());
