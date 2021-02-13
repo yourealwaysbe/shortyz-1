@@ -113,7 +113,6 @@ public class PlayActivity extends PuzzleActivity
     /**
      * Called when the activity is first created.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -563,7 +562,6 @@ public class PlayActivity extends PuzzleActivity
         return onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

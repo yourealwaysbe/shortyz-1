@@ -23,7 +23,6 @@ import app.crossword.yourealwaysbe.versions.DefaultUtil;
 public abstract class AbstractDownloader implements Downloader {
     protected static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
     public static File DOWNLOAD_DIR = ForkyzApplication.CROSSWORDS;
-    @SuppressWarnings("unchecked")
 	protected static final Map<String, String> EMPTY_MAP = Collections.EMPTY_MAP;
     protected File downloadDirectory;
     protected String baseUrl;

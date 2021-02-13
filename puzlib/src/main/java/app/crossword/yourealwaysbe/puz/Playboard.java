@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 
 import app.crossword.yourealwaysbe.util.WeakSet;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Playboard implements Serializable {
     private static final Logger LOG = Logger.getLogger(Playboard.class.getCanonicalName());
 

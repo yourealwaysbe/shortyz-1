@@ -18,7 +18,6 @@ import android.widget.EditText;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 
-@SuppressWarnings("SetJavaScriptEnabled")
 public class WebBrowserActivity extends ForkyzActivity {
     private EditText mURL;
     private InputMethodManager mIMM;

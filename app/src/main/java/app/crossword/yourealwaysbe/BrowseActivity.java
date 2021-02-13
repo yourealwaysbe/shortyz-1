@@ -223,7 +223,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
 
-    @SuppressWarnings("deprecation")
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -799,7 +798,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
     }
 
-    @SuppressWarnings("RestrictedApi")
     @Override
     public void onItemLongClick(View v, int position) {
         if (!(v.getTag() instanceof FileHandle)) {

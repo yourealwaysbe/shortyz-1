@@ -13,7 +13,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 
-@SuppressWarnings("deprecation")
 public class ScrollingImageView extends FrameLayout implements OnGestureListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
