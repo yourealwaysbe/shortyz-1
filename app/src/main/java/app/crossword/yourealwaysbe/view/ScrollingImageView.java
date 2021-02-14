@@ -61,6 +61,7 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         BaseInputConnection fic = new BaseInputConnection(this, false);
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_FORCE_ASCII;
         outAttrs.inputType = InputType.TYPE_NULL;
         return fic;
     }
