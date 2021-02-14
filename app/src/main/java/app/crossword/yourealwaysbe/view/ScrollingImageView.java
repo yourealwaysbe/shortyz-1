@@ -5,13 +5,16 @@ import java.util.logging.Logger;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.InputType;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
 
 public class ScrollingImageView extends FrameLayout implements OnGestureListener {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
@@ -52,6 +55,14 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
                 e.printStackTrace();
             }
         }
+    }
+
+    // Set input type to be raw keys if a keyboard is used
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        BaseInputConnection fic = new BaseInputConnection(this, false);
+        outAttrs.inputType = InputType.TYPE_NULL;
+        return fic;
     }
 
     public void setBitmap(Bitmap bitmap) {
