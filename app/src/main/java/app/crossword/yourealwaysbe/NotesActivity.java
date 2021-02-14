@@ -359,16 +359,6 @@ public class NotesActivity extends PuzzleActivity {
         switch (focused.getId()) {
         case R.id.miniboard:
             return onMiniboardKeyUp(keyCode, event);
-
-        case R.id.scratchMiniboard:
-            return scratchView.onKeyUp(keyCode, event);
-
-        case R.id.anagramSource:
-            return anagramSourceView.onKeyUp(keyCode, event);
-
-        case R.id.anagramSolution:
-            return anagramSolView.onKeyUp(keyCode, event);
-
         default:
             return false;
         }
