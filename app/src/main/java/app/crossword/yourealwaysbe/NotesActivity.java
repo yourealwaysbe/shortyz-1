@@ -462,7 +462,8 @@ public class NotesActivity extends PuzzleActivity {
     }
 
     protected void render() {
-        keyboardManager.showKeyboard();
+        View focused = getWindow().getCurrentFocus();
+        keyboardManager.showKeyboard(focused);
 
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         boolean displayScratchAcross = displayScratch && !getBoard().isAcross();

@@ -866,7 +866,7 @@ public class PlayActivity extends PuzzleActivity
             Position newPos = board.getHighlightLetter();
             if ((previous != null) &&
                 previous.checkInWord(newPos.across, newPos.down)) {
-                keyboardManager.showKeyboard();
+                keyboardManager.showKeyboard(boardView);
             } else {
                 keyboardManager.hideKeyboard();
             }

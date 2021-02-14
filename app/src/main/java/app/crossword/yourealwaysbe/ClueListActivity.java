@@ -287,7 +287,7 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     private void displayKeyboard() {
-        keyboardManager.showKeyboard();
+        keyboardManager.showKeyboard(imageView);
     }
 
     private void displayKeyboard(Word previousWord) {
@@ -298,7 +298,7 @@ public class ClueListActivity extends PuzzleActivity
             Position newPos = board.getHighlightLetter();
             if ((previousWord != null) &&
                 previousWord.checkInWord(newPos.across, newPos.down)) {
-                keyboardManager.showKeyboard();
+                keyboardManager.showKeyboard(imageView);
             } else {
                 keyboardManager.hideKeyboard();
             }

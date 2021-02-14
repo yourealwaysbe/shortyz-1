@@ -58,14 +58,15 @@ public class KeyboardManager {
 
     /**
      * Show the keyboard -- must be called after UI drawn
+     *
+     * @param view the view the keyboard should work for, will request
+     * focus
      */
-    public void showKeyboard() {
-        View focus = activity.getCurrentFocus();
-        if (focus != null) {
+    public void showKeyboard(View view) {
+        if (view != null && view.requestFocus()) {
             InputMethodManager imm
                 = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(focus, InputMethodManager.SHOW_FORCED);
-
+            imm.showSoftInput(view, InputMethodManager.SHOW_FORCED);
         }
     }
 
