@@ -32,9 +32,7 @@
         app:layout_constraintVertical_weight="100"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-    >
-        <requestFocus />
-    </app.crossword.yourealwaysbe.view.ScrollingImageView>
+    />
     <app.crossword.yourealwaysbe.view.ClueTabs
         android:id="@+id/playClueTab"
         android:layout_width="0dp"
