@@ -404,19 +404,16 @@ public class NotesActivity extends PuzzleActivity {
             return true;
 
         case KeyEvent.KEYCODE_SPACE:
+            getBoard().playLetter(' ');
 
-            if (!prefs.getBoolean("spaceChangesDirection", true)) {
-                getBoard().playLetter(' ');
+            Position curr = getBoard().getHighlightLetter();
 
-                Position curr = getBoard().getHighlightLetter();
-
-                if (!getBoard().getCurrentWord().equals(w)
-                        || (getBoard().getBoxes()[curr.across][curr.down] == null)) {
-                    getBoard().setHighlightLetter(last);
-                }
-
-                return true;
+            if (!getBoard().getCurrentWord().equals(w)
+                    || (getBoard().getBoxes()[curr.across][curr.down] == null)) {
+                getBoard().setHighlightLetter(last);
             }
+
+            return true;
         }
 
         char c = Character .toUpperCase(event.getDisplayLabel());
