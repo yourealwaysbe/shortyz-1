@@ -169,6 +169,15 @@ public class NotesActivity extends PuzzleActivity {
                 }
             }
         });
+        this.imageView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_UP)
+                    return NotesActivity.this.onMiniboardKeyUp(keyCode, event);
+                else
+                    return false;
+            }
+        });
 
         Note note = puz.getNote(c.number, getBoard().isAcross());
         EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
@@ -347,23 +356,6 @@ public class NotesActivity extends PuzzleActivity {
             keyboardManager.onDestroy();
     }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            this.finish();
-            return true;
-        }
-
-        View focused = getWindow().getCurrentFocus();
-
-        switch (focused.getId()) {
-        case R.id.miniboard:
-            return onMiniboardKeyUp(keyCode, event);
-        default:
-            return false;
-        }
-    }
-
     private boolean onMiniboardKeyUp(int keyCode, KeyEvent event) {
         Word w = getBoard().getCurrentWord();
         Position last = new Position(w.start.across
@@ -431,7 +423,7 @@ public class NotesActivity extends PuzzleActivity {
             return true;
         }
 
-        return super.onKeyUp(keyCode, event);
+        return false;
     }
 
     @Override

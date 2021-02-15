@@ -113,6 +113,21 @@ public class ClueListActivity extends PuzzleActivity
             }
         });
 
+        // i know this is not needed because of onKeyUp / onKeyDown,
+        // but it seems cleaner to me that we don't rely on the
+        // keypress finding its way from the board to the activity
+        this.imageView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_UP)
+                    return ClueListActivity.this.onKeyUp(keyCode, event);
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                    return ClueListActivity.this.onKeyDown(keyCode, event);
+                else
+                    return false;
+            }
+        });
+
         this.clueTabs = this.findViewById(R.id.clueListClueTabs);
         this.clueTabs.setBoard(getBoard());
 

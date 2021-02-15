@@ -282,6 +282,20 @@ public class PlayActivity extends PuzzleActivity
                     }
                 }
             });
+            // i know this is not needed because of onKeyUp / onKeyDown,
+            // but it seems cleaner to me that we don't rely on the
+            // keypress finding its way from the board to the activity
+            this.boardView.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View view, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_UP)
+                        return PlayActivity.this.onKeyUp(keyCode, event);
+                    if (event.getAction() == KeyEvent.ACTION_DOWN)
+                        return PlayActivity.this.onKeyDown(keyCode, event);
+                    else
+                        return false;
+                }
+            });
             // constrain to 1:1 if clueTabs is showing
             boardView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                 public void onLayoutChange(View v,
