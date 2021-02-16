@@ -5,242 +5,241 @@
 >
 
     <androidx.preference.PreferenceCategory
-        android:title="Select Puzzle Sources">
+        android:title="@string/select_sources"
+    >
         <!-- Organized alphabetically and by category. -->
         <androidx.preference.Preference
-            android:title="Daily Crosswords"
-            android:summary="Puzzles which update daily."
+            android:title="@string/daily_crosswords"
+            android:summary="@string/daily_crosswords_desc"
             android:key="selectDaily"
             app:fragment="app.crossword.yourealwaysbe.PreferencesDailyFragment"
         />
         <androidx.preference.Preference
-            android:title="Weekly Crosswords"
-            android:summary="Puzzles which update weekly."
+            android:title="@string/weekly_crosswords"
+            android:summary="@string/weekly_crosswords_desc"
             android:key="selectWeekly"
             app:fragment="app.crossword.yourealwaysbe.PreferencesWeeklyFragment"
         />
         <androidx.preference.Preference
-            android:title="Experimental Sources"
-            android:summary="May or may not function correctly."
+            android:title="@string/experimental_sources"
+            android:summary="@string/experimental_sources_desc"
             android:key="selectExperimental"
             app:fragment="app.crossword.yourealwaysbe.PreferencesExperimentalFragment"
         />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory
-        android:title="Application Settings">
+        android:title="@string/application_settings"
+    >
 
         <androidx.preference.CheckBoxPreference
-            android:title="Fit to screen when starting"
+            android:title="@string/fit_screen_start"
             android:defaultValue="false"
-            android:summary="Best-fits the puzzle when you start."
+            android:summary="@string/fit_screen_start_desc"
             android:key="fitToScreen"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Automatic Download"
+            android:title="@string/automatic_download"
             android:defaultValue="true"
-            android:summary="Download today's puzzles when starting the application"
+            android:summary="@string/automatic_download_desc"
             android:key="dlOnStartup"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Download new puzzles in background"
-            android:summary="Periodically download new puzzles in the background, even when Forkyz is not in use."
+            android:title="@string/background_download"
+            android:summary="@string/background_download_desc"
             android:key="backgroundDownload"
             android:defaultValue="false"
-            />
+        />
 
         <androidx.preference.Preference
-            android:title="Background Download Options"
-            android:summary="Configure background downloads."
+            android:title="@string/background_download_opts"
+            android:summary="@string/background_download_opts_desc"
             android:dependency="backgroundDownload"
             android:key="backgroundDownloadOptions"
             app:fragment="app.crossword.yourealwaysbe.PreferencesDownloadFragment"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="No Download Notifications"
+            android:title="@string/no_download_notifs"
             android:defaultValue="false"
-            android:summary="Prevents a notification for each puzzle downloaded from appearing in the notifications list."
+            android:summary="@string/no_download_notifs_desc"
             android:key="supressMessages"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="No Hint Highlighting"
+            android:title="@string/no_hint_highlighting"
             android:defaultValue="false"
-            android:summary="Prevents the pink boxes indicating 'hints' in the form of reveals or show errors."
+            android:summary="@string/no_hint_highlighting_desc"
             android:key="supressHints"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Delete on Cleanup"
+            android:title="@string/delete_on_cleanup"
             android:defaultValue="false"
-            android:summary="Delete rather than archive old puzzles"
+            android:summary="@string/delete_on_cleanup_desc"
             android:key="deleteOnCleanup"
         />
 
         <androidx.preference.ListPreference
-            android:title="Cleanup Unfinished"
-            android:summary="Determines how old an unfinished puzzle must be before it is archived/deleted."
+            android:title="@string/cleanup_unfinished"
+            android:summary="@string/cleanup_unfinished_desc"
             android:key="cleanupAge"
             android:defaultValue="2"
             android:entries="@array/cleanupAgeLabels"
-            android:entryValues="@array/cleanupAgeValues" />
+            android:entryValues="@array/cleanupAgeValues"
+        />
 
         <androidx.preference.ListPreference
-            android:title="Cleanup Archives"
-            android:summary="Determines how old an archived puzzle must be before it is deleted."
+            android:title="@string/cleanup_archives"
+            android:summary="@string/cleanup_archives_desc"
             android:key="archiveCleanupAge"
             android:defaultValue="-1"
             android:entries="@array/cleanupAgeLabels"
-            android:entryValues="@array/cleanupAgeValues" />
+            android:entryValues="@array/cleanupAgeValues"
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Don't Hide Keyboard"
+            android:title="@string/dont_hide_keyboard"
             android:defaultValue="false"
-            android:summary="Don't Hide the Keyboard when Changing Clues"
+            android:summary="@string/dont_hide_keyboard_desc"
             android:key="dontHideKeyboard"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Snap to Current Word"
+            android:title="@string/snap_current"
             android:defaultValue="true"
-            android:summary="Toggles the auto-scrolling of the playboard to the current play position"
+            android:summary="@string/snap_current_desc"
             android:key="ensureVisible"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Show Length"
+            android:title="@string/show_length"
             android:defaultValue="false"
-            android:summary="Shows the number of letters in the answer on the clue line"
+            android:summary="@string/show_length_desc"
             android:key="showCount"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Scroll To Clue"
+            android:title="@string/scroll_to_clue"
             android:defaultValue="false"
-            android:summary="Toggles the auto-scrolling to the selected clue in the clues list. (Works like Forkyz 1)"
+            android:summary="@string/scroll_to_clue_desc"
             android:key="snapClue"
         />
 
         <androidx.preference.ListPreference
-            android:title="Movement Style"
-            android:summary="Select what happens when you type past the end of a word."
+            android:title="@string/movement_style"
+            android:summary="@string/movement_style_desc"
             android:key="movementStrategy"
             android:defaultValue="MOVE_NEXT_ON_AXIS"
             android:entries="@array/movementStrategyLabels"
-            android:entryValues="@array/movementStrategyValues" />
+            android:entryValues="@array/movementStrategyValues"
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Skip Filled Boxes"
+            android:title="@string/skip_filled"
             android:defaultValue="false"
-            android:summary="Toggles the skipping of filled boxes when you enter a new letter."
+            android:summary="@string/skip_filled_desc"
             android:key="skipFilled"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Preserve Correct Boxes when Showing Errors"
+            android:title="@string/preserve_correct"
             android:defaultValue="false"
-            android:summary="Keeps you from overwriting a correct box when you are in 'Show Errors' mode."
+            android:summary="@string/preserve_correct_desc"
             android:key="preserveCorrectLettersInShowErrors"
-            />
-
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Space Changes Direction"
+            android:title="@string/space_change_dir"
             android:defaultValue="true"
-            android:summary="Spacebar changed direction rather than blanking the box."
+            android:summary="@string/space_change_dir_desc"
             android:key="spaceChangesDirection"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Enter Changes Direction"
+            android:title="@string/enter_changes_direction"
             android:defaultValue="true"
-            android:summary="Enter changes direction rather than moving to the next clue."
+            android:summary="@string/enter_changes_direction_desc"
             android:key="enterChangesDirection"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Double Tap Zoom"
+            android:title="@string/double_tap_zoom"
             android:defaultValue="false"
-            android:summary="Double tap toggles between fit to screen, and your default zoom."
+            android:summary="@string/double_tap_zoom_desc"
             android:key="doubleTap"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Show Timer"
+            android:title="@string/show_timer"
             android:defaultValue="false"
-            android:summary="Shows your puzzle time.\nYou must leave and re-enter a puzzle to apply."
+            android:summary="@string/show_timer_desc"
             android:key="showTimer"
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Full Screen"
+            android:title="@string/full_screen"
             android:defaultValue="false"
-            android:summary="Hides the notification bar.\nYou must leave and re-enter a puzzle to apply."
+            android:summary="@string/full_screen_desc"
             android:key="fullScreen"
         />
 
         <androidx.preference.ListPreference
-            android:title="Orientation Lock"
-            android:summary="Locks the screen location"
+            android:title="@string/orientation_lock"
+            android:summary="@string/orientation_lock_desc"
             android:key="orientationLock"
             android:defaultValue="UNLOCKED"
             android:entries="@array/orientationLockLabels"
-            android:entryValues="@array/orientationLockValues" />    
-        <!--  CheckBoxPreference
-            android:title="Full Screen"
-            android:defaultValue="false"
-            android:summary="Play screens run full screen."
-            android:key="fullScreen"
-        /-->
+            android:entryValues="@array/orientationLockValues"
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Disable Swipe"
+            android:title="@string/disable_swipe"
             android:defaultValue="false"
-            android:summary="Disables swiping to dismiss on the list view."
+            android:summary="@string/disable_swipe_desc"
             android:key="disableSwipe"
-            />
+        />
 
         <androidx.preference.ListPreference
-            android:title="Swipe Action"
-            android:summary="Select delete or archive on swipe"
+            android:title="@string/swipe_action"
+            android:summary="@string/swipe_action_desc"
             android:key="swipeAction"
             android:defaultValue="DELETE"
             android:entries="@array/swipeActionLabels"
-            android:entryValues="@array/swipeActionValues" />
+            android:entryValues="@array/swipeActionValues"
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Display Scratch"
+            android:title="@string/display_scratch"
             android:defaultValue="false"
-            android:summary="Display scratch notes on play board."
+            android:summary="@string/display_scratch_desc"
             android:key="displayScratch"
-            />
+        />
 
         <androidx.preference.CheckBoxPreference
-            android:title="Don't delete crossing words"
+            android:title="@string/dont_delete_crossing"
             android:defaultValue="true"
-            android:summary="When deleting, don't delete a letter if it is part of a filled-in crossing word"
+            android:summary="@string/dont_delete_crossing_desc"
             android:key="dontDeleteCrossing"
-            />
+        />
 
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory
-        android:title="About Forkyz">
+        android:title="@string/about_forkyz"
+    >
 
-    <androidx.preference.Preference
-         android:title="Release Notes" 
-         android:key="releaseNotes"/>
+        <androidx.preference.Preference
+            android:title="@string/release_notes"
+            android:key="releaseNotes"
+        />
 
-    <androidx.preference.Preference
-     android:title="License" 
-     android:key="license"/>
-
-    <!--      <Preference -->
-    <!--          android:title="Send Debug Package"  -->
-    <!--          android:key="sendDebug"/> -->
+        <androidx.preference.Preference
+            android:title="@string/license"
+            android:key="license"
+        />
 
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

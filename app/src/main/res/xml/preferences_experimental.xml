@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
-    android:title="Experimental Sources"
-    android:summary="May or may not function correctly."
-    android:key="selectExperimental">
+    android:title="@string/experimental_sources"
+    android:summary="@string/experimental_sources_desc"
+    android:key="selectExperimental"
+>
     <androidx.preference.CheckBoxPreference
-        android:title="Cru Puzzle Workshop"
+        android:title="@string/cru_puzzle_workshop"
         android:defaultValue="false"
-        android:summary="NYT Cru Cryptic Fan Puzzles\nhttp://web.me.com/joecab/nytcru/\n(Please Read the help item below)"
-        android:key="scrapeCru" />
+        android:summary="@string/cru_puzzle_workshop_desc"
+        android:key="scrapeCru"
+    />
     <androidx.preference.CheckBoxPreference
-        android:title="Kegler's Kryptics"
+        android:title="@string/keglars_cryptics"
         android:defaultValue="false"
-        android:summary="Ron &quot;Kegler&quot; Sweet's Cryptic Archive\nhttp://www.lafn.org/~keglerron/kegler.html\n(Please Read the help item below)"
-        android:key="scrapeKegler" />
+        android:summary="@string/keglars_cryptics_desc"
+        android:key="scrapeKegler"
+    />
     <androidx.preference.Preference
-         android:title="About These Sources"
-         android:key="aboutScrapes" />
+        android:title="@string/about_scrapes"
+        android:key="aboutScrapes"
+    />
 </androidx.preference.PreferenceScreen>

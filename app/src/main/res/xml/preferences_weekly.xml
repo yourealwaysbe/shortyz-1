@@ -1,81 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
-    android:title="Weekly Crosswords"
-    android:summary="Puzzles which update weekly."
-    android:key="selectWeekly">
-    <androidx.preference.PreferenceCategory android:title="Regular Sized">
-        <!--CheckBoxPreference
-            android:title="Brendan Emmett Quigley"
-            android:defaultValue="true"
-            android:summary="Updates Mondays &amp; Thursdays - brendanemmettquigley.com"
-            android:key="scrapeBEQ" /-->
+    android:title="@string/weekly_crosswords"
+    android:summary="@string/weekly_crosswords_desc"
+    android:key="selectWeekly"
+>
+    <androidx.preference.PreferenceCategory
+        android:title="@string/regular_sized"
+    >
         <androidx.preference.CheckBoxPreference
-            android:title="Ink Well"
+            android:title="@string/ink_well"
             android:defaultValue="true"
-            android:summary="Updates Fridays"
-            android:key="downloadInkwell" />
+            android:summary="@string/updates_fridays"
+            android:key="downloadInkwell"
+        />
         <androidx.preference.CheckBoxPreference
-            android:title="Jonesin' Crosswords"
+            android:title="@string/jonesin_crosswords"
             android:defaultValue="true"
-            android:summary="Updates Thursdays"
-            android:key="downloadJonesin" />
-        <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="New York Times Classic"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Mondays"-->
-            <!--android:key="downloadNYTClassic" />-->
-        <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="The Onion AV Club"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Wednesdays"-->
-            <!--android:key="downloadAvClub" />-->
+            android:summary="@string/updates_thursdays"
+            android:key="downloadJonesin"
+        />
         <androidx.preference.CheckBoxPreference
-            android:title="Washington Post Puzzler"
+            android:title="@string/washington_post_puzzler"
             android:defaultValue="true"
-            android:summary="Updates Sundays"
-            android:key="downloadWaPoPuzzler" />
-        <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="People Magazine"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Thursdays"-->
-            <!--android:key="scrapePeople" />-->
-         <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="I Swear"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Fridays"-->
-            <!--android:key="downloadISwear" />-->
+            android:summary="@string/updates_sundays"
+            android:key="downloadWaPoPuzzler"
+        />
     </androidx.preference.PreferenceCategory>
-    <androidx.preference.PreferenceCategory android:title="Large Sized">
-        <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="Boston Globe"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Sundays"-->
-            <!--android:key="downloadGlobe" />-->
+    <androidx.preference.PreferenceCategory
+        android:title="@string/large_sized"
+    >
         <androidx.preference.CheckBoxPreference
-            android:title="Chron. of Higher Ed."
+            android:title="@string/chron_of_higher_ed"
             android:defaultValue="true"
-            android:summary="Updates Fridays (Currently Biweekly)"
-            android:key="downloadCHE" />
+            android:summary="@string/updates_fridays_biweekly"
+            android:key="downloadCHE"
+        />
         <androidx.preference.CheckBoxPreference
-            android:title="LAT Sunday Calendar"
+            android:title="@string/lat_sunday_calendar"
             android:defaultValue="true"
-            android:summary="Updates Sundays"
-            android:key="downloadLACal" />
-        <!--<androidx.preference.CheckBoxPreference-->
-            <!--android:title="Philadelphia Inquirer"-->
-            <!--android:defaultValue="true"-->
-            <!--android:summary="Updates Sundays - By Merl Reagle"-->
-            <!--android:key="downloadPhilly" />-->
+            android:summary="@string/updates_sundays"
+            android:key="downloadLACal"
+        />
         <androidx.preference.CheckBoxPreference
-            android:title="Premier Crosswords"
+            android:title="@string/premier_crosswords"
             android:defaultValue="true"
-            android:summary="Updates Sundays"
-            android:key="downloadPremier" />
+            android:summary="@string/updates_sundays"
+            android:key="downloadPremier"
+        />
         <androidx.preference.CheckBoxPreference
-            android:title="The Wall Street Journal"
+            android:title="@string/wall_street_journal"
             android:defaultValue="true"
-            android:summary="Updates Fridays"
-            android:key="downloadWsj" />
+            android:summary="@string/updates_fridays"
+            android:key="downloadWsj"
+        />
     </androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>
