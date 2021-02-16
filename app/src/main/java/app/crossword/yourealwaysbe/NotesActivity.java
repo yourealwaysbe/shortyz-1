@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -622,9 +621,7 @@ public class NotesActivity extends PuzzleActivity {
                     args.getSerializable(TRANSFER_RESPONSE_REQUEST_KEY);
 
             AlertDialog.Builder builder
-                = new AlertDialog.Builder(
-                    new ContextThemeWrapper(activity, R.style.dialogStyle)
-                );
+                = new AlertDialog.Builder(activity);
 
             builder.setTitle(R.string.copy_conflict)
                 .setMessage(R.string.transfer_overwrite_warning)

@@ -16,6 +16,4 @@
         <item name="android:textColor">#000</item>
         <item name="android:textColorHint">#000</item>
     </style>
-    <style name="dialogStyle">
-    </style>
 </resources>

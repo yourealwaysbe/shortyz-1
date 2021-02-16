@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnShowListener;
 import android.content.Intent;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,10 +102,9 @@ public class DownloadPickerDialogBuilder {
             });
 
         AlertDialog.Builder builder
-            = new AlertDialog.Builder(
-                new ContextThemeWrapper(mActivity, R.style.dialogStyle)
-            ).setPositiveButton("Download", clickHandler)
-             .setNegativeButton("Cancel", null);
+            = new AlertDialog.Builder(mActivity)
+                .setPositiveButton("Download", clickHandler)
+                .setNegativeButton("Cancel", null);
 
         builder.setView(layout);
         mDialog = builder.create();
