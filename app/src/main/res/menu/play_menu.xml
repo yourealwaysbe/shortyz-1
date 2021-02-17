@@ -1,90 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+>
 
     <item
         android:id="@+id/play_menu_clues"
         android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Clues" />
+        android:title="@string/clues"
+    />
     <item
         android:id="@+id/play_menu_notes"
         android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Notes" />
+        android:title="@string/notes"
+    />
     <item
         android:id="@+id/play_menu_zoom"
-        android:title="Zoom" >
+        android:title="@string/zoom"
+    >
         <menu>
             <item
                 android:id="@+id/play_menu_zoom_in"
-                android:title="Zoom In" />
+                android:title="@string/zoom_in"
+            />
             <item
                 android:id="@+id/play_menu_zoom_in_max"
-                android:title="Zoom In Max" />
+                android:title="@string/zoom_in_max"
+            />
             <item
                 android:id="@+id/play_menu_zoom_out"
-                android:title="Zoom Out" />
+                android:title="@string/zoom_out"
+            />
             <item
                 android:id="@+id/play_menu_zoom_fit"
-                android:title="Fit to Screen" />
+                android:title="@string/fit_to_screen"
+            />
             <item
                 android:id="@+id/play_menu_zoom_reset"
-                android:title="Zoom Reset" />
+                android:title="@string/zoom_reset"
+            />
         </menu>
     </item>
     <item
         android:id="@+id/play_menu_clue_size"
-        android:title="Clue Text Size" >
+        android:title="@string/clue_text_size"
+    >
         <menu>
             <item
                 android:id="@+id/play_menu_clue_size_s"
-                android:title="Small" />
+                android:title="@string/small"
+            />
             <item
                 android:id="@+id/play_menu_clue_size_m"
-                android:title="Medium" />
+                android:title="@string/medium"
+            />
             <item
                 android:id="@+id/play_menu_clue_size_l"
-                android:title="Large" />
+                android:title="@string/large"
+            />
         </menu>
     </item>
     <item
         android:id="@+id/play_menu_show_errors"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Show Errors"
-        android:checkable="true" />
+        android:title="@string/show_errors"
+        android:checkable="true"
+    />
     <item
         android:id="@+id/play_menu_scratch_mode"
-        android:title="Scratch Mode"
-        android:checkable="true" />
+        android:title="@string/scratch_mode"
+        android:checkable="true"
+    />
     <item
         android:id="@+id/play_menu_reveal"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Reveal" >
+        android:title="@string/reveal"
+    >
         <menu>
             <item
                 android:id="@+id/play_menu_reveal_letter"
-                android:title="Letter" />
+                android:title="@string/letter"
+            />
             <item
                 android:id="@+id/play_menu_reveal_word"
-                android:title="Word" />
+                android:title="@string/word"
+            />
             <item
                 android:id="@+id/play_menu_reveal_errors"
-                android:title="Errors" />
+                android:title="@string/errors"
+            />
             <item
                 android:id="@+id/play_menu_reveal_puzzle"
-                android:title="Puzzle" />
-
+                android:title="@string/puzzle"
+            />
         </menu>
     </item>
     <item
         android:id="@+id/play_menu_info"
         android:icon="@android:drawable/ic_menu_info_details"
-        android:title="Info" />
+        android:title="@string/info"
+    />
     <item
         android:id="@+id/play_menu_help"
         android:icon="@android:drawable/ic_menu_help"
-        android:title="Help" />
+        android:title="@string/help"
+    />
     <item
         android:id="@+id/play_menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Settings" />
+        android:title="@string/settings"
+    />
 </menu>

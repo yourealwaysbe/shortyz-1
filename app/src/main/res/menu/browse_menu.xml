@@ -1,43 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+>
     <item
         android:id="@+id/browse_menu_app_theme"
         android:icon="@drawable/system_daynight_mode"
-        android:title="App Theme"
-        app:showAsAction="always" />
+        android:title="@string/app_theme"
+        app:showAsAction="always"
+    />
     <item
         android:id="@+id/browse_menu_sort"
         android:icon="@android:drawable/ic_menu_sort_alphabetically"
-        android:title="Sort"
-        app:showAsAction="withText" >
+        android:title="@string/sort"
+        app:showAsAction="withText"
+    >
         <menu>
             <item
                 android:id="@+id/browse_menu_sort_date_desc"
-                android:title="By Date (Descending)" />
+                android:title="@string/by_date_desc"
+            />
             <item
                 android:id="@+id/browse_menu_sort_date_asc"
-                android:title="By Date (Ascending)" />
+                android:title="@string/by_date_asc"
+            />
             <item
                 android:id="@+id/browse_menu_sort_source"
-                android:title="By Source" />
+                android:title="@string/by_source"
+            />
         </menu>
     </item>
     <item
         android:id="@+id/browse_menu_cleanup"
         android:icon="@android:drawable/ic_menu_manage"
-        android:title="Cleanup" />
+        android:title="@string/cleanup"
+    />
     <item
         android:id="@+id/browse_menu_archives"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Archives" />
+        android:title="@string/archives"
+    />
     <item
         android:id="@+id/browse_menu_help"
         android:icon="@android:drawable/ic_menu_help"
-        android:title="Help" />
+        android:title="@string/help"
+    />
     <item
         android:id="@+id/browse_menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Settings" />
+        android:title="@string/settings"
+    />
 </menu>
