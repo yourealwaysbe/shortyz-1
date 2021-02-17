@@ -27,7 +27,7 @@
 		      android:prompt="@string/puzzle_select" />
 		    <Button
 		      android:id="@+id/browse"
-		      android:text="Online"
+		      android:text="@string/online"
 		      android:layout_width="0dip"
 		      android:layout_height="wrap_content"
 		      android:layout_weight="1"

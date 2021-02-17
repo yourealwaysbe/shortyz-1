@@ -43,7 +43,7 @@
 
         <activity
             android:name="app.crossword.yourealwaysbe.HttpDownloadActivity"
-            android:label="Download to Forkyz"
+            android:label="@string/download_label"
             android:configChanges="orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -82,23 +82,23 @@
         </activity>
         <activity
             android:name="app.crossword.yourealwaysbe.PreferencesActivity"
-            android:label="Settings"
+            android:label="@string/settings_label"
             android:theme="@style/Theme.Forkyz"
             />
         <activity
             android:name="app.crossword.yourealwaysbe.ClueListActivity"
-            android:label="Clues"
+            android:label="@string/clues_list_label"
             android:theme="@style/Theme.Forkyz"
             android:configChanges="orientation"
         />
         <activity
             android:name="app.crossword.yourealwaysbe.NotesActivity"
-            android:label="Notes"
+            android:label="@string/notes_label"
             android:theme="@style/Theme.Forkyz"
         />
         <activity
             android:name="app.crossword.yourealwaysbe.HTMLActivity"
-            android:label="Forkyz"
+            android:label="@string/html_label"
             android:theme="@style/Theme.Forkyz"
             />
         <activity
@@ -115,11 +115,11 @@
         <activity
             android:name="app.crossword.yourealwaysbe.WebBrowserActivity"
             android:configChanges="orientation"
-            android:label="Browse for Puzzles"
+            android:label="@string/web_browse_label"
             android:theme="@style/Theme.Forkyz"/>
         <activity
             android:name="app.crossword.yourealwaysbe.PuzzleFinishedActivity"
-            android:label="Puzzle Completed!"
+            android:label="@string/puzzle_completed_label"
             android:theme="@style/Theme.AppCompat.Dialog"/>
 
         <receiver android:name="app.crossword.yourealwaysbe.net.DownloadReceiver">

@@ -23,8 +23,7 @@
         android:gravity="center_horizontal|center_vertical"
         android:lines="2"
         android:paddingLeft="10dp"
-        android:text="Wed
-Jan 2, 2001"
+        android:text="@string/puzzle_date"
         android:textColor="@color/textColorSecondary"
         android:textSize="10dp" />
 
@@ -57,7 +56,7 @@ Jan 2, 2001"
             android:paddingLeft="10dp"
             android:paddingTop="2dp"
             android:singleLine="true"
-            android:text="Noy Werk Times"
+            android:text="@string/puzzle_name"
             android:textColor="@color/textColorPrimary"
             android:textSize="25dp" />
 
@@ -68,7 +67,7 @@ Jan 2, 2001"
             android:gravity="center_vertical"
             android:lines="1"
             android:paddingLeft="12dp"
-            android:text="Caption text"
+            android:text="@string/caption_text"
             android:textColor="@color/textColorSecondary"
             android:textSize="15dp" />
     </LinearLayout>

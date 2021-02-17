@@ -7,6 +7,6 @@
 	android:paddingTop="16dip"
 	android:paddingBottom="8dip"
 	android:paddingLeft="16dip"
-    android:text="Preview"
+    android:text="@string/preview"
 	android:textColor="@color/header_text"
     android:background="@drawable/container_drop_shadow"/>

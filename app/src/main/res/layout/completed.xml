@@ -18,7 +18,7 @@
             <TextView
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Completed In"
+                android:text="@string/completed_in"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -28,7 +28,7 @@
                 android:id="@+id/elapsed"
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="XX:XX:XX"
+                android:text="@string/elapsed_time_dummy"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -42,7 +42,7 @@
             <TextView
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Total Clues"
+                android:text="@string/total_clues"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -52,7 +52,7 @@
                 android:id="@+id/totalClues"
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="XX"
+                android:text="@string/dummy_xx"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -66,7 +66,7 @@
             <TextView
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Total Boxes"
+                android:text="@string/total_boxes"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -76,7 +76,7 @@
                 android:id="@+id/totalBoxes"
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="XX"
+                android:text="@string/dummy_xx"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -91,7 +91,7 @@
             <TextView
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="Hinted Boxes"
+                android:text="@string/hinted_boxes"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -101,7 +101,7 @@
                 android:id="@+id/cheatedBoxes"
                 android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:text="XX (XX%)"
+                android:text="@string/dummy_xx_w_pcnt"
 		        android:textColor="#fff"
 		        android:textSize="16dp"
 		        android:padding="7dp"
@@ -122,14 +122,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Share" />
+            android:text="@string/share" />
         
          <Button
             android:id="@+id/done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Done" />
+            android:text="@string/done" />
 
     </LinearLayout>
     

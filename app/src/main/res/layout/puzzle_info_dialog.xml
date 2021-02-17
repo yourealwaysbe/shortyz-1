@@ -13,7 +13,7 @@
   android:textSize="30dp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
-  android:text="Title of Puzzle"
+  android:text="@string/puzzle_title"
   android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
@@ -22,7 +22,7 @@
   android:textSize="20dp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
-  android:text="By Author"
+  android:text="@string/by_author"
   android:textColor="@color/textColorPrimary"
    android:gravity="center_horizontal"/>
   
@@ -31,7 +31,7 @@
   android:textSize="10dp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
-  android:text="(c) 2010"
+  android:text="@string/copyright_info"
   android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
@@ -41,7 +41,7 @@
   android:textSize="20dp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
-  android:text="Elapsed Time: 3:15"
+  android:text="@string/elapsed_time_labelled_dummy"
   android:textColor="@color/textColorPrimary"
   android:gravity="center_horizontal"/>
   
@@ -72,7 +72,7 @@
     android:textSize="20dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:text="Puzzle notes."
+    android:text="@string/puzzle_notes"
     android:scrollbars="vertical"
   android:textColor="@color/textColorPrimary"
     android:gravity="center_horizontal"/>
