@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
-
+    android:orientation="vertical"
+>
     <TextView
         android:id="@+id/clueLine"
         android:layout_width="fill_parent"
@@ -15,38 +15,33 @@
         android:textColor="@color/textColorPrimary"
         android:background="@color/background_dark"
     />
-
     <TextView
         android:id="@+id/boardLab"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/board_lab"
-        android:layout_below="@+id/clueLine"
         android:textColor="@color/textColorPrimary"
     />
-
     <app.crossword.yourealwaysbe.view.ScrollingImageView
         android:id="@+id/miniboard"
         android:layout_width="fill_parent"
         android:layout_height="0.3in"
-        android:layout_below="@+id/boardLab"
         android:focusable="true"
-        android:focusableInTouchMode="true" >
-        <requestFocus />
+        android:focusableInTouchMode="true"
+    >
+        <requestFocus/>
     </app.crossword.yourealwaysbe.view.ScrollingImageView>
-
-
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/miniboard"
-        android:fillViewport="true" >
-
+        android:fillViewport="true"
+    >
         <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="vertical" >
-
+            android:orientation="vertical"
+        >
             <TextView
                 android:id="@+id/scratchLab"
                 android:layout_width="fill_parent"
@@ -55,16 +50,13 @@
                 android:inputType="text"
                 android:textColor="@color/textColorPrimary"
             />
-
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/scratchMiniboard"
                 android:layout_width="fill_parent"
                 android:layout_height="0.3in"
-                android:layout_below="@+id/scratchLab"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
-
             <TextView
                 android:id="@+id/notesLab"
                 android:layout_width="fill_parent"
@@ -72,7 +64,6 @@
                 android:text="@string/notes_lab"
                 android:textColor="@color/textColorPrimary"
             />
-
             <EditText
                 android:id="@+id/notesBox"
                 android:layout_width="fill_parent"
@@ -81,43 +72,39 @@
                 android:gravity="top"
                 android:typeface="monospace"
             />
-
             <TextView
                 android:id="@+id/anagramSourceLab"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/anagram_source_lab"
-                android:layout_below="@+id/notesBox"
                 android:textColor="@color/textColorPrimary"
             />
-
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSource"
                 android:layout_width="fill_parent"
-                android:layout_below="@+id/anagramSourceLab"
                 android:layout_height="0.3in"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
-
             <TextView
                 android:id="@+id/anagramSolutionLab"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/anagram_solution_lab"
-                android:layout_below="@+id/notesBox"
                 android:textColor="@color/textColorPrimary"
             />
-
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSolution"
                 android:layout_width="fill_parent"
-                android:layout_below="@+id/anagramSolutionLab"
                 android:layout_height="0.3in"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
-
+            <app.crossword.yourealwaysbe.view.ForkyzKeyboard
+                android:id="@+id/keyboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+            />
         </LinearLayout>
     </ScrollView>
-</RelativeLayout>
+</LinearLayout>

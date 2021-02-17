@@ -34,22 +34,24 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
-import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 import app.crossword.yourealwaysbe.view.ClueTabs;
+import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
-import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
-import app.crossword.yourealwaysbe.util.KeyboardManager;
+import app.crossword.yourealwaysbe.view.ScrollingImageView;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -189,8 +191,6 @@ public class PlayActivity extends PuzzleActivity
 
             this.constraintLayout
                 = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
-
-            keyboardManager = new KeyboardManager(this);
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
@@ -422,8 +422,6 @@ public class PlayActivity extends PuzzleActivity
             }
         });
 
-        this.render(true);
-
         this.setClueSize(prefs.getInt("clueSize", 12));
         setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
              + " -	" + neverNull(puz.getCopyright()));
@@ -450,6 +448,12 @@ public class PlayActivity extends PuzzleActivity
 
         }
 
+        ForkyzKeyboard keyboardView
+            = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
+        keyboardManager
+            = new KeyboardManager(this, keyboardView, boardView);
+
+        this.render(true);
     }
 
     private static String neverNull(String val) {
@@ -491,43 +495,60 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return keyCode == KeyEvent.KEYCODE_ENTER;
+        if (keyCode == KeyEvent.KEYCODE_ENTER)
+            return true;
+        else
+            return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+
+        boolean handled = false;
+
+        // handle back separately as it we shouldn't block a keyboard
+        // hide because of it
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!keyboardManager.handleBackKey()) {
+                this.finish();
+            }
+            handled = true;
+        }
+
+        keyboardManager.pushBlockHide();
+
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
                 getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
-                return true;
-
-            case KeyEvent.KEYCODE_BACK:
-                this.finish();
-                return true;
-
-            case KeyEvent.KEYCODE_MENU:
-                return false;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 getBoard().moveDown();
-                return true;
+                handled = true;
+                break;
+
             case KeyEvent.KEYCODE_DPAD_UP:
                 getBoard().moveUp();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 getBoard().moveLeft();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 getBoard().moveRight();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
                 getBoard().toggleDirection();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_SPACE:
                 if (prefs.getBoolean("spaceChangesDirection", true)) {
@@ -537,7 +558,8 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().playLetter(' ');
                 }
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_ENTER:
                 if (prefs.getBoolean("enterChangesDirection", true)) {
@@ -545,7 +567,8 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().nextWord();
                 }
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DEL:
                 if (this.scratchMode) {
@@ -553,21 +576,27 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().deleteLetter();
                 }
-                return true;
+                handled = true;
+                break;
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
 
-        if (ALPHA.indexOf(c) != -1) {
+        if (!handled && ALPHA.indexOf(c) != -1) {
             if (this.scratchMode) {
                 getBoard().playScratchLetter(c);
             } else {
                 getBoard().playLetter(c);
             }
-            return true;
+            handled = true;
         }
 
-        return super.onKeyUp(keyCode, event);
+        if (!handled)
+            handled = super.onKeyUp(keyCode, event);
+
+        keyboardManager.popBlockHide();
+
+        return handled;
     }
 
     @Override

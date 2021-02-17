@@ -100,11 +100,13 @@
             android:entryValues="@array/cleanupAgeValues"
         />
 
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/dont_hide_keyboard"
-            android:defaultValue="false"
-            android:summary="@string/dont_hide_keyboard_desc"
-            android:key="dontHideKeyboard"
+        <androidx.preference.ListPreference
+            android:title="@string/keyboard_showhide"
+            android:summary="@string/keyboard_showhide_desc"
+            android:key="keyboardShowHide"
+            android:defaultValue="@string/keyboard_show_sparingly"
+            android:entries="@array/keyboardShowHideLabels"
+            android:entryValues="@array/keyboardShowHideValues"
         />
 
         <androidx.preference.CheckBoxPreference

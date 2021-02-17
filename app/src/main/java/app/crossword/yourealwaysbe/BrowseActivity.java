@@ -75,7 +75,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private File crosswordsFolder = new File(Environment.getExternalStorageDirectory(), "crosswords");
     private FileHandle lastOpenedHandle = null;
     private Handler handler = new Handler();
-    private List<String> sourceList = new ArrayList<String>();
     private RecyclerView puzzleList;
     private ListView sources;
     private NotificationManager nm;
@@ -84,7 +83,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private MenuItem gamesItem;
     private boolean signedIn;
     private boolean hasWritePermissions;
-    private int playIcon = R.drawable.ic_play_games_badge_green;
     private FloatingActionButton download;
     private int highlightColor;
     private int normalColor;
@@ -330,7 +328,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             }
         });
         helper.attachToRecyclerView(this.puzzleList);
-        this.sources = (ListView) this.findViewById(R.id.sourceList);
         upgradePreferences();
         this.nm = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -548,17 +545,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             current = new ArrayList<FileHandle>();
         }
 
-        if (this.sources != null) {
-            this.sourceList.clear();
-            this.sourceList.addAll(sourcesTemp);
-            Collections.sort(this.sourceList);
-            this.handler.post(new Runnable(){
-	public void run(){
-		((SourceListAdapter) sources.getAdapter()).notifyDataSetInvalidated();
-	}
-            });
-        }
-
         return adapter;
     }
 
@@ -721,19 +707,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (!hasWritePermissions) return;
 
         utils.clearBackgroundDownload(prefs);
-
-        if ((this.sources != null) && (this.sources.getAdapter() == null)) {
-            final SourceListAdapter adapter = new SourceListAdapter(this, this.sourceList);
-            this.sources.setAdapter(adapter);
-            this.sources.setOnItemClickListener(new OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> list, View view, int arg2, long arg3) {
-                        String selected = (String) view.getTag();
-                        adapter.current = selected;
-                        adapter.notifyDataSetInvalidated();
-                        render();
-                    }
-                });
-        }
 
         final File directory = viewArchive ? BrowseActivity.this.archiveFolder : BrowseActivity.this.crosswordsFolder;
         directory.mkdirs();

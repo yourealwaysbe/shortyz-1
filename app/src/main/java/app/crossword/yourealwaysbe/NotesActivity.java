@@ -18,30 +18,32 @@ import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
-import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.Note;
-import app.crossword.yourealwaysbe.view.BoardEditText;
-import app.crossword.yourealwaysbe.view.BoardEditText.BoardEditFilter;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
-import app.crossword.yourealwaysbe.view.PlayboardRenderer;
-import app.crossword.yourealwaysbe.view.ScrollingImageView;
-import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
-import app.crossword.yourealwaysbe.puz.Playboard;
-import app.crossword.yourealwaysbe.puz.Playboard.Word;
-import app.crossword.yourealwaysbe.puz.Playboard.Position;
-import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
-import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.forkyz.R;
+import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Note;
+import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.Playboard.Position;
+import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
+import app.crossword.yourealwaysbe.view.BoardEditText.BoardEditFilter;
+import app.crossword.yourealwaysbe.view.BoardEditText;
+import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
+import app.crossword.yourealwaysbe.view.PlayboardRenderer;
+import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
+import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
+import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
 public class NotesActivity extends PuzzleActivity {
     private static final Logger LOG = Logger.getLogger(NotesActivity.class.getCanonicalName());
@@ -58,6 +60,7 @@ public class NotesActivity extends PuzzleActivity {
 
     protected KeyboardManager keyboardManager;
     private ScrollingImageView imageView;
+    private EditText notesBox;
     private BoardEditText scratchView;
     private BoardEditText anagramSourceView;
     private BoardEditText anagramSolView;
@@ -96,8 +99,6 @@ public class NotesActivity extends PuzzleActivity {
         Puzzle puz = board.getPuzzle();
 
         setContentView(R.layout.notes);
-
-        keyboardManager = new KeyboardManager(this);
 
         Clue c = board.getClue();
 
@@ -146,7 +147,7 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
-                imageView.requestFocus();
+                NotesActivity.this.keyboardManager.showKeyboard(imageView);
 
                 Word current = getBoard().getCurrentWord();
                 int newAcross = current.start.across;
@@ -179,7 +180,7 @@ public class NotesActivity extends PuzzleActivity {
         });
 
         Note note = puz.getNote(c.number, getBoard().isAcross());
-        EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
+        notesBox = (EditText) this.findViewById(R.id.notesBox);
 
         if (note != null) {
             notesBox.setText(note.getText());
@@ -192,6 +193,14 @@ public class NotesActivity extends PuzzleActivity {
                 return true;
             }
         });
+        notesBox.setOnFocusChangeListener(
+            new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean gainFocus) {
+                    NotesActivity.this.onNotesBoxFocusChanged(gainFocus);
+                }
+            }
+        );
 
         scratchView = (BoardEditText) this.findViewById(R.id.scratchMiniboard);
         if (note != null) {
@@ -207,6 +216,7 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity.this.keyboardManager.showKeyboard(scratchView);
                 NotesActivity.this.render();
             }
         });
@@ -279,6 +289,10 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity
+                    .this
+                    .keyboardManager
+                    .showKeyboard(anagramSourceView);
                 NotesActivity.this.render();
             }
         });
@@ -314,11 +328,28 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity.this.keyboardManager.showKeyboard(anagramSolView);
                 NotesActivity.this.render();
             }
         });
 
+        ForkyzKeyboard keyboardView
+            = (ForkyzKeyboard) findViewById(R.id.keyboard);
+        keyboardManager = new KeyboardManager(this, keyboardView, imageView);
+        keyboardManager.showKeyboard(imageView);
+
         this.render();
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_BACK:
+            if (!keyboardManager.handleBackKey())
+                this.finish();
+            return true;
+        default:
+            return super.onKeyUp(keyCode, event);
+        }
     }
 
     public void onPause() {
@@ -369,7 +400,7 @@ public class NotesActivity extends PuzzleActivity {
 
             if (!getBoard().getHighlightLetter().equals(
                     getBoard().getCurrentWord().start)) {
-                getBoard().previousLetter();
+                getBoard().moveLeft();
             }
 
             return true;
@@ -377,7 +408,7 @@ public class NotesActivity extends PuzzleActivity {
         case KeyEvent.KEYCODE_DPAD_RIGHT:
 
             if (!getBoard().getHighlightLetter().equals(last)) {
-                getBoard().nextLetter();
+                getBoard().moveRight();
             }
 
             return true;
@@ -440,10 +471,6 @@ public class NotesActivity extends PuzzleActivity {
     }
 
     protected void render() {
-        View focused = getWindow().getCurrentFocus();
-        if (focused.getId() == R.id.miniboard)
-            keyboardManager.showKeyboard(focused);
-
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         boolean displayScratchAcross = displayScratch && !getBoard().isAcross();
         boolean displayScratchDown = displayScratch && getBoard().isAcross();
@@ -646,4 +673,20 @@ public class NotesActivity extends PuzzleActivity {
         }
     }
 
+    /**
+     * Force hide in-app keyboard if focus gained, hide soft keyboard if
+     * focus lost
+     */
+    private void onNotesBoxFocusChanged(boolean gainFocus) {
+        if (gainFocus) {
+            keyboardManager.hideKeyboard(true);
+        } else {
+            InputMethodManager imm
+                = (InputMethodManager)
+                    getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(notesBox.getWindowToken(), 0);
+            }
+        }
+    }
 }

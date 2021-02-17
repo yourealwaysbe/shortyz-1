@@ -12,16 +12,6 @@
        <item>MOVE_NEXT_CLUE</item>
        <item>MOVE_PARALLEL_WORD</item>
      </string-array>
-     <string-array name="keyboardTypeLabels">
-       <item>Small</item>
-       <item>With Arrows</item>
-       <item>Native</item>
-     </string-array>
-     <string-array name="keyboardTypeValues">
-       <item>CONDENSED</item>
-       <item>CONDENSED_ARROWS</item>
-       <item>NATIVE</item>
-     </string-array>
      <string-array name="cleanupAgeLabels">
        <item>Two Days</item>
        <item>One Week</item>
@@ -52,4 +42,14 @@
         <item>DELETE</item>
         <item>ARCHIVE</item>
     </string-array>
+    <string-array name="keyboardShowHideLabels">
+       <item>@string/keyboard_always_show</item>
+       <item>@string/keyboard_show_sparingly</item>
+       <item>@string/keyboard_never_show</item>
+     </string-array>
+     <string-array name="keyboardShowHideValues">
+       <item>@string/keyboard_always_show</item>
+       <item>@string/keyboard_show_sparingly</item>
+       <item>@string/keyboard_never_show</item>
+     </string-array>
 </resources>
