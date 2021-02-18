@@ -97,7 +97,7 @@ public class NotesActivity extends PuzzleActivity {
 
         setContentView(R.layout.notes);
 
-        keyboardManager = new KeyboardManager(this);
+        keyboardManager = new KeyboardManager(this, null);
 
         Clue c = board.getClue();
 

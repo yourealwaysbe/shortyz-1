@@ -71,7 +71,7 @@ public class ClueListActivity extends PuzzleActivity
 
         setContentView(R.layout.clue_list);
 
-        keyboardManager = new KeyboardManager(this);
+        keyboardManager = new KeyboardManager(this, null);
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
         this.imageView.setAllowOverScroll(false);

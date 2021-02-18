@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_q"
-            app:keyCode="113"
+            app:keyCode="45"
         />
         <ForkyzTextKey
             android:id="@+id/key_w"
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_w"
-            app:keyCode="119"
+            app:keyCode="51"
         />
         <ForkyzTextKey
             android:id="@+id/key_e"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_e"
-            app:keyCode="101"
+            app:keyCode="33"
         />
         <ForkyzTextKey
             android:id="@+id/key_r"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_r"
-            app:keyCode="114"
+            app:keyCode="46"
         />
         <ForkyzTextKey
             android:id="@+id/key_t"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_t"
-            app:keyCode="116"
+            app:keyCode="48"
         />
         <ForkyzTextKey
             android:id="@+id/key_y"
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_y"
-            app:keyCode="121"
+            app:keyCode="53"
         />
         <ForkyzTextKey
             android:id="@+id/key_u"
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_u"
-            app:keyCode="117"
+            app:keyCode="49"
         />
         <ForkyzTextKey
             android:id="@+id/key_i"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_i"
-            app:keyCode="105"
+            app:keyCode="37"
         />
         <ForkyzTextKey
             android:id="@+id/key_o"
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_o"
-            app:keyCode="111"
+            app:keyCode="43"
         />
         <ForkyzTextKey
             android:id="@+id/key_p"
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_p"
-            app:keyCode="112"
+            app:keyCode="44"
         />
     </LinearLayout>
 
@@ -104,7 +104,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_a"
-            app:keyCode="97"
+            app:keyCode="29"
         />
         <ForkyzTextKey
             android:id="@+id/key_s"
@@ -112,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_s"
-            app:keyCode="115"
+            app:keyCode="47"
         />
         <ForkyzTextKey
             android:id="@+id/key_d"
@@ -120,7 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_d"
-            app:keyCode="100"
+            app:keyCode="32"
         />
         <ForkyzTextKey
             android:id="@+id/key_f"
@@ -128,7 +128,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_f"
-            app:keyCode="102"
+            app:keyCode="34"
         />
         <ForkyzTextKey
             android:id="@+id/key_g"
@@ -136,7 +136,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_g"
-            app:keyCode="103"
+            app:keyCode="35"
         />
         <ForkyzTextKey
             android:id="@+id/key_h"
@@ -144,7 +144,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_h"
-            app:keyCode="104"
+            app:keyCode="36"
         />
         <ForkyzTextKey
             android:id="@+id/key_j"
@@ -152,7 +152,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_j"
-            app:keyCode="106"
+            app:keyCode="38"
         />
         <ForkyzTextKey
             android:id="@+id/key_k"
@@ -160,7 +160,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_k"
-            app:keyCode="107"
+            app:keyCode="39"
         />
         <ForkyzTextKey
             android:id="@+id/key_l"
@@ -168,7 +168,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_l"
-            app:keyCode="108"
+            app:keyCode="40"
         />
     </LinearLayout>
 
@@ -192,7 +192,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_z"
-            app:keyCode="122"
+            app:keyCode="54"
         />
         <ForkyzTextKey
             android:id="@+id/key_x"
@@ -200,7 +200,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_x"
-            app:keyCode="120"
+            app:keyCode="52"
         />
         <ForkyzTextKey
             android:id="@+id/key_c"
@@ -208,7 +208,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_c"
-            app:keyCode="99"
+            app:keyCode="31"
         />
         <ForkyzTextKey
             android:id="@+id/key_v"
@@ -216,7 +216,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_v"
-            app:keyCode="118"
+            app:keyCode="50"
         />
         <ForkyzTextKey
             android:id="@+id/key_b"
@@ -224,7 +224,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_b"
-            app:keyCode="98"
+            app:keyCode="30"
         />
         <ForkyzTextKey
             android:id="@+id/key_n"
@@ -232,7 +232,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_n"
-            app:keyCode="110"
+            app:keyCode="42"
         />
         <ForkyzTextKey
             android:id="@+id/key_m"
@@ -240,7 +240,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/key_m"
-            app:keyCode="109"
+            app:keyCode="41"
         />
         <ForkyzImageKey
             android:id="@+id/key_delete"

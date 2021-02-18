@@ -15,12 +15,18 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import app.crossword.yourealwaysbe.forkyz.R;
+import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 
 public class KeyboardManager {
     private static final Logger LOG = Logger.getLogger(KeyboardManager.class.getCanonicalName());
 
     private Activity activity;
     private SharedPreferences prefs;
+    private ForkyzKeyboard keyboardView;
+
+    private enum KeyboardMode {
+        ALWAYS_SHOW, SHOW_SPARINGLY, NEVER_SHOW
+    }
 
     /**
      * Create a new manager to handle the keyboard
@@ -28,10 +34,12 @@ public class KeyboardManager {
      * To use, pass on calls to the implemented methods below.
      *
      * @param activity the activity the keyboard is for
+     * @param keyboardView the keyboard view of the activity
      */
-    public KeyboardManager(Activity activity) {
+    public KeyboardManager(Activity activity, ForkyzKeyboard keyboardView) {
         this.activity = activity;
         this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        this.keyboardView = keyboardView;
     }
 
     /**
@@ -44,17 +52,17 @@ public class KeyboardManager {
     /**
      * Call this when the activity receives an onPause
      */
-    public void onPause() { hideKeyboard(true); }
+    public void onPause() { }
 
     /**
      * Call this when the activity receives an onStop
      */
-    public void onStop() { hideKeyboard(true); }
+    public void onStop() { }
 
     /**
      * Call this when the activity receives an onDestroy
      */
-    public void onDestroy() { hideKeyboard(true); }
+    public void onDestroy() { }
 
     /**
      * Show the keyboard -- must be called after UI drawn
@@ -63,10 +71,11 @@ public class KeyboardManager {
      * focus
      */
     public void showKeyboard(View view) {
-        if (view != null && view.requestFocus()) {
-            InputMethodManager imm
-                = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(view, InputMethodManager.SHOW_FORCED);
+        if (getKeyboardMode() != KeyboardMode.NEVER_SHOW
+                && view != null
+                && view.requestFocus()) {
+            keyboardView.setVisibility(View.VISIBLE);
+            keyboardView.attachToView(view);
         }
     }
 
@@ -79,13 +88,22 @@ public class KeyboardManager {
      * show
      */
     public void hideKeyboard(boolean force) {
-        boolean ignoreHide
-            = !force && prefs.getBoolean("dontHideKeyboard", false);
-        View focus = activity.getCurrentFocus();
-        if (focus != null && !ignoreHide) {
-            InputMethodManager imm
-                = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
-        }
+        if (force || getKeyboardMode() != KeyboardMode.ALWAYS_SHOW)
+            keyboardView.setVisibility(View.GONE);
+    }
+
+    private KeyboardMode getKeyboardMode() {
+        String never = activity.getString(R.string.keyboard_never_show);
+        String spare = activity.getString(R.string.keyboard_show_sparingly);
+        String always = activity.getString(R.string.keyboard_always_show);
+
+        String modePref = prefs.getString("keyboardShowHide", spare);
+
+        if (never.equals(modePref))
+            return KeyboardMode.NEVER_SHOW;
+        else if (always.equals(modePref))
+            return KeyboardMode.ALWAYS_SHOW;
+        else
+            return KeyboardMode.SHOW_SPARINGLY;
     }
 }

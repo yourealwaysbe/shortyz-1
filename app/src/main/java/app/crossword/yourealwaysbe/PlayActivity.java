@@ -34,22 +34,24 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
-import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 import app.crossword.yourealwaysbe.view.ClueTabs;
+import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
-import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
-import app.crossword.yourealwaysbe.util.KeyboardManager;
+import app.crossword.yourealwaysbe.view.ScrollingImageView;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -190,7 +192,9 @@ public class PlayActivity extends PuzzleActivity
             this.constraintLayout
                 = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
 
-            keyboardManager = new KeyboardManager(this);
+            ForkyzKeyboard keyboardView
+                = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
+            keyboardManager = new KeyboardManager(this, keyboardView);
 
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
@@ -496,6 +500,7 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        System.out.println("FKBD on key up " + keyCode);
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
@@ -557,6 +562,8 @@ public class PlayActivity extends PuzzleActivity
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
+        System.out.println("FKBD " + c + " " + event.getDisplayLabel());
+        System.out.println("FKBD " + KeyEvent.KEYCODE_A);
 
         if (ALPHA.indexOf(c) != -1) {
             if (this.scratchMode) {

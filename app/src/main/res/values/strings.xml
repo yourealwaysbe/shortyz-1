@@ -58,8 +58,8 @@
     <string name="cleanup_unfinished_desc">Determines how old an unfinished puzzle must be before it is archived/deleted.</string>
     <string name="cleanup_archives">Cleanup Archives</string>
     <string name="cleanup_archives_desc">Determines how old an archived puzzle must be before it is deleted.</string>
-    <string name="dont_hide_keyboard">Don\'t Hide Keyboard</string>
-    <string name="dont_hide_keyboard_desc">Don\'t Hide the Keyboard when Changing Clues</string>
+    <string name="keyboard_showhide">Show/Hide In-App Keyboard</string>
+    <string name="keyboard_showhide_desc">The show/hide behaviour of the in-app keyboard.</string>
     <string name="snap_current">Snap to Current Word</string>
     <string name="snap_current_desc">Toggles the auto-scrolling of the playboard to the current play position</string>
     <string name="show_length">Show Length</string>
@@ -246,4 +246,8 @@
     <string name="key_down">down</string>
     <string name="key_left">left</string>
     <string name="key_right">right</string>
+
+    <string name="keyboard_always_show">Always show</string>
+    <string name="keyboard_show_sparingly">Show sparingly</string>
+    <string name="keyboard_never_show">Never show</string>
 </resources>
