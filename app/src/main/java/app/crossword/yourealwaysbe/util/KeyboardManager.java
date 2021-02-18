@@ -91,6 +91,17 @@ public class KeyboardManager {
     public void hideKeyboard() { hideKeyboard(false); }
 
     /**
+     * Hide the keyboard unless the user always wants it
+     *
+     * @param force force hide the keyboard, even if user has set always
+     * show
+     */
+    public void hideKeyboard(boolean force) {
+        if (force || getKeyboardMode() != KeyboardMode.ALWAYS_SHOW)
+            keyboardView.setVisibility(View.GONE);
+    }
+
+    /**
      * Handle back key
      *
      * Hides keyboard if mode allows it.
@@ -103,17 +114,6 @@ public class KeyboardManager {
         boolean visible = keyboardView.getVisibility() == View.VISIBLE;
         hideKeyboard();
         return hidable && visible;
-    }
-
-    /**
-     * Hide the keyboard unless the user always wants it
-     *
-     * @param force force hide the keyboard, even if user has set always
-     * show
-     */
-    public void hideKeyboard(boolean force) {
-        if (force || getKeyboardMode() != KeyboardMode.ALWAYS_SHOW)
-            keyboardView.setVisibility(View.GONE);
     }
 
     private KeyboardMode getKeyboardMode() {

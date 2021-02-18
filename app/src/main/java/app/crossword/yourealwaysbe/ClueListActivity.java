@@ -16,20 +16,21 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.util.KeyboardManager;
 import app.crossword.yourealwaysbe.view.ClueTabs;
+import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
-import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
-import app.crossword.yourealwaysbe.util.KeyboardManager;
+import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
 import java.io.File;
 import java.io.IOException;
@@ -129,7 +130,8 @@ public class ClueListActivity extends PuzzleActivity
         this.clueTabs = this.findViewById(R.id.clueListClueTabs);
         this.clueTabs.setBoard(getBoard());
 
-        keyboardManager = new KeyboardManager(this, null, imageView);
+        ForkyzKeyboard keyboard = (ForkyzKeyboard) findViewById(R.id.keyboard);
+        keyboardManager = new KeyboardManager(this, keyboard, imageView);
 
         this.render();
     }
@@ -160,11 +162,6 @@ public class ClueListActivity extends PuzzleActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.clue_list_menu, menu);
         return true;
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -211,7 +208,8 @@ public class ClueListActivity extends PuzzleActivity
             return false;
 
         case KeyEvent.KEYCODE_BACK:
-            this.finish();
+            if (!keyboardManager.handleBackKey())
+                this.finish();
             return true;
 
         case KeyEvent.KEYCODE_DPAD_LEFT:

@@ -10,7 +10,6 @@ import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
@@ -74,7 +73,6 @@ public class BoardEditText extends ScrollingImageView {
 
             public void onTap(Point e) {
                 BoardEditText.this.requestFocus();
-                BoardEditText.this.showKeyboard();
 
                 int box = renderer.findBox(e).across;
                 if (boxes != null && box < boxes.length) {
@@ -99,20 +97,13 @@ public class BoardEditText extends ScrollingImageView {
         if (!gainFocus) {
             selection.across = -1;
             render();
-            hideKeyboard();
         } else if (boxes != null) {
-            showKeyboard();
             if (selection.across < 0
                     || selection.across >= boxes.length) {
                 selection.across = 0;
                 render();
             }
         }
-    }
-
-    @Override
-    public boolean onCheckIsTextEditor() {
-        return true;
     }
 
     @Override
@@ -333,23 +324,5 @@ public class BoardEditText extends ScrollingImageView {
 
     private Playboard getBoard(){
         return ForkyzApplication.getInstance().getBoard();
-    }
-
-    private void showKeyboard() {
-        InputMethodManager imm
-            = (InputMethodManager) getContext()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && imm.isActive(this)) {
-            imm.showSoftInput(this, 0);
-        }
-    }
-
-    private void hideKeyboard() {
-        InputMethodManager imm
-            = (InputMethodManager) getContext()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && imm.isActive(this)) {
-            imm.hideSoftInputFromWindow(getWindowToken(), 0);
-        }
     }
 }
