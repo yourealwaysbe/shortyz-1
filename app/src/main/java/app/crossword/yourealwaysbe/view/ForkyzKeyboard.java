@@ -7,8 +7,6 @@ package app.crossword.yourealwaysbe.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.content.res.TypedArray;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.KeyEvent;
