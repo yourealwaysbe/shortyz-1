@@ -97,8 +97,6 @@ public class NotesActivity extends PuzzleActivity {
 
         setContentView(R.layout.notes);
 
-        keyboardManager = new KeyboardManager(this, null);
-
         Clue c = board.getClue();
 
         boolean showCount = prefs.getBoolean("showCount", false);
@@ -317,6 +315,8 @@ public class NotesActivity extends PuzzleActivity {
                 NotesActivity.this.render();
             }
         });
+
+        keyboardManager = new KeyboardManager(this, null, imageView);
 
         this.render();
     }

@@ -35,11 +35,20 @@ public class KeyboardManager {
      *
      * @param activity the activity the keyboard is for
      * @param keyboardView the keyboard view of the activity
+     * @param initialView the initial view the keyboard should be
+     * attached to if always shown
      */
-    public KeyboardManager(Activity activity, ForkyzKeyboard keyboardView) {
+    public KeyboardManager(
+        Activity activity, ForkyzKeyboard keyboardView, View initialView
+    ) {
         this.activity = activity;
         this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
         this.keyboardView = keyboardView;
+
+        if (getKeyboardMode() == KeyboardMode.ALWAYS_SHOW)
+            showKeyboard(initialView);
+        else
+            hideKeyboard();
     }
 
     /**
@@ -80,6 +89,21 @@ public class KeyboardManager {
     }
 
     public void hideKeyboard() { hideKeyboard(false); }
+
+    /**
+     * Handle back key
+     *
+     * Hides keyboard if mode allows it.
+     *
+     * @return true if key press was consumed, false if it should be
+     * passed on
+     */
+    public boolean handleBackKey() {
+        boolean hidable = getKeyboardMode() != KeyboardMode.ALWAYS_SHOW;
+        boolean visible = keyboardView.getVisibility() == View.VISIBLE;
+        hideKeyboard();
+        return hidable && visible;
+    }
 
     /**
      * Hide the keyboard unless the user always wants it

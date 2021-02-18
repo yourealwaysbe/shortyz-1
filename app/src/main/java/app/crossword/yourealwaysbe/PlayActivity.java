@@ -192,10 +192,6 @@ public class PlayActivity extends PuzzleActivity
             this.constraintLayout
                 = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
 
-            ForkyzKeyboard keyboardView
-                = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
-            keyboardManager = new KeyboardManager(this, keyboardView);
-
             this.clue = this.findViewById(R.id.clueLine);
             if (clue != null && clue.getVisibility() != View.GONE) {
                 ConstraintSet set = new ConstraintSet();
@@ -426,8 +422,6 @@ public class PlayActivity extends PuzzleActivity
             }
         });
 
-        this.render(true);
-
         this.setClueSize(prefs.getInt("clueSize", 12));
         setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
              + " -	" + neverNull(puz.getCopyright()));
@@ -454,6 +448,12 @@ public class PlayActivity extends PuzzleActivity
 
         }
 
+        ForkyzKeyboard keyboardView
+            = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
+        keyboardManager
+            = new KeyboardManager(this, keyboardView, boardView);
+
+        this.render(true);
     }
 
     private static String neverNull(String val) {
@@ -495,12 +495,14 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return keyCode == KeyEvent.KEYCODE_ENTER;
+        if (keyCode == KeyEvent.KEYCODE_ENTER)
+            return true;
+        else
+            return super.onKeyDown(keyCode, event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        System.out.println("FKBD on key up " + keyCode);
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
@@ -509,7 +511,9 @@ public class PlayActivity extends PuzzleActivity
                 return true;
 
             case KeyEvent.KEYCODE_BACK:
-                this.finish();
+                if (!keyboardManager.handleBackKey()) {
+                    this.finish();
+                }
                 return true;
 
             case KeyEvent.KEYCODE_MENU:
@@ -562,8 +566,6 @@ public class PlayActivity extends PuzzleActivity
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
-        System.out.println("FKBD " + c + " " + event.getDisplayLabel());
-        System.out.println("FKBD " + KeyEvent.KEYCODE_A);
 
         if (ALPHA.indexOf(c) != -1) {
             if (this.scratchMode) {
