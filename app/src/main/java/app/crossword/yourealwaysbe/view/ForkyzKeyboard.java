@@ -5,10 +5,11 @@
 
 package app.crossword.yourealwaysbe.view;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -36,10 +37,8 @@ public class ForkyzKeyboard
     private static final int KEY_REPEAT_INTERVAL = 50;
 
     private SparseArray<Integer> keyCodes = new SparseArray<>();
-    private SparseArray<Boolean> keysDown = new SparseArray<>();
+    private SparseArray<Timer> keyTimers = new SparseArray<>();
     private InputConnection inputConnection;
-
-    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public ForkyzKeyboard(Context context) {
         this(context, null, 0);
@@ -54,6 +53,14 @@ public class ForkyzKeyboard
     ) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
+    }
+
+    /**
+     * Call when activity paused to cancel unfinished key repeats
+     */
+    public void onPause() {
+        for (int i = 0; i < keyTimers.size(); i++)
+            keyTimers.valueAt(i).cancel();
     }
 
     @Override
@@ -95,17 +102,9 @@ public class ForkyzKeyboard
         return keyCodes.get(keyId);
     }
 
-    private void setKeyDown(int keyId, boolean down) {
-        keysDown.put(keyId, down);
-    }
-
-    private boolean isKeyDown(int keyId) {
-        return keysDown.get(keyId, false);
-    }
-
     private void onKeyUp(int keyId) {
-        setKeyDown(keyId, false);
         sendKeyUp(keyId);
+        cancelKeyTimer(keyId);
     }
 
     private void sendKeyUp(int keyId) {
@@ -116,19 +115,15 @@ public class ForkyzKeyboard
     }
 
     private void onKeyDown(final int keyId) {
-        setKeyDown(keyId, true);
-
-        handler.postDelayed(new Runnable() {
+        final Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
             public void run() {
-                if (isKeyDown(keyId)) {
-                    sendKeyUp(keyId);
-                    sendKeyDown(keyId);
-                    ForkyzKeyboard.this.handler.postDelayed(
-                        this, KEY_REPEAT_INTERVAL
-                    );
-                }
+                sendKeyUp(keyId);
+                sendKeyDown(keyId);
             }
-        }, KEY_REPEAT_DELAY);
+        }, KEY_REPEAT_DELAY, KEY_REPEAT_INTERVAL);
+        setKeyTimer(keyId, timer);
     }
 
     private void sendKeyDown(int keyId) {
@@ -136,6 +131,17 @@ public class ForkyzKeyboard
         inputConnection.sendKeyEvent(
             new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
         );
+    }
+
+    private void setKeyTimer(int keyId, Timer timer) {
+        cancelKeyTimer(keyId);
+        keyTimers.put(keyId, timer);
+    }
+
+    private void cancelKeyTimer(int keyId) {
+        Timer timer = keyTimers.get(keyId);
+        if (timer != null)
+            timer.cancel();
     }
 
     private class FKFactory implements LayoutInflater.Factory2 {

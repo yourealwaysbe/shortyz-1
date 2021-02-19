@@ -61,7 +61,9 @@ public class KeyboardManager {
     /**
      * Call this when the activity receives an onPause
      */
-    public void onPause() { }
+    public void onPause() {
+        keyboardView.onPause();
+    }
 
     /**
      * Call this when the activity receives an onStop
