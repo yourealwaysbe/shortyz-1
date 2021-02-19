@@ -70,15 +70,6 @@ public class NotesActivity extends PuzzleActivity {
 
     private int numAnagramLetters = 0;
 
-    private View.OnFocusChangeListener showKeyboardFocusListener
-        = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean gainFocus) {
-                if (gainFocus)
-                    NotesActivity.this.keyboardManager.showKeyboard(v);
-            }
-        };
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item == null || item.getItemId() == android.R.id.home) {
@@ -156,7 +147,7 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
-                imageView.requestFocus();
+                NotesActivity.this.keyboardManager.showKeyboard(imageView);
 
                 Word current = getBoard().getCurrentWord();
                 int newAcross = current.start.across;
@@ -187,7 +178,6 @@ public class NotesActivity extends PuzzleActivity {
                     return false;
             }
         });
-        imageView.setOnFocusChangeListener(showKeyboardFocusListener);
 
         Note note = puz.getNote(c.number, getBoard().isAcross());
         notesBox = (EditText) this.findViewById(R.id.notesBox);
@@ -226,13 +216,12 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity.this.keyboardManager.showKeyboard(scratchView);
                 NotesActivity.this.render();
             }
         });
-        scratchView.setOnFocusChangeListener(showKeyboardFocusListener);
 
         anagramSourceView = (BoardEditText) this.findViewById(R.id.anagramSource);
-        anagramSourceView.setOnFocusChangeListener(showKeyboardFocusListener);
         if (note != null) {
             String src = note.getAnagramSource();
             if (src != null) {
@@ -246,7 +235,6 @@ public class NotesActivity extends PuzzleActivity {
         }
 
         anagramSolView = (BoardEditText) this.findViewById(R.id.anagramSolution);
-        anagramSolView.setOnFocusChangeListener(showKeyboardFocusListener);
         if (note != null) {
             String sol = note.getAnagramSolution();
             if (sol != null) {
@@ -301,6 +289,10 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity
+                    .this
+                    .keyboardManager
+                    .showKeyboard(anagramSourceView);
                 NotesActivity.this.render();
             }
         });
@@ -336,6 +328,7 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
+                NotesActivity.this.keyboardManager.showKeyboard(anagramSolView);
                 NotesActivity.this.render();
             }
         });
