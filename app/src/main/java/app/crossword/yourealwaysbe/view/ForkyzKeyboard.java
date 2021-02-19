@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.LayoutInflaterCompat;
@@ -96,12 +97,15 @@ public class ForkyzKeyboard
             View parent, String tag, Context context, AttributeSet attrs
         ) {
             if (FORKYZ_TEXT_KEY.equals(tag)) {
-                View view = new AppCompatButton(context, attrs);
-                setupView(view, context, attrs);
+                TextView view = new AppCompatButton(context, attrs);
+                setButtonTextSize(view, context, attrs);
+                setButtonPadding(view, context, attrs);
+                setupButton(view, context, attrs);
                 return view;
             } else if (FORKYZ_IMAGE_KEY.equals(tag)) {
                 View view = new AppCompatImageButton(context, attrs);
-                setupView(view, context, attrs);
+                setButtonPadding(view, context, attrs);
+                setupButton(view, context, attrs);
                 return view;
             } else {
                 return null;
@@ -114,7 +118,9 @@ public class ForkyzKeyboard
             return onCreateView(null, tag, context, attrs);
         }
 
-        private void setupView(View view, Context context, AttributeSet attrs) {
+        private void setupButton(
+            View view, Context context, AttributeSet attrs
+        ) {
             TypedArray ta = context.obtainStyledAttributes(
                 attrs, R.styleable.ForkyzKey, 0, 0
             );
@@ -127,6 +133,62 @@ public class ForkyzKeyboard
             } finally {
                 ta.recycle();
             }
+        }
+
+        private void setButtonTextSize(
+            TextView view, Context context, AttributeSet attrs
+        ) {
+            if (!hasAttribute(android.R.attr.textSize, context, attrs)) {
+                view.setTextSize(
+                    context
+                        .getResources()
+                        .getInteger(R.integer.keyboardTextSize)
+                );
+            }
+        }
+
+        private void setButtonPadding(
+            View view, Context context, AttributeSet attrs
+        ) {
+            int paddingTop = view.getPaddingTop();
+            int paddingBottom = view.getPaddingBottom();
+            int paddingLeft = view.getPaddingLeft();
+            int paddingRight = view.getPaddingRight();
+
+            if (!hasAttribute(android.R.attr.padding, context, attrs) &&
+                !hasAttribute(android.R.attr.paddingTop, context, attrs)) {
+                paddingTop
+                    = context
+                        .getResources()
+                        .getInteger(R.integer.keyboardButtonVerticalPadding);
+            }
+            if (!hasAttribute(android.R.attr.padding, context, attrs) &&
+                !hasAttribute(android.R.attr.paddingBottom, context, attrs)) {
+                paddingBottom
+                    = context
+                        .getResources()
+                        .getInteger(R.integer.keyboardButtonVerticalPadding);
+            }
+
+            System.out.println("FKBD " + paddingTop + " " + paddingBottom);
+            view.setPadding(
+                paddingLeft, paddingTop, paddingRight, paddingBottom
+            );
+        }
+
+        private boolean hasAttribute(
+            int id, Context context, AttributeSet attrs
+        ) {
+            boolean hasAttribute = false;
+            TypedArray ta = context.obtainStyledAttributes(
+                attrs, new int[] { id }
+            );
+            try {
+                hasAttribute = ta.getString(0) != null;
+            } finally {
+                ta.recycle();
+            }
+            return hasAttribute;
         }
     }
 }

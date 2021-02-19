@@ -6,10 +6,17 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
 >
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:background="@color/keyboardDivider"
+    />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="10"
     >
         <ForkyzTextKey
             android:id="@+id/key_q"
@@ -97,6 +104,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="10"
     >
         <ForkyzTextKey
             android:id="@+id/key_a"
@@ -176,72 +185,74 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="end|center_vertical"
+        android:weightSum="10"
     >
-        <ForkyzImageKey
-            android:id="@+id/key_space"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/space"
-            android:contentDescription="@string/key_space"
-            app:keyCode="62"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_z"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_z"
-            app:keyCode="54"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_x"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_x"
-            app:keyCode="52"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_c"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_c"
-            app:keyCode="31"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_v"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_v"
-            app:keyCode="50"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_b"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_b"
-            app:keyCode="30"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_n"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_n"
-            app:keyCode="42"
-        />
-        <ForkyzTextKey
-            android:id="@+id/key_m"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/key_m"
-            app:keyCode="41"
-        />
+            android:layout_weight="8"
+            android:orientation="horizontal"
+            android:weightSum="8"
+            android:gravity="center"
+        >
+            <ForkyzTextKey
+                android:id="@+id/key_z"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_z"
+                app:keyCode="54"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_x"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_x"
+                app:keyCode="52"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_c"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_c"
+                app:keyCode="31"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_v"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_v"
+                app:keyCode="50"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_b"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_b"
+                app:keyCode="30"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_n"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_n"
+                app:keyCode="42"
+            />
+            <ForkyzTextKey
+                android:id="@+id/key_m"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/key_m"
+                app:keyCode="41"
+            />
+        </LinearLayout>
         <ForkyzImageKey
             android:id="@+id/key_delete"
             android:layout_width="0dp"
@@ -257,12 +268,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
     >
         <ForkyzImageKey
             android:id="@+id/key_up"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             app:srcCompat="@drawable/arrow_up"
             android:contentDescription="@string/key_up"
             app:keyCode="19"
@@ -271,16 +283,25 @@
             android:id="@+id/key_down"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             app:srcCompat="@drawable/arrow_down"
             android:contentDescription="@string/key_down"
             app:keyCode="20"
         />
         <ForkyzImageKey
+            android:id="@+id/key_space"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            app:srcCompat="@drawable/space"
+            android:contentDescription="@string/key_space"
+            app:keyCode="62"
+        />
+        <ForkyzImageKey
             android:id="@+id/key_left"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             app:srcCompat="@drawable/arrow_left"
             android:contentDescription="@string/key_left"
             app:keyCode="21"
@@ -289,7 +310,7 @@
             android:id="@+id/key_right"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             app:srcCompat="@drawable/arrow_right"
             android:contentDescription="@string/key_right"
             app:keyCode="22"
