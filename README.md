@@ -29,11 +29,14 @@ Removals:
 
 * No Google email or games integration.
 * No crashlytics.
-* No New York Times.
-* No non-native or forced keyboard.
+* No New York Times or layouts for large screens.
+* No native keyboard.
 
-The latter two are for no reason other than i didn't want to maintain
-them. They could be put back.
+The penultimate removal is for no reason other than i didn't want to
+maintain them. They could be put back.
+
+The native keyboard was removed because soft input methods are
+discouraged from sending key events.
 
 ## Compilation
 
