@@ -58,8 +58,10 @@
     </style>
 
     <style name="buttonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">?attr/selectableItemBackground</item>
     </style>
     <style name="imageButtonStyle" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:tint">@color/textColorPrimary</item>
     </style>
 </resources>

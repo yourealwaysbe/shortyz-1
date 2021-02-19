@@ -80,17 +80,6 @@ public class ForkyzKeyboard
             = LayoutInflater.from(context).cloneInContext(context);
         LayoutInflaterCompat.setFactory2(inflater, new FKFactory());
         inflater.inflate(R.layout.forkyz_keyboard, this, true);
-
-        TypedArray ta = context.obtainStyledAttributes(
-            attrs, new int[] { android.R.attr.background }
-        );
-        try {
-            String background = ta.getString(0);
-            if (background == null)
-                setBackgroundResource(R.color.background_light);
-        } finally {
-            ta.recycle();
-        }
     }
 
     private void addKeyCode(int keyId, int keyCode) {
@@ -135,17 +124,6 @@ public class ForkyzKeyboard
                     ForkyzKeyboard.this.addKeyCode(view.getId(), keyCode);
                     view.setOnTouchListener(ForkyzKeyboard.this);
                 }
-            } finally {
-                ta.recycle();
-            }
-
-            ta = context.obtainStyledAttributes(
-                attrs, new int[] { android.R.attr.background }
-            );
-            try  {
-                String background = ta.getString(0);
-                if (background == null)
-                    view.setBackgroundResource(R.drawable.keyboard_button);
             } finally {
                 ta.recycle();
             }
