@@ -57,12 +57,12 @@ public class ForkyzKeyboard
             inputConnection.sendKeyEvent(
                 new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
             );
-            return true;
+            break;
         case MotionEvent.ACTION_UP:
             inputConnection.sendKeyEvent(
                 new KeyEvent(KeyEvent.ACTION_UP, keyCode)
             );
-            return true;
+            break;
         }
 
         return false;
@@ -80,6 +80,17 @@ public class ForkyzKeyboard
             = LayoutInflater.from(context).cloneInContext(context);
         LayoutInflaterCompat.setFactory2(inflater, new FKFactory());
         inflater.inflate(R.layout.forkyz_keyboard, this, true);
+
+        TypedArray ta = context.obtainStyledAttributes(
+            attrs, new int[] { android.R.attr.background }
+        );
+        try {
+            String background = ta.getString(0);
+            if (background == null)
+                setBackgroundResource(R.color.background_light);
+        } finally {
+            ta.recycle();
+        }
     }
 
     private void addKeyCode(int keyId, int keyCode) {
@@ -93,7 +104,7 @@ public class ForkyzKeyboard
     private class FKFactory implements LayoutInflater.Factory2 {
         @Override
         public View onCreateView(
-            String tag, Context context, AttributeSet attrs
+            View parent, String tag, Context context, AttributeSet attrs
         ) {
             if (FORKYZ_TEXT_KEY.equals(tag)) {
                 View view = new AppCompatButton(context, attrs);
@@ -109,21 +120,34 @@ public class ForkyzKeyboard
         }
 
         public View onCreateView(
-            View parent, String tag, Context context, AttributeSet attrs
+            String tag, Context context, AttributeSet attrs
         ) {
-            return onCreateView(tag, context, attrs);
+            return onCreateView(null, tag, context, attrs);
         }
 
         private void setupView(View view, Context context, AttributeSet attrs) {
             TypedArray ta = context.obtainStyledAttributes(
                 attrs, R.styleable.ForkyzKey, 0, 0
             );
-            int keyCode = ta.getInt(R.styleable.ForkyzKey_keyCode, -1);
-            ta.recycle();
+            try {
+                int keyCode = ta.getInt(R.styleable.ForkyzKey_keyCode, -1);
+                if (keyCode > -1) {
+                    ForkyzKeyboard.this.addKeyCode(view.getId(), keyCode);
+                    view.setOnTouchListener(ForkyzKeyboard.this);
+                }
+            } finally {
+                ta.recycle();
+            }
 
-            if (keyCode > -1) {
-                ForkyzKeyboard.this.addKeyCode(view.getId(), keyCode);
-                view.setOnTouchListener(ForkyzKeyboard.this);
+            ta = context.obtainStyledAttributes(
+                attrs, new int[] { android.R.attr.background }
+            );
+            try  {
+                String background = ta.getString(0);
+                if (background == null)
+                    view.setBackgroundResource(R.drawable.keyboard_button);
+            } finally {
+                ta.recycle();
             }
         }
     }

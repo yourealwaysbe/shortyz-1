@@ -17,6 +17,10 @@
         <item name="dialogTheme">@style/dialogStyle</item>
         <item name="alertDialogTheme">@style/dialogStyle</item>
         <item name="android:spinnerDropDownItemStyle">@style/spinnerItemStyle</item>
+        <item name="buttonStyle">@style/buttonStyle</item>
+        <item name="android:buttonStyle">@style/buttonStyle</item>
+        <item name="imageButtonStyle">@style/imageButtonStyle</item>
+        <item name="android:imageButtonStyle">@style/imageButtonStyle</item>
     </style>
 
     <style name="actionOverflowButtonStyle"   parent="Widget.AppCompat.Light.ActionButton.Overflow">
@@ -51,5 +55,11 @@
 
     <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
         <item name="android:textColor">@color/textColorPrimary</item>
+    </style>
+
+    <style name="buttonStyle" parent="Widget.AppCompat.Button">
+    </style>
+    <style name="imageButtonStyle" parent="Widget.AppCompat.ImageButton">
+        <item name="android:tint">@color/textColorPrimary</item>
     </style>
 </resources>
