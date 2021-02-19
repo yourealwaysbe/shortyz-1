@@ -7,6 +7,8 @@ package app.crossword.yourealwaysbe.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -30,8 +32,14 @@ public class ForkyzKeyboard
     private static final String FORKYZ_TEXT_KEY = "ForkyzTextKey";
     private static final String FORKYZ_IMAGE_KEY = "ForkyzImageKey";
 
+    private static final int KEY_REPEAT_DELAY = 300;
+    private static final int KEY_REPEAT_INTERVAL = 50;
+
     private SparseArray<Integer> keyCodes = new SparseArray<>();
+    private SparseArray<Boolean> keysDown = new SparseArray<>();
     private InputConnection inputConnection;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public ForkyzKeyboard(Context context) {
         this(context, null, 0);
@@ -41,7 +49,9 @@ public class ForkyzKeyboard
         this(context, attrs, 0);
     }
 
-    public ForkyzKeyboard(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ForkyzKeyboard(
+        Context context, AttributeSet attrs, int defStyleAttr
+    ) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
@@ -51,18 +61,12 @@ public class ForkyzKeyboard
         if (inputConnection == null)
             return false;
 
-        Integer keyCode = keyCodes.get(view.getId());
-
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:
-            inputConnection.sendKeyEvent(
-                new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
-            );
+            onKeyDown(view.getId());
             break;
         case MotionEvent.ACTION_UP:
-            inputConnection.sendKeyEvent(
-                new KeyEvent(KeyEvent.ACTION_UP, keyCode)
-            );
+            onKeyUp(view.getId());
             break;
         }
 
@@ -89,6 +93,49 @@ public class ForkyzKeyboard
 
     private int getKeyCode(int keyId) {
         return keyCodes.get(keyId);
+    }
+
+    private void setKeyDown(int keyId, boolean down) {
+        keysDown.put(keyId, down);
+    }
+
+    private boolean isKeyDown(int keyId) {
+        return keysDown.get(keyId, false);
+    }
+
+    private void onKeyUp(int keyId) {
+        setKeyDown(keyId, false);
+        sendKeyUp(keyId);
+    }
+
+    private void sendKeyUp(int keyId) {
+        int keyCode = getKeyCode(keyId);
+        inputConnection.sendKeyEvent(
+            new KeyEvent(KeyEvent.ACTION_UP, keyCode)
+        );
+    }
+
+    private void onKeyDown(final int keyId) {
+        setKeyDown(keyId, true);
+
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                if (isKeyDown(keyId)) {
+                    sendKeyUp(keyId);
+                    sendKeyDown(keyId);
+                    ForkyzKeyboard.this.handler.postDelayed(
+                        this, KEY_REPEAT_INTERVAL
+                    );
+                }
+            }
+        }, KEY_REPEAT_DELAY);
+    }
+
+    private void sendKeyDown(int keyId) {
+        int keyCode = getKeyCode(keyId);
+        inputConnection.sendKeyEvent(
+            new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
+        );
     }
 
     private class FKFactory implements LayoutInflater.Factory2 {
@@ -170,7 +217,6 @@ public class ForkyzKeyboard
                         .getInteger(R.integer.keyboardButtonVerticalPadding);
             }
 
-            System.out.println("FKBD " + paddingTop + " " + paddingBottom);
             view.setPadding(
                 paddingLeft, paddingTop, paddingRight, paddingBottom
             );
