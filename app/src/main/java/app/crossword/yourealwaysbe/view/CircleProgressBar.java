@@ -59,9 +59,7 @@ public class CircleProgressBar extends View {
     }
 
     private final void initMetrics(Context context){
-        metrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getMetrics(metrics);
+        metrics = context.getResources().getDisplayMetrics();
         circleStroke = metrics.density * 6F;
         circleFine = metrics.density * 2f;
         if(icons1 == null) {

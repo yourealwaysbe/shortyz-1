@@ -86,8 +86,7 @@ public class NotesActivity extends PuzzleActivity {
         utils.holographic(this);
         utils.finishOnHomeButton(this);
 
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
         this.renderer = new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
 
         final int curWordLen = getBoard().getCurrentWord().length;

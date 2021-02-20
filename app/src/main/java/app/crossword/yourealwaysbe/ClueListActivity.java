@@ -60,8 +60,7 @@ public class ClueListActivity extends PuzzleActivity
         super.onCreate(icicle);
         utils.holographic(this);
         utils.finishOnHomeButton(this);
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         Playboard board = getBoard();
         Puzzle puz = getBoard().getPuzzle();
@@ -329,8 +328,7 @@ public class ClueListActivity extends PuzzleActivity
      * selected word.
      */
     private void scaleRendererToCurWord() {
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
         int curWordLen = getBoard().getCurrentWord().length;
         double scale = this.renderer.fitTo(metrics.widthPixels, curWordLen);
         if (scale > 1)

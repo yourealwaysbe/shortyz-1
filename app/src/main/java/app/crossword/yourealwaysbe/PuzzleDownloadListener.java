@@ -12,6 +12,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
@@ -29,7 +30,7 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 public class PuzzleDownloadListener implements DownloadListener {
     private static final String ERROR_MSG = "error";
     private Context mContext;
-    private Handler handler = new Handler() {
+    private Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 Toast.makeText(mContext, msg.getData().getString(ERROR_MSG), Toast.LENGTH_SHORT)

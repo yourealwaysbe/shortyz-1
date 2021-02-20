@@ -29,7 +29,7 @@ public class PlayboardRenderer {
     private static final float BASE_BOX_SIZE_INCHES = 0.25F;
     private static final Logger LOG = Logger.getLogger(PlayboardRenderer.class.getCanonicalName());
     @SuppressLint("NewApi")
-    private static final Typeface TYPEFACE_SEMI_BOLD_SANS = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+    private static final Typeface TYPEFACE_SEMI_BOLD_SANS = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 ? Typeface.create(Typeface.SANS_SERIF, 600, false) // semi-bold if available
                 : Typeface.create("sans-serif", Typeface.BOLD); // or fallback to bold
     private final Paint blackBox = new Paint();

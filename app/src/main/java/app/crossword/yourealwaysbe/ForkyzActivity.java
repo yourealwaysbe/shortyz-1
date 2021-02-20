@@ -13,11 +13,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
-import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
@@ -125,8 +125,7 @@ public class ForkyzActivity extends AppCompatActivity {
     }
 
     protected Bitmap createBitmap(String fontFile, String character){
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
         int dpi = Math.round(160F * metrics.density);
         int size = dpi / 2;
         Bitmap bitmap = Bitmap.createBitmap(size , size, Bitmap.Config.ARGB_8888);

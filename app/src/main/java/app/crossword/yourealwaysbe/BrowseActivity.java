@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,7 +75,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private File contextFile;
     private File crosswordsFolder = new File(Environment.getExternalStorageDirectory(), "crosswords");
     private FileHandle lastOpenedHandle = null;
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(Looper.getMainLooper());
     private RecyclerView puzzleList;
     private ListView sources;
     private NotificationManager nm;

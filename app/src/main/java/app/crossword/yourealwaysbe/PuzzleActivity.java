@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Playboard;
@@ -30,7 +31,7 @@ public abstract class PuzzleActivity
 
     private File baseFile;
     private ImaginaryTimer timer;
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     private Runnable updateTimeTask = new Runnable() {
         public void run() {
