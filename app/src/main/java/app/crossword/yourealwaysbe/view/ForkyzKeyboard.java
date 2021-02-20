@@ -59,8 +59,11 @@ public class ForkyzKeyboard
      * Call when activity paused to cancel unfinished key repeats
      */
     public void onPause() {
-        for (int i = 0; i < keyTimers.size(); i++)
-            keyTimers.valueAt(i).cancel();
+        for (int i = 0; i < keyTimers.size(); i++) {
+            Timer timer = keyTimers.valueAt(i);
+            if (timer != null)
+                timer.cancel();
+        }
     }
 
     @Override
@@ -140,8 +143,11 @@ public class ForkyzKeyboard
 
     private void cancelKeyTimer(int keyId) {
         Timer timer = keyTimers.get(keyId);
-        if (timer != null)
+        if (timer != null) {
             timer.cancel();
+            // no point keeping references to expired timers
+            keyTimers.put(keyId, null);
+        }
     }
 
     private class FKFactory implements LayoutInflater.Factory2 {
