@@ -1,6 +1,6 @@
 <resources>
     <!-- inherit from the material theme -->
-    <style name="Theme.Forkyz" parent="Theme.AppCompat">
+    <style name="Theme.Forkyz" parent="Base.Theme.AppCompat">
         <item name="android:textColorPrimary">@color/textColorPrimary</item>
         <item name="android:textColorSecondary">@color/textColorSecondary</item>
         <item name="colorPrimary">@color/primary</item>
@@ -14,8 +14,9 @@
         <item name="textAppearanceLargePopupMenu">@style/actionMenuTextLarge</item>
         <item name="textAppearanceSmallPopupMenu">@style/actionMenuTextSmall</item>
         <item name="actionBarPopupTheme">@style/submenuHeaderStyle</item>
-        <item name="dialogTheme">@style/dialogStyle</item>
-        <item name="alertDialogTheme">@style/dialogStyle</item>
+        <item name="android:dialogTheme">@style/dialogTheme</item>
+        <item name="alertDialogTheme">@style/dialogTheme</item>
+        <item name="android:alertDialogTheme">@style/dialogTheme</item>
         <item name="android:spinnerDropDownItemStyle">@style/spinnerItemStyle</item>
         <item name="buttonStyle">@style/buttonStyle</item>
         <item name="android:buttonStyle">@style/buttonStyle</item>
@@ -45,7 +46,7 @@
         <item name="android:textColorSecondary">@color/textColorPrimary</item>
     </style>
 
-    <style name="dialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="dialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
          <item name="android:colorAccent">@color/accent</item>
          <item name="android:background">@color/background_light</item>
          <item name="android:textColorPrimary">@color/textColorPrimary</item>

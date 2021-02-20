@@ -6,10 +6,10 @@ import java.util.logging.Logger;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;

@@ -1,5 +1,6 @@
 package app.crossword.yourealwaysbe;
 
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -11,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
@@ -25,6 +27,8 @@ import android.view.View.OnLongClickListener;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -73,7 +77,7 @@ public class PlayActivity extends PuzzleActivity
 
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(Looper.getMainLooper());
     private KeyboardManager keyboardManager;
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
@@ -100,8 +104,7 @@ public class PlayActivity extends PuzzleActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        metrics = getResources().getDisplayMetrics();
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
         LOG.info("Configuration Changed "+this.screenWidthInInches+" ");
         if(this.screenWidthInInches >= 7){
@@ -118,8 +121,7 @@ public class PlayActivity extends PuzzleActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        metrics = getResources().getDisplayMetrics();
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
 
         try {
@@ -143,8 +145,16 @@ public class PlayActivity extends PuzzleActivity
         MovementStrategy movement = this.getMovementStrategy();
 
         if (prefs.getBoolean("fullScreen", false)) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                final WindowInsetsController insetsController
+                    = getWindow().getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.statusBars());
+                }
+            } else {
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
         }
 
         File baseFile = null;

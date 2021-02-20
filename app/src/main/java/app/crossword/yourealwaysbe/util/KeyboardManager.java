@@ -9,10 +9,10 @@ import java.util.logging.Logger;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.view.View.OnFocusChangeListener;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.view.ForkyzKeyboard;

@@ -22,12 +22,7 @@ public class HighlightTextView extends TextView {
 
     public HighlightTextView(Context context, AttributeSet as) {
         super(context, as);
-        metrics = new DisplayMetrics();
-
-        WindowManager manager = (WindowManager) this.getContext()
-                                                    .getSystemService(Context.WINDOW_SERVICE);
-        manager.getDefaultDisplay()
-               .getMetrics(metrics);
+        metrics = context.getResources().getDisplayMetrics();
         blackPaint.setColor(ContextCompat.getColor(context, androidx.appcompat.R.color.primary_material_light));
         blackPaint.setAntiAlias(true);
         blackPaint.setStyle(Style.FILL_AND_STROKE);

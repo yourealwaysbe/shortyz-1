@@ -11,14 +11,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.net.Downloaders;
 
 import java.time.LocalDate;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +61,7 @@ public class BackgroundDownloadService extends JobService {
     public boolean onStartJob(JobParameters job) {
         LOGGER.info("Starting background download task");
         DownloadTask downloadTask = new DownloadTask(this);
-        downloadTask.execute(job);
+        downloadTask.executeAsync(job);
         return true;
     }
 
@@ -111,15 +113,24 @@ public class BackgroundDownloadService extends JobService {
         scheduler.cancel(JobSchedulerId.BACKGROUND_DOWNLOAD.id());
     }
 
-    private static class DownloadTask extends AsyncTask<JobParameters, Void, JobParameters> {
+    private static class DownloadTask {
+        private final Executor executor = Executors.newSingleThreadExecutor(); // change according to your requirements
+        private final Handler handler = new Handler(Looper.getMainLooper());
+
         private final JobService jobService;
 
         public DownloadTask(JobService jobService) {
             this.jobService = jobService;
         }
 
-        @Override
-        protected JobParameters doInBackground(JobParameters... params) {
+        public void executeAsync(JobParameters params) {
+            executor.execute(() -> { doInBackground(); });
+            handler.post(() -> {
+                jobService.jobFinished(params, false);
+            });
+        }
+
+        private void doInBackground() {
             Context context = jobService.getApplicationContext();
 
             NotificationManager nm =
@@ -129,7 +140,6 @@ public class BackgroundDownloadService extends JobService {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
                     PackageManager.PERMISSION_GRANTED) {
                 LOGGER.info("Skipping download, no write permission");
-                return params[0];
             }
 
             LOGGER.info("Downloading most recent puzzles");
@@ -146,12 +156,6 @@ public class BackgroundDownloadService extends JobService {
             prefs.edit()
                 .putBoolean(DOWNLOAD_PENDING_PREFERENCE, true)
                 .apply();
-
-            return params[0];
-        }
-
-        protected void onPostExecute(JobParameters params) {
-            jobService.jobFinished(params, false);
         }
     }
 }
