@@ -209,18 +209,19 @@ public class ForkyzKeyboard
             int paddingRight = view.getPaddingRight();
 
             if (!hasAttribute(android.R.attr.padding, context, attrs) &&
-                !hasAttribute(android.R.attr.paddingTop, context, attrs)) {
-                paddingTop
-                    = context
-                        .getResources()
-                        .getInteger(R.integer.keyboardButtonVerticalPadding);
-            }
-            if (!hasAttribute(android.R.attr.padding, context, attrs) &&
+                !hasAttribute(android.R.attr.paddingTop, context, attrs) &&
                 !hasAttribute(android.R.attr.paddingBottom, context, attrs)) {
-                paddingBottom
+
+                int btnPaddingPcnt
                     = context
                         .getResources()
-                        .getInteger(R.integer.keyboardButtonVerticalPadding);
+                        .getInteger(R.integer.keyboardButtonPaddingPcnt);
+                int dispHght
+                    = context.getResources().getDisplayMetrics().heightPixels;
+                int paddingTopBot = (int) ((btnPaddingPcnt / 100.0) * dispHght);
+
+                paddingTop = paddingTopBot;
+                paddingBottom = paddingTopBot;
             }
 
             view.setPadding(
@@ -241,6 +242,12 @@ public class ForkyzKeyboard
                 ta.recycle();
             }
             return hasAttribute;
+        }
+
+        private int dpToPx(Context context, int dp) {
+            final float scale
+                = context.getResources().getDisplayMetrics().density;
+            return (int) (dp * scale + 0.5f);
         }
     }
 }

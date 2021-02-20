@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="keyboardTextSize">16</integer>
-    <integer name="keyboardButtonVerticalPadding">50</integer>
+    <integer name="keyboardButtonPaddingPcnt">2</integer>
 </resources>
 
