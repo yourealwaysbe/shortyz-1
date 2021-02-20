@@ -144,18 +144,7 @@ public class PlayActivity extends PuzzleActivity
 
         MovementStrategy movement = this.getMovementStrategy();
 
-        if (prefs.getBoolean("fullScreen", false)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                final WindowInsetsController insetsController
-                    = getWindow().getInsetsController();
-                if (insetsController != null) {
-                    insetsController.hide(WindowInsets.Type.statusBars());
-                }
-            } else {
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-        }
+        setFullScreenMode();
 
         File baseFile = null;
         Puzzle puz = null;
@@ -1171,6 +1160,22 @@ public class PlayActivity extends PuzzleActivity
                 );
 
             return builder.create();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void setFullScreenMode() {
+        if (prefs.getBoolean("fullScreen", false)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                final WindowInsetsController insetsController
+                    = getWindow().getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.statusBars());
+                }
+            } else {
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
         }
     }
 }
