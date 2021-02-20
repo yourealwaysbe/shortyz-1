@@ -39,6 +39,7 @@ public class ForkyzKeyboard
     private SparseArray<Integer> keyCodes = new SparseArray<>();
     private SparseArray<Timer> keyTimers = new SparseArray<>();
     private InputConnection inputConnection;
+    private int countKeysDown = 0;
 
     public ForkyzKeyboard(Context context) {
         this(context, null, 0);
@@ -90,6 +91,14 @@ public class ForkyzKeyboard
         inputConnection = view.onCreateInputConnection(new EditorInfo());
     }
 
+    /**
+     * Check if at least one key is currently pressed
+     */
+    public boolean hasKeysDown() { return countKeysDown > 0; }
+
+    private void countKeyDown() { countKeysDown++; }
+    private void countKeyUp() { countKeysDown--; }
+
     private void init(Context context, AttributeSet attrs) {
         LayoutInflater inflater
             = LayoutInflater.from(context).cloneInContext(context);
@@ -106,6 +115,7 @@ public class ForkyzKeyboard
     }
 
     private void onKeyUp(int keyId) {
+        countKeyUp();
         sendKeyUp(keyId);
         cancelKeyTimer(keyId);
     }
@@ -118,6 +128,8 @@ public class ForkyzKeyboard
     }
 
     private void onKeyDown(final int keyId) {
+        countKeyDown();
+
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override

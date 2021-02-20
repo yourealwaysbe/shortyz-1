@@ -95,11 +95,16 @@ public class KeyboardManager {
     /**
      * Hide the keyboard unless the user always wants it
      *
+     * Will not hide if the user is currently pressing a key
+     *
      * @param force force hide the keyboard, even if user has set always
      * show
      */
     public void hideKeyboard(boolean force) {
-        if (force || getKeyboardMode() != KeyboardMode.ALWAYS_SHOW)
+        boolean softHide =
+            getKeyboardMode() != KeyboardMode.ALWAYS_SHOW
+                && !keyboardView.hasKeysDown();
+        if (force || softHide)
             keyboardView.setVisibility(View.GONE);
     }
 
