@@ -502,22 +502,25 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        keyboardManager.pushBlockHide();
 
         boolean handled = false;
+
+        // handle back separately as it we shouldn't block a keyboard
+        // hide because of it
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!keyboardManager.handleBackKey()) {
+                this.finish();
+            }
+            handled = true;
+        }
+
+        keyboardManager.pushBlockHide();
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
                 getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_BACK:
-                if (!keyboardManager.handleBackKey()) {
-                    this.finish();
-                }
                 handled = true;
                 break;
 
