@@ -34,7 +34,7 @@ public class ForkyzKeyboard
     private static final String FORKYZ_IMAGE_KEY = "ForkyzImageKey";
 
     private static final int KEY_REPEAT_DELAY = 300;
-    private static final int KEY_REPEAT_INTERVAL = 50;
+    private static final int KEY_REPEAT_INTERVAL = 100;
 
     private SparseArray<Integer> keyCodes = new SparseArray<>();
     private SparseArray<Timer> keyTimers = new SparseArray<>();
