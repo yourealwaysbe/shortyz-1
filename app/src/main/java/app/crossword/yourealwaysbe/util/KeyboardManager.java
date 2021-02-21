@@ -23,6 +23,7 @@ public class KeyboardManager {
     private Activity activity;
     private SharedPreferences prefs;
     private ForkyzKeyboard keyboardView;
+    private int blockHideDepth = 0;
 
     private enum KeyboardMode {
         ALWAYS_SHOW, SHOW_SPARINGLY, NEVER_SHOW
@@ -103,9 +104,11 @@ public class KeyboardManager {
     public void hideKeyboard(boolean force) {
         boolean softHide =
             getKeyboardMode() != KeyboardMode.ALWAYS_SHOW
-                && !keyboardView.hasKeysDown();
-        if (force || softHide)
+                && !keyboardView.hasKeysDown()
+                && !isBlockHide();
+        if (force || softHide) {
             keyboardView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -122,6 +125,21 @@ public class KeyboardManager {
         hideKeyboard();
         return hidable && visible;
     }
+
+    /**
+     * Add a block hide request
+     *
+     * hideKeyboard will only have an effect if there are no block hide
+     * requests (or force was passed to hideKeyboard)
+     */
+    public void pushBlockHide() { blockHideDepth++; }
+
+    /**
+     * Remove a block hide request
+     */
+    public void popBlockHide() { blockHideDepth--; }
+
+    private boolean isBlockHide() { return blockHideDepth > 0; }
 
     private KeyboardMode getKeyboardMode() {
         String never = activity.getString(R.string.keyboard_never_show);

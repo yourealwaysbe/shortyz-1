@@ -502,40 +502,49 @@ public class PlayActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        keyboardManager.pushBlockHide();
+
+        boolean handled = false;
+
         switch (keyCode) {
             case KeyEvent.KEYCODE_SEARCH:
                 getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
                 getBoard().nextWord();
                 getBoard().setMovementStrategy(this.getMovementStrategy());
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_BACK:
                 if (!keyboardManager.handleBackKey()) {
                     this.finish();
                 }
-                return true;
-
-            case KeyEvent.KEYCODE_MENU:
-                return false;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 getBoard().moveDown();
-                return true;
+                handled = true;
+                break;
+
             case KeyEvent.KEYCODE_DPAD_UP:
                 getBoard().moveUp();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 getBoard().moveLeft();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_RIGHT:
                 getBoard().moveRight();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DPAD_CENTER:
                 getBoard().toggleDirection();
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_SPACE:
                 if (prefs.getBoolean("spaceChangesDirection", true)) {
@@ -545,7 +554,8 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().playLetter(' ');
                 }
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_ENTER:
                 if (prefs.getBoolean("enterChangesDirection", true)) {
@@ -553,7 +563,8 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().nextWord();
                 }
-                return true;
+                handled = true;
+                break;
 
             case KeyEvent.KEYCODE_DEL:
                 if (this.scratchMode) {
@@ -561,21 +572,27 @@ public class PlayActivity extends PuzzleActivity
                 } else {
                     getBoard().deleteLetter();
                 }
-                return true;
+                handled = true;
+                break;
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
 
-        if (ALPHA.indexOf(c) != -1) {
+        if (!handled && ALPHA.indexOf(c) != -1) {
             if (this.scratchMode) {
                 getBoard().playScratchLetter(c);
             } else {
                 getBoard().playLetter(c);
             }
-            return true;
+            handled = true;
         }
 
-        return super.onKeyUp(keyCode, event);
+        if (!handled)
+            handled = super.onKeyUp(keyCode, event);
+
+        keyboardManager.popBlockHide();
+
+        return handled;
     }
 
     @Override
