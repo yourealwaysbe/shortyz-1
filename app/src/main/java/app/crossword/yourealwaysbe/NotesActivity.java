@@ -399,7 +399,7 @@ public class NotesActivity extends PuzzleActivity {
 
             if (!getBoard().getHighlightLetter().equals(
                     getBoard().getCurrentWord().start)) {
-                getBoard().previousLetter();
+                getBoard().moveLeft();
             }
 
             return true;
@@ -407,7 +407,7 @@ public class NotesActivity extends PuzzleActivity {
         case KeyEvent.KEYCODE_DPAD_RIGHT:
 
             if (!getBoard().getHighlightLetter().equals(last)) {
-                getBoard().nextLetter();
+                getBoard().moveRight();
             }
 
             return true;

@@ -215,7 +215,7 @@ public class ClueListActivity extends PuzzleActivity
 
             if (!board.getHighlightLetter().equals(
                     board.getCurrentWord().start)) {
-                board.previousLetter();
+                board.moveLeft();
             }
 
             return true;
@@ -223,7 +223,7 @@ public class ClueListActivity extends PuzzleActivity
         case KeyEvent.KEYCODE_DPAD_RIGHT:
 
             if (!board.getHighlightLetter().equals(last)) {
-                board.nextLetter();
+                board.moveRight();
             }
 
             return true;
