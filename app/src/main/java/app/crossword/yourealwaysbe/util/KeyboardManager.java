@@ -124,7 +124,10 @@ public class KeyboardManager {
      * @return true if key press was consumed, false if it should be
      * passed on
      */
-    public boolean handleBackKey() { return hideKeyboard(); }
+    public boolean handleBackKey() {
+        return keyboardView.getVisibility() == View.VISIBLE
+            && hideKeyboard();
+    }
 
     /**
      * Add a block hide request
