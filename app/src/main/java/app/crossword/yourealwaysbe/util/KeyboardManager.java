@@ -91,7 +91,7 @@ public class KeyboardManager {
         }
     }
 
-    public void hideKeyboard() { hideKeyboard(false); }
+    public boolean hideKeyboard() { return hideKeyboard(false); }
 
     /**
      * Hide the keyboard unless the user always wants it
@@ -100,15 +100,20 @@ public class KeyboardManager {
      *
      * @param force force hide the keyboard, even if user has set always
      * show
+     * @return true if the hide request was not blocked by settings or
+     * pushBlockHide
      */
-    public void hideKeyboard(boolean force) {
+    public boolean hideKeyboard(boolean force) {
         boolean softHide =
             getKeyboardMode() != KeyboardMode.ALWAYS_SHOW
                 && !keyboardView.hasKeysDown()
                 && !isBlockHide();
-        if (force || softHide) {
+        boolean doHide = force || softHide;
+
+        if (doHide)
             keyboardView.setVisibility(View.GONE);
-        }
+
+        return doHide;
     }
 
     /**
@@ -119,12 +124,7 @@ public class KeyboardManager {
      * @return true if key press was consumed, false if it should be
      * passed on
      */
-    public boolean handleBackKey() {
-        boolean hidable = getKeyboardMode() != KeyboardMode.ALWAYS_SHOW;
-        boolean visible = keyboardView.getVisibility() == View.VISIBLE;
-        hideKeyboard();
-        return hidable && visible;
-    }
+    public boolean handleBackKey() { return hideKeyboard(); }
 
     /**
      * Add a block hide request
