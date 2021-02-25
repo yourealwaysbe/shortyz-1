@@ -1,9 +1,8 @@
 package app.crossword.yourealwaysbe;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDate;
@@ -21,7 +20,9 @@ import android.widget.Toast;
 
 import app.crossword.yourealwaysbe.net.Downloaders;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
-
+import app.crossword.yourealwaysbe.util.files.FileHandle;
+import app.crossword.yourealwaysbe.util.files.DirHandle;
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Listener for WebBrowserActivity which handles downloading a puzzle and adding it to the puzzle
@@ -30,6 +31,7 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 public class PuzzleDownloadListener implements DownloadListener {
     private static final String ERROR_MSG = "error";
     private Context mContext;
+    private FileHandler fileHandler;
     private Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -38,8 +40,9 @@ public class PuzzleDownloadListener implements DownloadListener {
             }
         };
 
-    public PuzzleDownloadListener(Context c) {
+    public PuzzleDownloadListener(Context c, FileHandler fileHandler) {
         mContext = c;
+        this.fileHandler = fileHandler;
     }
 
     public void onDownloadStart(final String url, final String userAgent, final String contentDisposition,
@@ -72,7 +75,8 @@ public class PuzzleDownloadListener implements DownloadListener {
 
     private void performDownload(String url, String userAgent, String contentDisposition, String mimetype,
         long contentLength) {
-        File crosswords = new File(Environment.getExternalStorageDirectory(), "crosswords/");
+        DirHandle crosswordFolder = fileHandler.getCrosswordsDirectory();
+        DirHandle archiveFolder = fileHandler.getArchiveDirectory();
         String cookies = CookieManager.getInstance()
                                       .getCookie(url);
         String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
@@ -85,49 +89,45 @@ public class PuzzleDownloadListener implements DownloadListener {
             fileName = fileName + ".puz";
         }
 
-        File outputFile = new File(crosswords.getAbsolutePath() + "/" + fileName);
-        File archiveOutputFile = new File(crosswords.getAbsolutePath() + "/archive/" + fileName);
+        FileHandle outputFile
+            = fileHandler.getFileHandle(crosswordFolder, fileName);
+        FileHandle archiveOutputFile
+            = fileHandler.getFileHandle(archiveFolder, fileName);
 
-        FileOutputStream fout = null;
-        try {
-            InputStream in = OpenHttpConnection(new URL(url), cookies);
-
-            if (outputFile.exists() || archiveOutputFile.exists()) {
+        try (
+            InputStream in = OpenHttpConnection(new URL(url), cookies)
+        ) {
+            if (fileHandler.exists(outputFile)
+                    || fileHandler.exists(archiveOutputFile)) {
                 sendMessage("Puzzle " + fileName + " already exists.");
 
                 return;
             }
 
-            fout = new FileOutputStream(outputFile);
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            
-            while ((len = in.read(buffer)) != -1) {
-                fout.write(buffer, 0, len);
-            }
+            try (OutputStream fout = fileHandler.getOutputStream(outputFile);) {
+                byte[] buffer = new byte[1024];
+                int len = 0;
 
-            fout.flush();
-            fout.close();
-            in.close();
+                while ((len = in.read(buffer)) != -1) {
+                    fout.write(buffer, 0, len);
+                }
+            }
 
             PuzzleMeta meta = new PuzzleMeta();
             meta.date = LocalDate.now();
 
-            if (Downloaders.processDownloadedPuzzle(outputFile, meta)) {
-                sendMessage("Puzzle " + fileName + " downloaded successfully.");
+            boolean processed
+                = Downloaders.processDownloadedPuzzle(outputFile, meta);
+
+            if (processed) {
+                sendMessage(
+                    "Puzzle " + fileName + " downloaded successfully."
+                );
             } else {
                 sendMessage("Error parsing puzzle " + fileName);
             }
         } catch (Exception ex) {
             sendMessage("Error downloading puzzle " + fileName);
-        } finally {
-            if(fout != null){
-                try {
-                    fout.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 

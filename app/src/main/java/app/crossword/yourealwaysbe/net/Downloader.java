@@ -6,6 +6,8 @@ import java.time.LocalDate;
 
 import android.content.Context;
 
+import app.crossword.yourealwaysbe.util.files.FileHandle;
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 public interface Downloader {
     // These lists must be sorted for binary search.
@@ -34,7 +36,23 @@ public interface Downloader {
         DayOfWeek.SATURDAY
     };
 
-    File DEFERRED_FILE = new File(".");
+    public static class DownloadResult {
+        private FileHandle fileHandle;
+        private boolean isDeferred;
+        public static final DownloadResult DEFERRED_FILE = new DownloadResult();
+
+        public DownloadResult(FileHandle fileHandle) {
+            this.fileHandle = fileHandle;
+            this.isDeferred = false;
+        }
+
+        private DownloadResult() {
+            this.isDeferred = true;
+        }
+
+        public FileHandle getFileHandle() { return fileHandle; }
+        public boolean getIsDeferred() { return isDeferred; }
+    }
 
     void setContext(Context context);
 
@@ -44,12 +62,11 @@ public interface Downloader {
 
     String createFileName(LocalDate date);
 
-    File download(LocalDate date);
+    DownloadResult download(LocalDate date);
 
     String sourceUrl(LocalDate date);
 
     boolean alwaysRun();
-
 
     LocalDate getGoodThrough();
 

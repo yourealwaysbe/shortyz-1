@@ -48,6 +48,8 @@ import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
+import app.crossword.yourealwaysbe.util.files.FileHandle;
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.view.ClueTabs;
 import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
@@ -56,8 +58,6 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -121,6 +121,8 @@ public class PlayActivity extends PuzzleActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        final FileHandler fileHandler = getFileHandler();
+
         metrics = getResources().getDisplayMetrics();
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
 
@@ -146,15 +148,15 @@ public class PlayActivity extends PuzzleActivity
 
         setFullScreenMode();
 
-        File baseFile = null;
+        FileHandle baseFile = null;
         Puzzle puz = null;
 
         try {
             Uri u = this.getIntent().getData();
 
             if (u != null && u.getScheme().equals("file")) {
-                baseFile = new File(u.getPath());
-                puz = IO.load(baseFile);
+                baseFile = fileHandler.getFileHandle(u);
+                puz = fileHandler.load(baseFile);
             }
 
             if (puz == null || puz.getBoxes() == null) {
@@ -348,7 +350,7 @@ public class PlayActivity extends PuzzleActivity
             String filename = null;
 
             try {
-                filename = this.getBaseFile().getName();
+                filename = fileHandler.getName(this.getBaseFile());
             } catch (Exception ee) {
                 e.printStackTrace();
             }
@@ -1093,8 +1095,10 @@ public class PlayActivity extends PuzzleActivity
 
                 TextView filename
                     = view.findViewById(R.id.puzzle_info_filename);
+                FileHandler fileHandler
+                    = ForkyzApplication.getInstance().getFileHandler();
                 filename.setText(
-                    Uri.fromFile(activity.getBaseFile()).toString()
+                    fileHandler.getUri(activity.getBaseFile()).toString()
                 );
 
                 addNotes(view);

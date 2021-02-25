@@ -11,15 +11,15 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StatFs;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 
 import java.lang.reflect.Field;
@@ -30,26 +30,27 @@ public class ForkyzActivity extends AppCompatActivity {
     protected SharedPreferences prefs;
     public NightModeHelper nightMode;
 
+    protected FileHandler getFileHandler() {
+        return ForkyzApplication.getInstance().getFileHandler();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (!Environment.MEDIA_MOUNTED.equals(Environment
-                .getExternalStorageState())) {
+        final FileHandler fileHandler = getFileHandler();
+
+        if (!fileHandler.isStorageMounted()) {
             showSDCardHelp();
             finish();
-
             return;
         }
-        StatFs stats = new StatFs(Environment.getExternalStorageDirectory()
-                .getAbsolutePath());
 
-        if ( stats.getAvailableBlocksLong() * stats.getBlockSizeLong() < 1024L * 1024L) {
+        if (fileHandler.isStorageFull()) {
             showSDCardFull();
             finish();
-
             return;
         }
         doOrientation();
@@ -84,11 +85,9 @@ public class ForkyzActivity extends AppCompatActivity {
             this.utils.restoreNightMode(this);
         }
 
-        if (!Environment.MEDIA_MOUNTED.equals(Environment
-                .getExternalStorageState())) {
+        if (!getFileHandler().isStorageMounted()) {
             showSDCardHelp();
             finish();
-
             return;
         }
         doOrientation();
