@@ -50,6 +50,7 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.view.ClueTabs;
 import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
@@ -148,16 +149,18 @@ public class PlayActivity extends PuzzleActivity
 
         setFullScreenMode();
 
-        FileHandle baseFile = null;
+        PuzHandle puzHandle = null;
         Puzzle puz = null;
 
         try {
-            Uri u = this.getIntent().getData();
+            puzHandle = ForkyzApplication.getInstance().getPuzHandle();
 
-            if (u != null && u.getScheme().equals("file")) {
-                baseFile = fileHandler.getFileHandle(u);
-                puz = fileHandler.load(baseFile);
+            if (puzHandle == null) {
+                LOG.info("PlayActivity started but no Puzzle selected, finishing.");
+                finish();
             }
+
+            puz = fileHandler.load(puzHandle);
 
             if (puz == null || puz.getBoxes() == null) {
                 throw new IOException("Puzzle is null or contains no boxes.");
@@ -169,7 +172,7 @@ public class PlayActivity extends PuzzleActivity
                                   prefs.getBoolean("preserveCorrectLettersInShowErrors",
                                                    false),
                                   prefs.getBoolean("dontDeleteCrossing", true)),
-                    baseFile
+                    puzHandle
             );
             ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
 
@@ -350,7 +353,9 @@ public class PlayActivity extends PuzzleActivity
             String filename = null;
 
             try {
-                filename = fileHandler.getName(this.getBaseFile());
+                filename = fileHandler.getName(
+                    this.getPuzHandle().getPuzFileHandle()
+                );
             } catch (Exception ee) {
                 e.printStackTrace();
             }
@@ -1098,7 +1103,9 @@ public class PlayActivity extends PuzzleActivity
                 FileHandler fileHandler
                     = ForkyzApplication.getInstance().getFileHandler();
                 filename.setText(
-                    fileHandler.getUri(activity.getBaseFile()).toString()
+                    fileHandler.getUri(
+                        activity.getPuzHandle().getPuzFileHandle()
+                    ).toString()
                 );
 
                 addNotes(view);

@@ -48,7 +48,11 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
     private static final int CW_HEIGHT = 15;
 
     public GuardianDailyCrypticDownloader() {
-        super("https://www.theguardian.com/crosswords/cryptic/", DOWNLOAD_DIR, NAME);
+        super(
+            "https://www.theguardian.com/crosswords/cryptic/",
+            getStandardDownloadDir(),
+            NAME
+        );
     }
 
     public DayOfWeek[] getDownloadDates() {
@@ -73,21 +77,22 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             = ForkyzApplication.getInstance().getFileHandler();
 
         try {
+
+            String fileName = createFileName(date);
+
+            FileHandle f = fileHandler.createFileHandle(
+                downloadDirectory, fileName
+            );
+            if (f == null)
+                return null;
+
             URL url = new URL(this.baseUrl + urlSuffix);
             JSONObject cw = getCrosswordJSON(url);
 
-            if (cw == null) {
-                return (canDefer
-                    ?  Downloader.DownloadResult.DEFERRED_FILE
-                    : null
-                );
-            }
+            if (cw == null)
+                return null;
 
             Puzzle puz = readPuzzleFromJSON(cw, date);
-
-            FileHandle f = fileHandler.getFileHandle(
-                downloadDirectory, this.createFileName(date)
-            );
 
             try (
                 DataOutputStream dos = new DataOutputStream(
@@ -96,15 +101,8 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             ) {
                 puz.setVersion(IO.VERSION_STRING);
                 IO.saveNative(puz, dos);
+                return new Downloader.DownloadResult(f);
             }
-
-            PuzzleMeta meta = new PuzzleMeta();
-            meta.date = puz.getDate();
-            meta.source = getName();
-            meta.sourceUrl = url.toString();
-            meta.updatable = true;
-
-            utils.storeMetas(fileHandler.getUri(f), meta);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {

@@ -26,7 +26,7 @@ public class AVClubDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
 
     protected AVClubDownloader() {
-        super("http://herbach.dnsalias.com/Tausig/", DOWNLOAD_DIR, NAME);
+        super("http://herbach.dnsalias.com/Tausig/", getStandardDownloadDir(), NAME);
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
     }
@@ -66,9 +66,11 @@ public class AVClubDownloader extends AbstractDownloader {
             connection.setRequestProperty("Referer", this.baseUrl);
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                FileHandle f = fileHandler.getFileHandle(
+                FileHandle f = fileHandler.createFileHandle(
                     downloadDirectory, this.createFileName(date)
                 );
+                if (f == null)
+                    return null;
                 try (OutputStream fos = fileHandler.getOutputStream(f)) {
                     IO.copyStream(connection.getInputStream(), fos);
                 }

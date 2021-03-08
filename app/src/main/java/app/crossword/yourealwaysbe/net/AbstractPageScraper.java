@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,9 +49,13 @@ public class AbstractPageScraper {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
         URL u = new URL(url);
-        FileHandle output= fileHandler.getFileHandle(
-            AbstractDownloader.DOWNLOAD_DIR, fileName
+
+        FileHandle output = fileHandler.createFileHandle(
+            AbstractDownloader.getStandardDownloadDir(), fileName
         );
+        if (output == null)
+            return null;
+
         try (OutputStream fos = fileHandler.getOutputStream(output)) {
             IO.copyStream(u.openStream(), fos);
         } catch (Exception e) {
@@ -100,7 +105,7 @@ public class AbstractPageScraper {
         return this.sourceName;
     }
 
-    public boolean processFile(FileHandle file, String sourceUrl) {
+    private boolean processFile(FileHandle file, String sourceUrl) {
         final FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
         try {
@@ -112,7 +117,10 @@ public class AbstractPageScraper {
             puz.setSource(this.sourceName);
             puz.setSourceUrl(sourceUrl);
             puz.setDate(LocalDate.now());
-            fileHandler.save(puz, file);
+
+            DirHandle dir = AbstractDownloader.getStandardDownloadDir();
+
+            fileHandler.saveCreateMeta(puz, dir, file);
 
             return true;
         } catch (Exception e) {
@@ -144,17 +152,17 @@ public class AbstractPageScraper {
             Map<String, String> urlsToFilenames = mapURLsToFileNames(urls);
             System.out.println("Mapped: " + urlsToFilenames.size());
 
+            Set<String> existingFiles = fileHandler.getFileNames(
+                AbstractDownloader.getStandardDownloadDir(),
+                AbstractDownloader.getStandardArchiveDir()
+            );
+
             for (String url : urls) {
                 String filename = urlsToFilenames.get(url);
-                FileHandle cwFile = fileHandler.getFileHandle(
-                    AbstractDownloader.DOWNLOAD_DIR, filename
-                );
-                FileHandle archiveFile = fileHandler.getFileHandle(
-                    AbstractDownloader.ARCHIVE_DIR, filename
-                );
-                if (!fileHandler.exists(cwFile)
-                        && !fileHandler.exists(archiveFile)
-                        && (scrapedFiles.size() < 3)) {
+
+                boolean exists = existingFiles.contains(filename);
+
+                if (!exists && (scrapedFiles.size() < 3)) {
                     System.out.println("Attempting " + url + "  scraped "
                             + scrapedFiles.size());
 

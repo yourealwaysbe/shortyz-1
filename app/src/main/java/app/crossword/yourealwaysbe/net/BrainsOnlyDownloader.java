@@ -25,7 +25,7 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
     private final String fullName;
 
     public BrainsOnlyDownloader(String baseUrl, String fullName) {
-        super(baseUrl, DOWNLOAD_DIR, fullName);
+        super(baseUrl, getStandardDownloadDir(), fullName);
         this.fullName = fullName;
     }
 
@@ -45,19 +45,18 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
     public Downloader.DownloadResult download(LocalDate date) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
-        FileHandle downloadTo = fileHandler.getFileHandle(
-            this.downloadDirectory, this.createFileName(date)
-        );
 
-        if (fileHandler.exists(downloadTo)) {
+        String fileName = this.createFileName(date);
+
+        FileHandle downloadTo = fileHandler.createFileHandle(
+            this.downloadDirectory, fileName
+        );
+        if (downloadTo == null)
             return null;
-        }
 
         FileHandle plainText = downloadToTempFile(this.getName(), date);
-
-        if (plainText == null) {
+        if (plainText == null)
             return null;
-        }
 
         try (
             InputStream is = fileHandler.getInputStream(plainText);

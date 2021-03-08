@@ -2,6 +2,7 @@ package app.crossword.yourealwaysbe;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import androidx.preference.PreferenceManager;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.util.files.FileHandlerSAF;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 
 import java.lang.reflect.Field;
@@ -29,6 +31,18 @@ public class ForkyzActivity extends AppCompatActivity {
             .getInstance();
     protected SharedPreferences prefs;
     public NightModeHelper nightMode;
+
+    private OnSharedPreferenceChangeListener prefChangeListener
+        = new OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(
+                SharedPreferences prefs, String key
+            ) {
+                if (ForkyzApplication.STORAGE_LOC_PREF.equals(key)
+                        || FileHandlerSAF.SAF_ROOT_URI_PREF.equals(key)) {
+                    ForkyzActivity.this.finish();
+                }
+            }
+        };
 
     protected FileHandler getFileHandler() {
         return ForkyzApplication.getInstance().getFileHandler();
@@ -40,19 +54,10 @@ public class ForkyzActivity extends AppCompatActivity {
 
         this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        this.prefs.registerOnSharedPreferenceChangeListener(prefChangeListener);
+
         final FileHandler fileHandler = getFileHandler();
 
-        if (!fileHandler.isStorageMounted()) {
-            showSDCardHelp();
-            finish();
-            return;
-        }
-
-        if (fileHandler.isStorageFull()) {
-            showSDCardFull();
-            finish();
-            return;
-        }
         doOrientation();
 
     }
@@ -85,26 +90,7 @@ public class ForkyzActivity extends AppCompatActivity {
             this.utils.restoreNightMode(this);
         }
 
-        if (!getFileHandler().isStorageMounted()) {
-            showSDCardHelp();
-            finish();
-            return;
-        }
         doOrientation();
-    }
-
-    protected void showSDCardFull() {
-        Intent i = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("file:///android_asset/sdcard-full.html"), this,
-                HTMLActivity.class);
-        this.startActivity(i);
-    }
-
-    protected void showSDCardHelp() {
-        Intent i = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("file:///android_asset/sdcard.html"), this,
-                HTMLActivity.class);
-        this.startActivity(i);
     }
 
     private void doOrientation() {

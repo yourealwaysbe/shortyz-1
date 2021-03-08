@@ -13,8 +13,10 @@ public class LATimesDownloader extends AbstractJPZDownloader {
 
     public LATimesDownloader() {
         super(
-                "http://cdn.games.arkadiumhosted.com/latimes/assets/DailyCrossword/",
-                DOWNLOAD_DIR, NAME);
+            "http://cdn.games.arkadiumhosted.com/latimes/assets/DailyCrossword/",
+            getStandardDownloadDir(),
+            NAME
+        );
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
         headers.put("Accept","*/*");
@@ -45,7 +47,7 @@ public class LATimesDownloader extends AbstractJPZDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         String val = "la";
-        if(date.isBefore(LocalDate.of(114, 0, 27))){
+        if(date.isBefore(LocalDate.of(2014, 1, 27))){
             val = "puzzle_";
         }
         return val + (date.getYear() % 100)

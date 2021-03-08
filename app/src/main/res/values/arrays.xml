@@ -52,4 +52,9 @@
        <item>@string/keyboard_show_sparingly</item>
        <item>@string/keyboard_never_show</item>
      </string-array>
+    <string-array name="storageLocations">
+       <item>@string/internal_storage</item>
+       <item>@string/external_storage_saf</item>
+       <item>@string/external_storage_legacy</item>
+     </string-array>
 </resources>

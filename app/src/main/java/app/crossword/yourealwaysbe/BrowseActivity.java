@@ -45,6 +45,7 @@ import app.crossword.yourealwaysbe.util.files.Accessor;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
 import app.crossword.yourealwaysbe.view.CircleProgressBar;
 import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
@@ -73,15 +74,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private static final long DAY = 24L * 60L * 60L * 1000L;
     private static final Logger LOGGER = Logger.getLogger(BrowseActivity.class.getCanonicalName());
     private Accessor accessor = Accessor.DATE_DESC;
-    private SeparatedRecyclerViewAdapter<FileViewHolder> currentAdapter = null;
+    private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
+        currentAdapter = null;
     private DirHandle archiveFolder = getFileHandler().getArchiveDirectory();
     private DirHandle crosswordsFolder = getFileHandler().getCrosswordsDirectory();
-    private PuzMetaFile lastOpenedPuzMeta = null;
     private Handler handler = new Handler(Looper.getMainLooper());
     private RecyclerView puzzleList;
     private ListView sources;
     private NotificationManager nm;
-    private View lastOpenedView = null;
     private boolean viewArchive;
     private MenuItem gamesItem;
     private boolean signedIn;
@@ -125,13 +125,17 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 actionMode.finish();
             } else if(menuItem.getTitle().equals("Archive")){
                 for(PuzMetaFile puzMeta : selected){
-                    fileHandler.moveTo(puzMeta, archiveFolder);
+                    fileHandler.moveTo(
+                        puzMeta, crosswordsFolder, archiveFolder
+                    );
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
             } else if(menuItem.getTitle().equals("Un-archive")){
                 for(PuzMetaFile puzMeta : selected){
-                    fileHandler.moveTo(puzMeta, crosswordsFolder);
+                    fileHandler.moveTo(
+                        puzMeta, archiveFolder, crosswordsFolder
+                    );
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
@@ -281,9 +285,13 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     fileHandler.delete(puzMeta);
                 } else {
                     if (viewArchive) {
-                        fileHandler.moveTo(puzMeta, crosswordsFolder);
+                        fileHandler.moveTo(
+                            puzMeta, archiveFolder, crosswordsFolder
+                        );
                     } else {
-                        fileHandler.moveTo(puzMeta, archiveFolder);
+                        fileHandler.moveTo(
+                            puzMeta, crosswordsFolder, archiveFolder
+                        );
                     }
                 }
                 currentAdapter.onItemDismiss(viewHolder.getAdapterPosition());
@@ -392,46 +400,79 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @Override
     protected void onResume() {
         super.onResume();
-        if (this.currentAdapter == null) {
-            this.render();
-        } else {
-            if (lastOpenedPuzMeta != null) {
-                try {
-                    getFileHandler().reloadMeta(lastOpenedPuzMeta);
 
-                    CircleProgressBar bar = (CircleProgressBar) lastOpenedView.findViewById(R.id.puzzle_progress);
-
-                    if (lastOpenedPuzMeta.isUpdatable()) {
-                        bar.setPercentFilled(-1);
-                    } else {
-                        bar.setPercentFilled(lastOpenedPuzMeta.getFilled());
-                        bar.setComplete(lastOpenedPuzMeta.getComplete() == 100);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-
-
-        // A background update will commonly happen when the user turns on the preference for the
-        // first time, so check here to ensure the UI is re-rendered when they exit the settings
-        // dialog.
-        if (utils.checkBackgroundDownload(prefs, hasWritePermissions)) {
+        // A background update will commonly happen when the user turns
+        // on the preference for the first time, so check here to ensure
+        // the UI is re-rendered when they exit the settings dialog.
+        if (currentAdapter == null
+                || utils.checkBackgroundDownload(prefs, hasWritePermissions)) {
             render();
+        } else {
+            refreshLastAccessedPuzzle();
         }
 
-        this.checkDownload();
+        checkDownload();
     }
 
-    private SeparatedRecyclerViewAdapter<FileViewHolder> buildList(DirHandle directory, Accessor accessor) {
+    private void refreshLastAccessedPuzzle() {
+        final FileHandler fileHandler = getFileHandler();
+        final PuzHandle lastAccessed
+            = ForkyzApplication.getInstance().getPuzHandle();
+
+        if (lastAccessed == null)
+            return;
+
+        new Thread(new Runnable() {
+            public void run() {
+                for (SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>.IndexedSectionAdapter indexedSectionAdapter : currentAdapter.getIndexedSectionAdapters()) {
+                    int startPos = indexedSectionAdapter.getIndex();
+                    FileAdapter adapter
+                        = indexedSectionAdapter.getSectionAdapter();
+
+                    FileHandle lastAccessedPuzFile
+                        = lastAccessed.getPuzFileHandle();
+
+                    for (int pos = 0; pos < adapter.getItemCount(); pos++) {
+                        PuzMetaFile posMeta = adapter.getPuzMetaFile(pos);
+
+                        FileHandle posPuzFile
+                            = posMeta.getPuzHandle().getPuzFileHandle();
+
+                        if (posPuzFile.equals(lastAccessedPuzFile)) {
+                            final int updateSectionPos = pos;
+                            final int updateListPos = startPos + pos;
+                            PuzMetaFile newPuzMeta
+                                = fileHandler.loadPuzMetaFile(
+                                    lastAccessed
+                                );
+                            adapter.setPuzMetaFile(
+                                updateSectionPos, newPuzMeta
+                            );
+                            handler.post(new Runnable() {
+                                public void run() {
+                                    currentAdapter.notifyItemChanged(
+                                        updateListPos
+                                    );
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
+    buildList(DirHandle directory, Accessor accessor) {
+
         long incept = System.currentTimeMillis();
         FileHandler fileHandler = getFileHandler();
 
         if (!fileHandler.exists(directory)) {
-            showSDCardHelp();
-            return new SeparatedRecyclerViewAdapter<FileViewHolder>(
+            return new SeparatedRecyclerViewAdapter<
+                FileViewHolder, FileAdapter
+            >(
                 R.layout.puzzle_list_header,
                 FileViewHolder.class
             );
@@ -455,7 +496,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             e.printStackTrace();
         }
 
-        SeparatedRecyclerViewAdapter<FileViewHolder> adapter
+        SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter> adapter
             = new SeparatedRecyclerViewAdapter<>(
                 R.layout.puzzle_list_header,
                 FileViewHolder.class
@@ -546,7 +587,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
 
         for (PuzMetaFile pm : toArchive) {
-            fileHandler.moveTo(pm, this.archiveFolder);
+            fileHandler.moveTo(pm, this.crosswordsFolder, this.archiveFolder);
         }
 
         render();
@@ -609,17 +650,12 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         final FileHandler fileHandler = getFileHandler();
         final DirHandle directory = viewArchive ? BrowseActivity.this.archiveFolder : BrowseActivity.this.crosswordsFolder;
-        //Only spawn a thread if there are a lot of puzzles.
-        // Using SDK rev as a proxy to decide whether you have a slow processor or not.
 
         boolean dirExists = fileHandler.exists(directory);
-        int numFiles = fileHandler.numFiles(directory);
-        int minFilesForThread
-            = (android.os.Build.VERSION.SDK_INT >= 5) ? 500 : 160;
 
-        if (dirExists && numFiles > minFilesForThread) {
+        if (dirExists) {
             final View progressBar
-                = BrowseActivity.this.findViewById( R.id.please_wait_notice);
+                = BrowseActivity.this.findViewById(R.id.please_wait_notice);
             progressBar.setVisibility(View.VISIBLE);
 
             Runnable r = new Runnable() {
@@ -660,17 +696,22 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    lastOpenedView = v;
-                    lastOpenedPuzMeta= ((PuzMetaFile) v.getTag());
-                    if (lastOpenedPuzMeta == null) {
+                    PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
+                    if (selectedPuzMeta == null) {
                         return;
                     }
+
+                    FileHandler fileHandler
+                        = BrowseActivity.this.getFileHandler();
+
                     Intent i = new Intent(
-                        Intent.ACTION_EDIT,
-                        lastOpenedPuzMeta.getUri(),
-                        BrowseActivity.this,
-                        PlayActivity.class
+                        BrowseActivity.this, PlayActivity.class
                     );
+
+                    ForkyzApplication.getInstance().setBoard(
+                        null, selectedPuzMeta.getPuzHandle()
+                    );
+
                     startActivity(i);
                 }
             }, 450);
@@ -723,6 +764,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         public FileAdapter(ArrayList<PuzMetaFile> objects) {
             this.objects = objects;
+        }
+
+        public PuzMetaFile getPuzMetaFile(int index) {
+            return objects.get(index);
+        }
+
+        public void setPuzMetaFile(int index, PuzMetaFile puzMeta) {
+            objects.set(index, puzMeta);
         }
 
         @Override

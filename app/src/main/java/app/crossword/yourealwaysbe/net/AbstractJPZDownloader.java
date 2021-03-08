@@ -36,9 +36,13 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             = ForkyzApplication.getInstance().getFileHandler();
         DownloadResult jpzResult = download(date, urlSuffix, headers, false);
         FileHandle jpzFile = jpzResult.getFileHandle();
-        FileHandle puzFile = fileHandler.getFileHandle(
+
+        FileHandle puzFile = fileHandler.createFileHandle(
             downloadDirectory, this.createFileName(date)
         );
+        if (puzFile == null)
+            return null;
+
         try (
             InputStream is = fileHandler.getInputStream(jpzFile);
             DataOutputStream dos
@@ -72,27 +76,29 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             URL url = new URL(this.baseUrl + urlSuffix);
             LOG.info("Downloading from "+url);
 
-            FileHandle f = fileHandler.getFileHandle(
+            FileHandle f = fileHandler.createFileHandle(
                 downloadDirectory, this.createFileName(date)+".jpz"
             );
+            if (f == null)
+                return null;
+
             PuzzleMeta meta = new PuzzleMeta();
             meta.date = date;
             meta.source = getName();
             meta.sourceUrl = url.toString();
             meta.updatable = false;
 
-            utils.storeMetas(fileHandler.getUri(f), meta);
-            if( canDefer ){
-                if (utils.downloadFile(url, f, headers, true, this.getName())) {
-                    DownloadReceiver.metas.remove(fileHandler.getUri(f));
+            Uri fileUri = fileHandler.getUri(f);
+            utils.storeMetas(fileHandler.getUri(f), meta, downloadDirectory);
 
-                    return new Downloader.DownloadResult(f);
-                } else {
-                    return Downloader.DownloadResult.DEFERRED_FILE;
-                }
-            } else {
-                AndroidVersionUtils.Factory.getInstance().downloadFile(url, f, headers, true, this.getName());
+            if (utils.downloadFile(url, f, headers, true, this.getName())) {
+                utils.removeMetas(fileHandler.getUri(f));
                 return new Downloader.DownloadResult(f);
+            } else if (canDefer) {
+                return Downloader.DownloadResult.DEFERRED_FILE;
+            } else {
+                utils.removeMetas(fileUri);
+                return null;
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDate;
+import java.util.Set;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -18,10 +19,11 @@ import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
 import android.widget.Toast;
 
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.net.Downloaders;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
+import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
@@ -89,21 +91,29 @@ public class PuzzleDownloadListener implements DownloadListener {
             fileName = fileName + ".puz";
         }
 
+        Set<String> existingFiles
+            = fileHandler.getFileNames(crosswordFolder, archiveFolder);
+
+        if (existingFiles.contains(fileName)) {
+            sendMessage(
+                mContext.getString(R.string.puzzle_already_exists, fileName)
+            );
+            return;
+        }
+
         FileHandle outputFile
-            = fileHandler.getFileHandle(crosswordFolder, fileName);
-        FileHandle archiveOutputFile
-            = fileHandler.getFileHandle(archiveFolder, fileName);
+            = fileHandler.createFileHandle(crosswordFolder, fileName);
+
+        if (outputFile == null) {
+            sendMessage(
+                mContext.getString(R.string.error_downloading_puzzle, fileName)
+            );
+            return;
+        }
 
         try (
             InputStream in = OpenHttpConnection(new URL(url), cookies)
         ) {
-            if (fileHandler.exists(outputFile)
-                    || fileHandler.exists(archiveOutputFile)) {
-                sendMessage("Puzzle " + fileName + " already exists.");
-
-                return;
-            }
-
             try (OutputStream fout = fileHandler.getOutputStream(outputFile);) {
                 byte[] buffer = new byte[1024];
                 int len = 0;
@@ -117,17 +127,24 @@ public class PuzzleDownloadListener implements DownloadListener {
             meta.date = LocalDate.now();
 
             boolean processed
-                = Downloaders.processDownloadedPuzzle(outputFile, meta);
+                = Downloaders.processDownloadedPuzzle(
+                    crosswordFolder, outputFile, meta
+                );
 
             if (processed) {
-                sendMessage(
-                    "Puzzle " + fileName + " downloaded successfully."
-                );
+                sendMessage(mContext.getString(
+                    R.string.puzzle_downloaded_successfully,
+                    fileName
+                ));
             } else {
-                sendMessage("Error parsing puzzle " + fileName);
+                sendMessage(
+                    mContext.getString(R.string.error_parsing_puzzle, fileName)
+                );
             }
         } catch (Exception ex) {
-            sendMessage("Error downloading puzzle " + fileName);
+            sendMessage(
+                mContext.getString(R.string.error_downloading_puzzle, fileName)
+            );
         }
     }
 

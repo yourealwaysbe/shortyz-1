@@ -24,21 +24,24 @@ import app.crossword.yourealwaysbe.versions.DefaultUtil;
 
 public abstract class AbstractDownloader implements Downloader {
     protected static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
-    public static final DirHandle DOWNLOAD_DIR
-        = ForkyzApplication
+    public static final DirHandle getStandardDownloadDir() {
+        return ForkyzApplication
             .getInstance()
             .getFileHandler()
             .getCrosswordsDirectory();
-    public static final DirHandle ARCHIVE_DIR
-        = ForkyzApplication
+    }
+    public static final DirHandle getStandardArchiveDir() {
+        return ForkyzApplication
             .getInstance()
             .getFileHandler()
             .getArchiveDirectory();
+    }
 
     protected static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
     protected DirHandle downloadDirectory;
     protected String baseUrl;
-    protected final AndroidVersionUtils utils = AndroidVersionUtils.Factory.getInstance();
+    protected final AndroidVersionUtils utils
+        = AndroidVersionUtils.Factory.getInstance();
     private String downloaderName;
     protected DirHandle tempFolder;
     protected LocalDate goodThrough = LocalDate.now();
@@ -53,7 +56,12 @@ public abstract class AbstractDownloader implements Downloader {
             = ForkyzApplication
                 .getInstance()
                 .getFileHandler()
-                .getTempDirectory(downloadDirectory);
+                .getTempDirectory();
+    }
+
+    @Override
+    public DirHandle getDownloadDir() {
+        return downloadDirectory;
     }
 
     public void setContext(Context ctx) {
@@ -84,7 +92,6 @@ public abstract class AbstractDownloader implements Downloader {
         String urlSuffix,
         Map<String, String> headers
     ){
-        System.out.println("DL From ASD");
         return download(date, urlSuffix, headers, true);
     }
 
@@ -100,9 +107,12 @@ public abstract class AbstractDownloader implements Downloader {
             URL url = new URL(this.baseUrl + urlSuffix);
             System.out.println(url);
 
-            FileHandle f = fileHandler.getFileHandle(
+            FileHandle f = fileHandler.createFileHandle(
                 downloadDirectory, this.createFileName(date)
             );
+            if (f == null)
+                return null;
+
             PuzzleMeta meta = new PuzzleMeta();
             meta.date = date;
             meta.source = getName();
@@ -110,18 +120,16 @@ public abstract class AbstractDownloader implements Downloader {
             meta.updatable = false;
 
             Uri fileUri = fileHandler.getUri(f);
-            utils.storeMetas(fileUri, meta);
-            if( canDefer ){
-                if (utils.downloadFile(url, f, headers, true, this.getName())) {
-                    DownloadReceiver.metas.remove(fileUri);
+            utils.storeMetas(fileUri, meta, downloadDirectory);
 
-                    return new Downloader.DownloadResult(f);
-                } else {
-                    return Downloader.DownloadResult.DEFERRED_FILE;
-                }
-            } else {
-                AndroidVersionUtils.Factory.getInstance().downloadFile(url, f, headers, true, this.getName());
+            if (utils.downloadFile(url, f, headers, true, this.getName())) {
+                utils.removeMetas(fileUri);
                 return new Downloader.DownloadResult(f);
+            } else if (canDefer) {
+                return Downloader.DownloadResult.DEFERRED_FILE;
+            } else {
+                utils.removeMetas(fileUri);
+                return null;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -140,19 +148,21 @@ public abstract class AbstractDownloader implements Downloader {
     protected FileHandle downloadToTempFile(String fullName, LocalDate date) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
-        FileHandle downloaded = fileHandler.getFileHandle(
+        FileHandle downloaded = fileHandler.createFileHandle(
             tempFolder,
             "txt-tmp"+System.currentTimeMillis()+".txt"
         );
 
-        try {
-            URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
-            LOG.log(Level.INFO, fullName +" "+url.toExternalForm());
-            AndroidVersionUtils.Factory.getInstance().downloadFile(url, downloaded, EMPTY_MAP, false, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fileHandler.delete(downloaded);
-            downloaded = null;
+        if (downloaded != null) {
+            try {
+                URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
+                LOG.log(Level.INFO, fullName +" "+url.toExternalForm());
+                utils.downloadFile(url, downloaded, EMPTY_MAP, false, null);
+            } catch (Exception e) {
+                e.printStackTrace();
+                fileHandler.delete(downloaded);
+                downloaded = null;
+            }
         }
 
         if (downloaded == null) {

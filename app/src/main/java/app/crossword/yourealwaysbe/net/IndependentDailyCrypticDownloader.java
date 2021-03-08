@@ -34,7 +34,11 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
     private static final String NAME = "The Independent's Cryptic Crossword";
 
     public IndependentDailyCrypticDownloader() {
-        super("https://ams.cdn.arkadiumhosted.com/assets/gamesfeed/independent/daily-crossword/", DOWNLOAD_DIR, NAME);
+        super(
+            "https://ams.cdn.arkadiumhosted.com/assets/gamesfeed/independent/daily-crossword/",
+            getStandardDownloadDir(),
+            NAME
+        );
     }
 
     public DayOfWeek[] getDownloadDates() {
@@ -66,9 +70,13 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        FileHandle f = fileHandler.getFileHandle(
-            downloadDirectory, this.createFileName(date)
+        String fileName = this.createFileName(date);
+
+        FileHandle f = fileHandler.createFileHandle(
+            this.downloadDirectory, this.createFileName(date)
         );
+        if (f == null)
+            return null;
 
         try (
             InputStream is = url.openStream();
@@ -82,15 +90,9 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
 
             if (!retVal) {
                 LOG.log(Level.SEVERE,
-                        "Unable to convert uclick XML puzzle into Across Lite format.");
+                        "Unable to convert Independent XML puzzle into Across Lite format.");
             } else {
-                PuzzleMeta meta = new PuzzleMeta();
-                meta.date = date;
-                meta.source = getName();
-                meta.sourceUrl = url.toString();
-                meta.updatable = true;
-
-                utils.storeMetas(fileHandler.getUri(f), meta);
+                return new Downloader.DownloadResult(f);
             }
         } catch (IOException ioe) {
             LOG.log(Level.SEVERE, "Exception converting Independent XML puzzle into Across Lite format.", ioe);

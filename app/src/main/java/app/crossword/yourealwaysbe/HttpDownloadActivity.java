@@ -22,6 +22,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
@@ -105,12 +106,6 @@ public class HttpDownloadActivity extends ForkyzActivity {
 
     private void initializeDownload() {
         FileHandler fileHandler = getFileHandler();
-        if (!fileHandler.isStorageMounted() || fileHandler.isStorageFull()) {
-            showSDCardHelp();
-            finish();
-
-            return;
-        }
 
         Uri u = this.getIntent()
                     .getData();
@@ -131,14 +126,22 @@ public class HttpDownloadActivity extends ForkyzActivity {
             }
 
             InputStream is = response.body().byteStream();
-            FileHandle puzFile = fileHandler.getFileHandle(
+            FileHandle puzFile = fileHandler.createFileHandle(
                 crosswordsFolder, filename
             );
 
+            if (puzFile == null) {
+                Toast t = Toast.makeText(
+                    this,
+                    getString(R.string.unable_to_download_from, u.toString()),
+                    Toast.LENGTH_LONG
+                );
+                t.show();
+                finish();
+            }
+
             try (
-                OutputStream fos = fileHandler.getOutputStream(
-                    fileHandler.getFileHandle(crosswordsFolder, filename)
-                )
+                OutputStream fos = fileHandler.getOutputStream(puzFile)
             ) {
                 copyStream(is, fos);
             }
@@ -152,11 +155,13 @@ public class HttpDownloadActivity extends ForkyzActivity {
             this.startActivity(i);
         } catch (Exception e) {
             e.printStackTrace();
-
-            Toast t = Toast.makeText(this, "Unable to download from\n" + u.toString(), Toast.LENGTH_LONG);
+            Toast t = Toast.makeText(
+                this,
+                getString(R.string.unable_to_download_from, u.toString()),
+                Toast.LENGTH_LONG
+            );
             t.show();
         }
-
         finish();
     }
 }
