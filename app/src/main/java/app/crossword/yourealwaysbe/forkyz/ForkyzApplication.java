@@ -121,6 +121,7 @@ public class ForkyzApplication extends Application {
         // Initialize credentials and service object.
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
+        initialiseSettings();
         setFileHander();
 
         settings.registerOnSharedPreferenceChangeListener(prefChangeListener);
@@ -227,6 +228,25 @@ public class ForkyzApplication extends Application {
                 Toast.LENGTH_LONG
             );
             t.show();
+        }
+    }
+
+    /**
+     * Makes sure any settings needed are there
+     *
+     * In particular, storage location is set up before any change listeners
+     * are set. Otherwise they will be called the first time the user goes to
+     * the settings screen.
+     */
+    private void initialiseSettings() {
+        String storageLoc = settings.getString(STORAGE_LOC_PREF, null);
+
+        if (storageLoc == null) {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(
+                STORAGE_LOC_PREF, getString(R.string.internal_storage)
+            );
+            editor.apply();
         }
     }
 }
