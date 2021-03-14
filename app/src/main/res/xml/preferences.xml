@@ -53,7 +53,7 @@
 
         <androidx.preference.CheckBoxPreference
             android:title="@string/automatic_download"
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:summary="@string/automatic_download_desc"
             android:key="dlOnStartup"
         />
