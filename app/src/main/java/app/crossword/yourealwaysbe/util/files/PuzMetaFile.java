@@ -1,7 +1,6 @@
 
 package app.crossword.yourealwaysbe.util.files;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;

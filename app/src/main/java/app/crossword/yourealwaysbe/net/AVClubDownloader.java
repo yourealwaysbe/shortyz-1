@@ -2,7 +2,6 @@ package app.crossword.yourealwaysbe.net;
 
 import app.crossword.yourealwaysbe.io.IO;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;

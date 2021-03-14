@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 

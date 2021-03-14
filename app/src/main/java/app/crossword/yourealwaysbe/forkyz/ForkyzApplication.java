@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
@@ -24,16 +25,9 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import okhttp3.CookieJar;
 
@@ -190,11 +184,21 @@ public class ForkyzApplication extends Application {
 
     public boolean isInternalStorage() {
         String internalStorage = getString(R.string.internal_storage);
-
         String locPref
             = settings.getString(STORAGE_LOC_PREF, internalStorage);
-
         return locPref.equals(internalStorage);
+    }
+
+    public boolean isSAFSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    public boolean isLegacyStorage() {
+        String internalStorage = getString(R.string.internal_storage);
+        String legacyStorage = getString(R.string.external_storage_legacy);
+        String locPref
+            = settings.getString(STORAGE_LOC_PREF, internalStorage);
+        return locPref.equals(legacyStorage);
     }
 
     private void setFileHander() {
