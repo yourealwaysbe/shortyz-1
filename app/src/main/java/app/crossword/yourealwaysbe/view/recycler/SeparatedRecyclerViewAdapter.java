@@ -120,6 +120,14 @@ public class SeparatedRecyclerViewAdapter<
         return count;
     }
 
+    public boolean isEmpty() {
+        for (SectionAdapter section : sections.values()) {
+            if (section.getItemCount() > 0)
+                return false;
+        }
+        return true;
+    }
+
     @Override
     public int getItemViewType(int position) {
         int sectionPosition = 0;

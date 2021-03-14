@@ -1,6 +1,7 @@
 <resources>
     <!-- inherit from the material theme -->
     <style name="Theme.Forkyz" parent="Base.Theme.AppCompat">
+        <item name="android:textColor">@color/textColorPrimary</item>
         <item name="android:textColorPrimary">@color/textColorPrimary</item>
         <item name="android:textColorSecondary">@color/textColorSecondary</item>
         <item name="colorPrimary">@color/primary</item>

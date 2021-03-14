@@ -660,10 +660,13 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             Runnable r = new Runnable() {
                 public void run() {
-                    currentAdapter = BrowseActivity.this.buildList(directory, BrowseActivity.this.accessor);
+                    SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
+                        adapter = BrowseActivity.this.buildList(
+                            directory, BrowseActivity.this.accessor
+                        );
                     BrowseActivity.this.handler.post(new Runnable() {
                         public void run() {
-                            BrowseActivity.this.puzzleList.setAdapter(currentAdapter);
+                            BrowseActivity.this.setPuzzleListAdapter(adapter);
                             progressBar.setVisibility(View.GONE);
                         }
                     });
@@ -672,7 +675,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             new Thread(r).start();
         } else {
-            this.puzzleList.setAdapter(currentAdapter = this.buildList(directory, accessor));
+            setPuzzleListAdapter(this.buildList(directory, accessor));
         }
     }
 
@@ -744,6 +747,28 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
         if (selected.isEmpty()) {
             actionMode.finish();
+        }
+    }
+
+    private void setPuzzleListAdapter(
+        SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter> adapter
+    ) {
+        currentAdapter = adapter;
+        puzzleList.setAdapter(adapter);
+
+        TextView emptyMsg = findViewById(R.id.empty_listing_msg);
+
+        if (adapter.isEmpty()) {
+            if (viewArchive) {
+                emptyMsg.setText(R.string.no_puzzles);
+            } else {
+                emptyMsg.setText(
+                    R.string.no_puzzles_download_or_configure_storage
+                );
+            }
+            emptyMsg.setVisibility(View.VISIBLE);
+        } else {
+            emptyMsg.setVisibility(View.GONE);
         }
     }
 
