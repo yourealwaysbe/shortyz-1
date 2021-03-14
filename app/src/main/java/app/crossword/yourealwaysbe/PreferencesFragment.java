@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultCallback;
@@ -53,7 +54,7 @@ public class PreferencesFragment
                 }
             );
 
-        setExternalSAFURIDisplayValue();
+        setStorageOptions();
 
         if (!AndroidVersionUtils.Factory.getInstance().isBackgroundDownloadAvaliable()) {
             Preference backgroundDownload = findPreference("backgroundDownload");
@@ -90,7 +91,7 @@ public class PreferencesFragment
                 .getDefaultSharedPreferences(getActivity().getApplicationContext())
                 .registerOnSharedPreferenceChangeListener(this);
 
-        setExternalSAFURIDisplayValue();
+        setStorageOptions();
 
         super.onResume();
     }
@@ -176,7 +177,7 @@ public class PreferencesFragment
             );
             editor.apply();
 
-            setExternalSAFURIDisplayValue();
+            setStorageOptions();
         } else {
             Toast t = Toast.makeText(
                 getActivity(),
@@ -187,34 +188,41 @@ public class PreferencesFragment
         }
     }
 
-    private void setExternalSAFURIDisplayValue() {
-        SharedPreferences prefs
-            = PreferenceManager .getDefaultSharedPreferences(
-                getActivity().getApplicationContext()
-            );
+    private void setStorageOptions() {
+        CharSequence[] entries = new CharSequence[2];
+        CharSequence[] values = new CharSequence[2];
 
-        String storageLocationSAFURI
-            = prefs.getString(
-                FileHandlerSAF.SAF_ROOT_URI_PREF,
-                getString(R.string.external_storage_saf_none_selected)
-            );
+        entries[0] = getString(R.string.internal_storage);
+        values[0] = entries[0];
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            SharedPreferences prefs
+                = PreferenceManager .getDefaultSharedPreferences(
+                    getActivity().getApplicationContext()
+                );
+
+            String storageLocationSAFURI
+                = prefs.getString(
+                    FileHandlerSAF.SAF_ROOT_URI_PREF,
+                    getString(R.string.external_storage_saf_none_selected)
+                );
+
+            entries[1] =
+                getString(R.string.external_storage_saf) + " "
+                    + getString(
+                        R.string.external_storage_saf_current_uri,
+                        storageLocationSAFURI
+                    );
+            values[1] = getString(R.string.external_storage_saf);
+        } else {
+            entries[1] = getString(R.string.external_storage_legacy);
+            values[1] = entries[1];
+        }
 
         ListPreference storageOptions
             = findPreference(ForkyzApplication.STORAGE_LOC_PREF);
 
-        CharSequence[] entries = storageOptions.getEntries();
-        int index
-            = storageOptions.findIndexOfValue(getString(
-                R.string.external_storage_saf
-            ));
-
-        entries[index] =
-            getString(R.string.external_storage_saf) + " "
-                + getString(
-                    R.string.external_storage_saf_current_uri,
-                    storageLocationSAFURI
-                );
-
         storageOptions.setEntries(entries);
+        storageOptions.setEntryValues(values);
     }
 }
