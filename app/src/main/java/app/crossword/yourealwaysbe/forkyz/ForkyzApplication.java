@@ -187,6 +187,15 @@ public class ForkyzApplication extends Application {
         return INSTANCE;
     }
 
+    public boolean isInternalStorage() {
+        String internalStorage = getString(R.string.internal_storage);
+
+        String locPref
+            = settings.getString(STORAGE_LOC_PREF, internalStorage);
+
+        return locPref.equals(internalStorage);
+    }
+
     private void setFileHander() {
         String locPref
             = settings.getString(

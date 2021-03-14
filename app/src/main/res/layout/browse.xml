@@ -24,6 +24,17 @@
             android:padding="30sp"
         />
 
+        <TextView
+            android:id="@+id/internal_storage_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/internal_storage_description"
+            android:visibility="gone"
+            android:textSize="15sp"
+            android:padding="30sp"
+        />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/puzzleList"
             android:layout_width="fill_parent"

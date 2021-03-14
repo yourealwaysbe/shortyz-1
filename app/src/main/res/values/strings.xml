@@ -37,6 +37,7 @@
     <string name="puzzle_downloaded_successfully">Puzzle %1$s downloaded successfully</string>
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below, or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
+    <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
 
     <!-- preferences -->
     <string name="storage_location">Storage Location</string>

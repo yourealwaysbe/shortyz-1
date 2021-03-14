@@ -757,6 +757,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         puzzleList.setAdapter(adapter);
 
         TextView emptyMsg = findViewById(R.id.empty_listing_msg);
+        TextView storageMsg = findViewById(R.id.internal_storage_msg);
 
         if (adapter.isEmpty()) {
             if (viewArchive) {
@@ -767,8 +768,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 );
             }
             emptyMsg.setVisibility(View.VISIBLE);
+
+            if (ForkyzApplication.getInstance().isInternalStorage())
+                storageMsg.setVisibility(View.VISIBLE);
+            else
+                storageMsg.setVisibility(View.GONE);
         } else {
             emptyMsg.setVisibility(View.GONE);
+            storageMsg.setVisibility(View.GONE);
         }
     }
 
