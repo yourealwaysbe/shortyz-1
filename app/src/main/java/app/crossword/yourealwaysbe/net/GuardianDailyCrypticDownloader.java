@@ -81,7 +81,7 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             String fileName = createFileName(date);
 
             FileHandle f = fileHandler.createFileHandle(
-                downloadDirectory, fileName
+                downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
             );
             if (f == null)
                 return null;

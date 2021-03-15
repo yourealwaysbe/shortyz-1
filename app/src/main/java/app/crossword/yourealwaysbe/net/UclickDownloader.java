@@ -64,7 +64,9 @@ public class UclickDownloader extends AbstractDownloader {
         String fileName = this.createFileName(date);
 
         FileHandle downloadTo = fileHandler.createFileHandle(
-            this.downloadDirectory, this.createFileName(date)
+            this.downloadDirectory,
+            this.createFileName(date),
+            FileHandler.MIME_TYPE_PUZ
         );
         if (downloadTo == null)
             return null;
@@ -117,7 +119,8 @@ public class UclickDownloader extends AbstractDownloader {
         try {
             FileHandle tmpFile = fileHandler.createFileHandle(
                 this.tempFolder,
-                "uclick-temp"+System.currentTimeMillis()+".xml"
+                "uclick-temp"+System.currentTimeMillis()+".xml",
+                FileHandler.MIME_TYPE_GENERIC_XML
             );
             if (tmpFile == null) {
                 LOG.log(Level.SEVERE, "Unable to download uclick XML file.");

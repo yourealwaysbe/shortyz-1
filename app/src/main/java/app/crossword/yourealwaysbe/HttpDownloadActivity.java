@@ -127,7 +127,7 @@ public class HttpDownloadActivity extends ForkyzActivity {
 
             InputStream is = response.body().byteStream();
             FileHandle puzFile = fileHandler.createFileHandle(
-                crosswordsFolder, filename
+                crosswordsFolder, filename, FileHandler.MIME_TYPE_PUZ
             );
 
             if (puzFile == null) {

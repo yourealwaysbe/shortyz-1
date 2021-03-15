@@ -66,7 +66,9 @@ public class AVClubDownloader extends AbstractDownloader {
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 FileHandle f = fileHandler.createFileHandle(
-                    downloadDirectory, this.createFileName(date)
+                    downloadDirectory,
+                    this.createFileName(date),
+                    FileHandler.MIME_TYPE_PUZ
                 );
                 if (f == null)
                     return null;

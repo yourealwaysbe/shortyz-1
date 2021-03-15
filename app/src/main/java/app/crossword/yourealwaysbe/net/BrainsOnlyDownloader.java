@@ -49,7 +49,7 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
         String fileName = this.createFileName(date);
 
         FileHandle downloadTo = fileHandler.createFileHandle(
-            this.downloadDirectory, fileName
+            this.downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
         );
         if (downloadTo == null)
             return null;

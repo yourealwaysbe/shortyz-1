@@ -277,11 +277,10 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public FileHandle createFileHandle(DirHandle dir, String fileName) {
+    public FileHandle createFileHandle(
+        DirHandle dir, String fileName, String mimeType
+    ) {
         try {
-            String mimeType = "application/octet-stream";
-            if (fileName.endsWith(".puz"))
-                mimeType = "application/x-crossword";
             Uri uri = DocumentsContract.createDocument(
                 context.getContentResolver(), dir.getUri(), mimeType, fileName
             );

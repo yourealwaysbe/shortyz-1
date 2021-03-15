@@ -101,8 +101,9 @@ public class PuzzleDownloadListener implements DownloadListener {
             return;
         }
 
-        FileHandle outputFile
-            = fileHandler.createFileHandle(crosswordFolder, fileName);
+        FileHandle outputFile = fileHandler.createFileHandle(
+            crosswordFolder, fileName, FileHandler.MIME_TYPE_PUZ
+        );
 
         if (outputFile == null) {
             sendMessage(

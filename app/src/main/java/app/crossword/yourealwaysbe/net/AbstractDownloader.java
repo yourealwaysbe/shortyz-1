@@ -105,7 +105,9 @@ public abstract class AbstractDownloader implements Downloader {
             System.out.println(url);
 
             FileHandle f = fileHandler.createFileHandle(
-                downloadDirectory, this.createFileName(date)
+                downloadDirectory,
+                this.createFileName(date),
+                FileHandler.MIME_TYPE_PUZ
             );
             if (f == null)
                 return null;
@@ -147,7 +149,8 @@ public abstract class AbstractDownloader implements Downloader {
             = ForkyzApplication.getInstance().getFileHandler();
         FileHandle downloaded = fileHandler.createFileHandle(
             tempFolder,
-            "txt-tmp"+System.currentTimeMillis()+".txt"
+            "txt-tmp"+System.currentTimeMillis()+".txt",
+            FileHandler.MIME_TYPE_PLAIN_TEXT
         );
 
         if (downloaded != null) {

@@ -60,7 +60,9 @@ public class KFSDownloader extends AbstractDownloader {
         String fileName = this.createFileName(date);
 
         FileHandle downloadTo = fileHandler.createFileHandle(
-            this.downloadDirectory, this.createFileName(date)
+            this.downloadDirectory,
+            this.createFileName(date),
+            FileHandler.MIME_TYPE_PUZ
         );
         if (downloadTo == null)
             return null;

@@ -73,7 +73,9 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         String fileName = this.createFileName(date);
 
         FileHandle f = fileHandler.createFileHandle(
-            this.downloadDirectory, this.createFileName(date)
+            this.downloadDirectory,
+            this.createFileName(date),
+            FileHandler.MIME_TYPE_PUZ
         );
         if (f == null)
             return null;

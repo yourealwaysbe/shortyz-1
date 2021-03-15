@@ -28,6 +28,12 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
  * Implementations provided for different file backends
  */
 public abstract class FileHandler {
+    public static final String MIME_TYPE_PUZ = "application/x-crossword";
+    public static final String MIME_TYPE_META = "application/octet-stream";
+    public static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
+    public static final String MIME_TYPE_GENERIC = "application/octet-stream";
+    public static final String MIME_TYPE_GENERIC_XML = "text/xml";
+
     public abstract DirHandle getCrosswordsDirectory();
     public abstract DirHandle getArchiveDirectory();
     public abstract DirHandle getTempDirectory();
@@ -53,7 +59,9 @@ public abstract class FileHandler {
      * Return null if could not be created. E.g. if the file already
      * exists.
      */
-    public abstract FileHandle createFileHandle(DirHandle dir, String fileName);
+    public abstract FileHandle createFileHandle(
+        DirHandle dir, String fileName, String mimeType
+    );
 
     /**
      * Move from srcDir to destDir
@@ -246,7 +254,9 @@ public abstract class FileHandler {
 
         if (metaFile == null) {
             String metaName = getMetaFileName(puzFile);
-            metaFile = createFileHandle(puzHandle.getDirHandle(), metaName);
+            metaFile = createFileHandle(
+                puzHandle.getDirHandle(), metaName, MIME_TYPE_META
+            );
             if (metaFile == null)
                 throw new IOException("Could not create meta file");
         }

@@ -36,7 +36,9 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         FileHandle jpzFile = jpzResult.getFileHandle();
 
         FileHandle puzFile = fileHandler.createFileHandle(
-            downloadDirectory, this.createFileName(date)
+            downloadDirectory,
+            this.createFileName(date),
+            FileHandler.MIME_TYPE_PUZ
         );
         if (puzFile == null)
             return null;
@@ -75,7 +77,9 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             LOG.info("Downloading from "+url);
 
             FileHandle f = fileHandler.createFileHandle(
-                downloadDirectory, this.createFileName(date)+".jpz"
+                downloadDirectory,
+                this.createFileName(date)+".jpz",
+                FileHandler.MIME_TYPE_GENERIC
             );
             if (f == null)
                 return null;

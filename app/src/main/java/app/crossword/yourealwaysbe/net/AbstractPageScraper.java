@@ -50,7 +50,9 @@ public class AbstractPageScraper {
         URL u = new URL(url);
 
         FileHandle output = fileHandler.createFileHandle(
-            AbstractDownloader.getStandardDownloadDir(), fileName
+            AbstractDownloader.getStandardDownloadDir(),
+            fileName,
+            FileHandler.MIME_TYPE_PUZ
         );
         if (output == null)
             return null;
