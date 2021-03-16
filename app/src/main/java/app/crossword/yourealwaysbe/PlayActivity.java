@@ -693,8 +693,7 @@ public class PlayActivity extends PuzzleActivity
             showInfoDialog();
             return true;
         case R.id.play_menu_clues:
-            Intent clueIntent = new Intent(PlayActivity.this, ClueListActivity.class);
-            PlayActivity.this.startActivityForResult(clueIntent, 0);
+            PlayActivity.this.launchClueList();
             return true;
         case R.id.play_menu_notes:
             launchNotes();
@@ -1003,12 +1002,12 @@ public class PlayActivity extends PuzzleActivity
 
     private void launchNotes() {
         Intent i = new Intent(this, NotesActivity.class);
-        this.startActivityForResult(i, 0);
+        this.startActivity(i);
     }
 
     private void launchClueList() {
         Intent i = new Intent(this, ClueListActivity.class);
-        PlayActivity.this.startActivityForResult(i, 0);
+        PlayActivity.this.startActivity(i);
     }
 
     /**

@@ -93,14 +93,6 @@ public class DownloadPickerDialogBuilder {
                 }
             };
 
-        layout.findViewById(R.id.browse).setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Intent i = new Intent();
-                    i.setClass(mActivity, WebBrowserActivity.class);
-                    mActivity.startActivityForResult(i, 0);
-                }
-            });
-
         AlertDialog.Builder builder
             = new AlertDialog.Builder(mActivity)
                 .setPositiveButton("Download", clickHandler)

@@ -336,6 +336,6 @@ public class ClueListActivity extends PuzzleActivity
 
     private void launchNotes() {
         Intent i = new Intent(this, NotesActivity.class);
-        ClueListActivity.this.startActivityForResult(i, 0);
+        ClueListActivity.this.startActivity(i);
     }
 }
