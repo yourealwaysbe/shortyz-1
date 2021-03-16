@@ -41,15 +41,8 @@
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory
-        android:title="@string/application_settings"
+        android:title="@string/download_settings"
     >
-
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/fit_screen_start"
-            android:defaultValue="false"
-            android:summary="@string/fit_screen_start_desc"
-            android:key="fitToScreen"
-        />
 
         <androidx.preference.CheckBoxPreference
             android:title="@string/automatic_download"
@@ -80,13 +73,11 @@
             android:key="supressMessages"
         />
 
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/no_hint_highlighting"
-            android:defaultValue="false"
-            android:summary="@string/no_hint_highlighting_desc"
-            android:key="supressHints"
-        />
+    </androidx.preference.PreferenceCategory>
 
+    <androidx.preference.PreferenceCategory
+        android:title="@string/browser_settings"
+    >
         <androidx.preference.CheckBoxPreference
             android:title="@string/delete_on_cleanup"
             android:defaultValue="false"
@@ -98,7 +89,7 @@
             android:title="@string/cleanup_unfinished"
             android:summary="@string/cleanup_unfinished_desc"
             android:key="cleanupAge"
-            android:defaultValue="2"
+            android:defaultValue="-1"
             android:entries="@array/cleanupAgeLabels"
             android:entryValues="@array/cleanupAgeValues"
         />
@@ -112,6 +103,28 @@
             android:entryValues="@array/cleanupAgeValues"
         />
 
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/disable_swipe"
+            android:defaultValue="false"
+            android:summary="@string/disable_swipe_desc"
+            android:key="disableSwipe"
+        />
+
+        <androidx.preference.ListPreference
+            android:title="@string/swipe_action"
+            android:summary="@string/swipe_action_desc"
+            android:key="swipeAction"
+            android:defaultValue="ARCHIVE"
+            android:entries="@array/swipeActionLabels"
+            android:entryValues="@array/swipeActionValues"
+        />
+
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/interaction_settings"
+    >
+
         <androidx.preference.ListPreference
             android:title="@string/keyboard_showhide"
             android:summary="@string/keyboard_showhide_desc"
@@ -123,16 +136,9 @@
 
         <androidx.preference.CheckBoxPreference
             android:title="@string/snap_current"
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:summary="@string/snap_current_desc"
             android:key="ensureVisible"
-        />
-
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/show_length"
-            android:defaultValue="false"
-            android:summary="@string/show_length_desc"
-            android:key="showCount"
         />
 
         <androidx.preference.CheckBoxPreference
@@ -159,22 +165,15 @@
         />
 
         <androidx.preference.CheckBoxPreference
-            android:title="@string/preserve_correct"
-            android:defaultValue="false"
-            android:summary="@string/preserve_correct_desc"
-            android:key="preserveCorrectLettersInShowErrors"
-        />
-
-        <androidx.preference.CheckBoxPreference
             android:title="@string/space_change_dir"
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:summary="@string/space_change_dir_desc"
             android:key="spaceChangesDirection"
         />
 
         <androidx.preference.CheckBoxPreference
             android:title="@string/enter_changes_direction"
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:summary="@string/enter_changes_direction_desc"
             android:key="enterChangesDirection"
         />
@@ -184,6 +183,53 @@
             android:defaultValue="false"
             android:summary="@string/double_tap_zoom_desc"
             android:key="doubleTap"
+        />
+
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/dont_delete_crossing"
+            android:defaultValue="false"
+            android:summary="@string/dont_delete_crossing_desc"
+            android:key="dontDeleteCrossing"
+        />
+
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/preserve_correct"
+            android:defaultValue="false"
+            android:summary="@string/preserve_correct_desc"
+            android:key="preserveCorrectLettersInShowErrors"
+        />
+
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        android:title="@string/display_settings"
+    >
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/fit_screen_start"
+            android:defaultValue="false"
+            android:summary="@string/fit_screen_start_desc"
+            android:key="fitToScreen"
+        />
+
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/display_scratch"
+            android:defaultValue="false"
+            android:summary="@string/display_scratch_desc"
+            android:key="displayScratch"
+        />
+
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/no_hint_highlighting"
+            android:defaultValue="false"
+            android:summary="@string/no_hint_highlighting_desc"
+            android:key="supressHints"
+        />
+
+        <androidx.preference.CheckBoxPreference
+            android:title="@string/show_length"
+            android:defaultValue="false"
+            android:summary="@string/show_length_desc"
+            android:key="showCount"
         />
 
         <androidx.preference.CheckBoxPreference
@@ -207,36 +253,6 @@
             android:defaultValue="UNLOCKED"
             android:entries="@array/orientationLockLabels"
             android:entryValues="@array/orientationLockValues"
-        />
-
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/disable_swipe"
-            android:defaultValue="false"
-            android:summary="@string/disable_swipe_desc"
-            android:key="disableSwipe"
-        />
-
-        <androidx.preference.ListPreference
-            android:title="@string/swipe_action"
-            android:summary="@string/swipe_action_desc"
-            android:key="swipeAction"
-            android:defaultValue="DELETE"
-            android:entries="@array/swipeActionLabels"
-            android:entryValues="@array/swipeActionValues"
-        />
-
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/display_scratch"
-            android:defaultValue="false"
-            android:summary="@string/display_scratch_desc"
-            android:key="displayScratch"
-        />
-
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/dont_delete_crossing"
-            android:defaultValue="true"
-            android:summary="@string/dont_delete_crossing_desc"
-            android:key="dontDeleteCrossing"
         />
 
     </androidx.preference.PreferenceCategory>

@@ -59,7 +59,10 @@
     <string name="weekly_crosswords_desc">Puzzles which update weekly.</string>
     <string name="experimental_sources">Experimental Sources</string>
     <string name="experimental_sources_desc">May or may not function correctly.</string>
-    <string name="application_settings">Application Settings</string>
+    <string name="browser_settings">Browser Settings</string>
+    <string name="interaction_settings">Interaction Settings</string>
+    <string name="display_settings">Display Settings</string>
+    <string name="download_settings">Download Settings</string>
     <string name="fit_screen_start">Fit to screen when starting</string>
     <string name="fit_screen_start_desc">Best-fits the puzzle when you start.</string>
     <string name="automatic_download">Automatic Download</string>
