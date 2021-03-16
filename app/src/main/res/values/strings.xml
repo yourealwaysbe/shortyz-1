@@ -160,9 +160,9 @@
 
     <!--  preferences experimental -->
     <string name="cru_puzzle_workshop">Cru Puzzle Workshop</string>
-    <string name="cru_puzzle_workshop_desc">NYT Cru Cryptic Fan Puzzles\nhttp://web.me.com/joecab/nytcru/\n(Please Read the help item below)</string>
+    <string name="cru_puzzle_workshop_desc">NYT Cru Cryptic Fan Puzzles\nhttps://archive.nytimes.com/www.nytimes.com/premium/xword/cryptic-archive.html\n(Please Read the help item below)</string>
     <string name="keglars_cryptics">Kegler\'s Kryptics</string>
-    <string name="keglars_cryptics_desc">Ron &quot;Kegler&quot; Sweet\'s Cryptic Archive\nhttp://www.lafn.org/~keglerron/kegler.html\n(Please Read the help item below)</string>
+    <string name="keglars_cryptics_desc">Ron &quot;Kegler&quot; Sweet\'s Cryptic Archive\nhttps://kegler.gitlab.io/Block_style/index.html\n(Please Read the help item below)</string>
     <string name="about_scrapes">About These Sources</string>
 
     <!-- menus general -->

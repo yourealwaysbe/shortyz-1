@@ -148,10 +148,7 @@ public class AbstractPageScraper {
                 e.printStackTrace();
             }
 
-            System.out.println("Found puzzles: " + urls);
-
             Map<String, String> urlsToFilenames = mapURLsToFileNames(urls);
-            System.out.println("Mapped: " + urlsToFilenames.size());
 
             Set<String> existingFiles = fileHandler.getFileNames(
                 AbstractDownloader.getStandardDownloadDir(),
@@ -164,23 +161,17 @@ public class AbstractPageScraper {
                 boolean exists = existingFiles.contains(filename);
 
                 if (!exists && (scrapedFiles.size() < 3)) {
-                    System.out.println("Attempting " + url + "  scraped "
-                            + scrapedFiles.size());
-
                     try {
                         FileHandle file = download(url, filename);
 
                         if (file != null && this.processFile(file, url)) {
                             scrapedFiles.add(file);
-                            System.out.println("SCRAPED.");
                         }
                     } catch (Exception e) {
                         System.err.println("Exception downloading " + url
                                 + " for " + this.sourceName);
                         e.printStackTrace();
                     }
-                } else {
-                    System.out.println(filename + " exists.");
                 }
             }
         } catch (IOException e) {
