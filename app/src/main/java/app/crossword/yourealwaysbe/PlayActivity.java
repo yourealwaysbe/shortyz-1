@@ -305,18 +305,34 @@ public class PlayActivity extends PuzzleActivity
                   int left, int top, int right, int bottom,
                   int leftWas, int topWas, int rightWas, int bottomWas
                 ) {
-                    boolean constrainedHeight = false;
+                    boolean constrainedDims = false;
 
                     ConstraintSet set = new ConstraintSet();
                     set.clone(constraintLayout);
-                    if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+
+                    boolean showCluesTab = PlayActivity.this.prefs.getBoolean(
+                        SHOW_CLUES_TAB, true
+                    );
+
+                    if (showCluesTab) {
                         int height = bottom - top;
                         int width = right - left;
 
-                        if (height > width) {
-                            constrainedHeight = true;
-                            set.constrainMaxHeight(boardView.getId(),
-                                                   (int)(BOARD_DIM_RATIO * width));
+                        int orientation
+                            = PlayActivity.this
+                                .getResources()
+                                .getConfiguration()
+                                .orientation;
+
+                        boolean portrait
+                            = orientation == Configuration.ORIENTATION_PORTRAIT;
+
+                        if (portrait && height > width) {
+                            constrainedDims = true;
+                            set.constrainMaxHeight(
+                                boardView.getId(),
+                                (int)(BOARD_DIM_RATIO * width)
+                            );
                         }
                     } else {
                         set.constrainMaxHeight(boardView.getId(), 0);
@@ -329,7 +345,7 @@ public class PlayActivity extends PuzzleActivity
                     // use a predraw listener that requests a new layout
                     // (via render) and returns false to cancel the
                     // current draw
-                    if (constrainedHeight ||
+                    if (constrainedDims ||
                         left != leftWas || right != rightWas ||
                         top != topWas || bottom != bottomWas) {
                         boardView.getViewTreeObserver()
