@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.service;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.NotificationManager;
 import android.app.job.JobInfo;
@@ -10,12 +9,11 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.net.Downloaders;
 
 import java.time.LocalDate;
@@ -136,10 +134,9 @@ public class BackgroundDownloadService extends JobService {
             NotificationManager nm =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            if (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-                    PackageManager.PERMISSION_GRANTED) {
+            if (ForkyzApplication.getInstance().isMissingWritePermission()) {
                 LOGGER.info("Skipping download, no write permission");
+                return;
             }
 
             LOGGER.info("Downloading most recent puzzles");

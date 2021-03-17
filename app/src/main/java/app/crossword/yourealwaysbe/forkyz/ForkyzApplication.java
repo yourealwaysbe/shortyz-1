@@ -1,14 +1,17 @@
 package app.crossword.yourealwaysbe.forkyz;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.io.IO;
@@ -199,6 +202,13 @@ public class ForkyzApplication extends Application {
         String locPref
             = settings.getString(STORAGE_LOC_PREF, internalStorage);
         return locPref.equals(legacyStorage);
+    }
+
+    public boolean isMissingWritePermission() {
+        return isLegacyStorage()
+            && ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED;
     }
 
     private void setFileHander() {

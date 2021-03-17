@@ -336,12 +336,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         normalColor = ContextCompat.getColor(this, R.color.background_light);
         primaryTextColor = ContextCompat.getColor(this, R.color.textColorPrimary);
 
-        if (
-            ForkyzApplication.getInstance().isLegacyStorage()
-                && ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ForkyzApplication.getInstance().isMissingWritePermission()) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 DialogFragment dialog = new StoragePermissionDialog();
                 Bundle args = new Bundle();
