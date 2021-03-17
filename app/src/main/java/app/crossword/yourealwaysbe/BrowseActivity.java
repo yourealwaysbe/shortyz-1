@@ -94,15 +94,23 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            //4
-            actionMode = mode;
-            MenuItem item = menu.add("Delete");
-            item.setIcon(android.R.drawable.ic_menu_delete);
-            utils.onActionBarWithText(item);
-            item = menu.add(viewArchive ? "Un-archive" : "Archive");
-            utils.onActionBarWithText(item);
-            item.setIcon(R.drawable.ic_action_remove);
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.browse_action_bar_menu, menu);
+
+            if (viewArchive) {
+                menu.findItem(R.id.browse_action_archive)
+                    .setVisible(false);
+            } else {
+                menu.findItem(R.id.browse_action_unarchive)
+                    .setVisible(false);
+            }
+
+            for (int i = 0; i < menu.size(); i++) {
+                utils.onActionBarWithText(menu.getItem(i));
+            }
+
             download.setVisibility(View.GONE);
+
             return true;
         }
 
@@ -117,13 +125,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         ) {
             FileHandler fileHandler = getFileHandler();
 
-            if(menuItem.getTitle().equals("Delete")){
+            switch(menuItem.getItemId()) {
+            case R.id.browse_action_delete:
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.delete(puzMeta);
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
-            } else if(menuItem.getTitle().equals("Archive")){
+                break;
+            case R.id.browse_action_archive:
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.moveTo(
                         puzMeta, crosswordsFolder, archiveFolder
@@ -131,7 +141,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
-            } else if(menuItem.getTitle().equals("Un-archive")){
+                break;
+            case R.id.browse_action_unarchive:
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.moveTo(
                         puzMeta, archiveFolder, crosswordsFolder
@@ -139,6 +150,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
+                break;
             }
             return true;
         }
