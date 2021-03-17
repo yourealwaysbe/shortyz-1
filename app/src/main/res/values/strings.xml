@@ -38,12 +38,14 @@
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
     <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
+    <string name="share_message_with_date">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hints!"</string>
+    <string name="share_message_no_date">I finished the %1$s crossword in #Forkyz with %2$d hints!"</string>
 
     <!-- preferences -->
     <string name="storage_location">Storage Location</string>
     <string name="storage_location_desc">Configure where Forkyz stores/finds its files. Restart app after change.</string>
     <string name="internal_storage">App Internal Storage</string>
-    <string name="external_storage_saf">External directory</string>$
+    <string name="external_storage_saf">External directory</string>
     <string name="external_storage_saf_current_uri">(Current: %1$s)</string>
     <string name="external_storage_saf_none_selected">no directory selected</string>
     <string name="external_storage_legacy">External SD crosswords directory</string>

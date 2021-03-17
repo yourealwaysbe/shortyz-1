@@ -37,7 +37,6 @@ public class IOVersion1 implements IOVersion {
     }
 
     protected void applyMeta(Puzzle puz, PuzzleMeta meta){
-        //System.out.println("Applying V1 Meta");
         puz.setSource(meta.source);
         puz.setDate(meta.date);
     }

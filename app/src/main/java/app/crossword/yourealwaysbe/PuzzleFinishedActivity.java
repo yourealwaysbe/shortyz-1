@@ -13,8 +13,9 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
-import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.concurrent.TimeUnit;
 
 public class PuzzleFinishedActivity extends ForkyzActivity {
@@ -22,7 +23,6 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
     private static final long MINUTES = SECONDS * 60;
     private static final long HOURS = MINUTES * 60;
     private final NumberFormat two_int = NumberFormat.getIntegerInstance();
-    private final DateFormat date = DateFormat.getDateInstance(DateFormat.SHORT);
 
     /** Percentage varying from 0 to 100. */
     private int cheatLevel = 0;
@@ -74,13 +74,26 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
         }
         String cheatedString = cheatedBoxes + " (" + cheatLevel + "%)";
 
+        String source = puz.getSource();
+        if (source == null)
+            source = puz.getTitle();
+        if (source == null)
+            source = "";
+
         final String shareMessage;
-        if(puz.getSource() != null && puz.getDate() != null){
-            shareMessage = "I finished the "+puz.getSource()+" crossword for "+ date.format(puz.getDate()) +" in "+
-                elapsedString +(cheatedBoxes > 0 ? " but got "+cheatedBoxes+ " hints" : "")+" in #Forkyz!";
+        if (puz.getDate() != null) {
+            DateTimeFormatter dateFormat
+                = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+
+            shareMessage = getString(
+                R.string.share_message_with_date,
+                source, dateFormat.format(puz.getDate()), cheatedBoxes
+            );
         } else {
-            shareMessage = "I finished "+puz.getSource()+" in "+
-                    elapsedString +(cheatedBoxes > 0 ? "but got "+cheatedBoxes +" hints" : "")+" with #Forkyz!";
+            shareMessage = getString(
+                R.string.share_message_no_date,
+                source, cheatedBoxes
+            );
         }
 
         TextView elapsedTime = this.findViewById(R.id.elapsed);
