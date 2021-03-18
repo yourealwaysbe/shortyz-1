@@ -44,12 +44,18 @@
     </style>
 
     <style name="dialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-         <item name="android:colorAccent">@color/accent</item>
-         <item name="android:background">@color/background_light</item>
-         <item name="android:textColorPrimary">@color/textColorPrimary</item>
-         <item name="android:textColorSecondary">@color/textColorSecondary</item>
-         <item name="textColorAlertDialogListItem">@color/textColorPrimary</item>
-     </style>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:background">@color/background_light</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="textColorAlertDialogListItem">@color/textColorPrimary</item>
+        <item name="android:buttonBarButtonStyle">@style/dialogButtonStyle</item>
+        <item name="buttonBarButtonStyle">@style/dialogButtonStyle</item>
+    </style>
+
+    <style name="dialogButtonStyle" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">@color/accent</item>
+    </style>
 
     <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
         <item name="android:textColor">@color/textColorPrimary</item>
