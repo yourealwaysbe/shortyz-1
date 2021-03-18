@@ -169,7 +169,6 @@ public class ForkyzKeyboard
         ) {
             if (FORKYZ_TEXT_KEY.equals(tag)) {
                 TextView view = new AppCompatButton(context, attrs);
-                setButtonTextSize(view, context, attrs);
                 setButtonPadding(view, context, attrs);
                 setupButton(view, context, attrs);
                 return view;
@@ -203,18 +202,6 @@ public class ForkyzKeyboard
                 }
             } finally {
                 ta.recycle();
-            }
-        }
-
-        private void setButtonTextSize(
-            TextView view, Context context, AttributeSet attrs
-        ) {
-            if (!hasAttribute(android.R.attr.textSize, context, attrs)) {
-                view.setTextSize(
-                    context
-                        .getResources()
-                        .getInteger(R.integer.keyboardTextSize)
-                );
             }
         }
 

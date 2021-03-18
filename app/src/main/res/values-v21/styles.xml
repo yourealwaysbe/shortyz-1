@@ -19,10 +19,6 @@
         <item name="alertDialogTheme">@style/dialogTheme</item>
         <item name="android:alertDialogTheme">@style/dialogTheme</item>
         <item name="android:spinnerDropDownItemStyle">@style/spinnerItemStyle</item>
-        <item name="buttonStyle">@style/buttonStyle</item>
-        <item name="android:buttonStyle">@style/buttonStyle</item>
-        <item name="imageButtonStyle">@style/imageButtonStyle</item>
-        <item name="android:imageButtonStyle">@style/imageButtonStyle</item>
     </style>
 
     <style name="actionOverflowButtonStyle"   parent="Widget.AppCompat.Light.ActionButton.Overflow">
@@ -59,10 +55,20 @@
         <item name="android:textColor">@color/textColorPrimary</item>
     </style>
 
-    <style name="buttonStyle" parent="Widget.AppCompat.Button">
-        <item name="android:background">?attr/selectableItemBackground</item>
+    <style name="keyboardStyle" parent="Base.Theme.AppCompat">
+        <item name="android:background">@color/background_dark</item>
+        <item name="buttonStyle">@style/keyboardButtonStyle</item>
+        <item name="android:buttonStyle">@style/keyboardButtonStyle</item>
+        <item name="imageButtonStyle">@style/keyboardImageButtonStyle</item>
+        <item name="android:imageButtonStyle">@style/keyboardImageButtonStyle</item>
     </style>
-    <style name="imageButtonStyle" parent="Widget.AppCompat.ImageButton">
+
+    <style name="keyboardButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textSize">@dimen/keyboardTextSize</item>
+    </style>
+
+    <style name="keyboardImageButtonStyle" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:tint">@color/textColorPrimary</item>
     </style>
