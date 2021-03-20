@@ -772,8 +772,10 @@ public class PlayActivity extends PuzzleActivity
         editor.apply();
     }
 
-    public void onPlayboardChange(Word currentWord, Word previousWord) {
-        super.onPlayboardChange(currentWord, previousWord);
+    public void onPlayboardChange(
+        boolean wholeBoard, Word currentWord, Word previousWord
+    ) {
+        super.onPlayboardChange(wholeBoard, currentWord, previousWord);
 
         // hide keyboard when moving to a new word
         Position newPos = getBoard().getHighlightLetter();
@@ -782,7 +784,10 @@ public class PlayActivity extends PuzzleActivity
             keyboardManager.hideKeyboard();
         }
 
-        render(previousWord, false);
+        if (!wholeBoard)
+            render(previousWord, false);
+        else
+            render(false);
     }
 
     private void fitToScreen() {

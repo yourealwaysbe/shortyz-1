@@ -70,7 +70,9 @@ public abstract class PuzzleActivity
         board.setDontDeleteCrossing(noDelCrossing);
     }
 
-    public void onPlayboardChange(Word currentWord, Word previousWord) {
+    public void onPlayboardChange(
+        boolean wholeBoard, Word currentWord, Word previousWord
+    ) {
         Puzzle puz = getPuzzle();
         ImaginaryTimer timer = getTimer();
 

@@ -241,7 +241,9 @@ public class ClueTabs extends LinearLayout
 
     }
 
-    public void onPlayboardChange(Word currentWord, Word previousWord) {
+    public void onPlayboardChange(
+        boolean wholeBoard, Word currentWord, Word previousWord
+    ) {
         if (viewPager != null) {
             viewPager.getAdapter().notifyDataSetChanged();
 

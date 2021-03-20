@@ -163,8 +163,10 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     @Override
-    public void onPlayboardChange(Word currentWord, Word previousWord) {
-        super.onPlayboardChange(currentWord, previousWord);
+    public void onPlayboardChange(
+        boolean wholeBoard, Word currentWord, Word previousWord
+    ) {
+        super.onPlayboardChange(wholeBoard, currentWord, previousWord);
         this.render();
     }
 

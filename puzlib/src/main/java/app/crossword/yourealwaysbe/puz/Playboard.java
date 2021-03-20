@@ -962,6 +962,7 @@ public class Playboard implements Serializable {
 
     public void toggleShowErrors() {
         this.showErrors = !this.showErrors;
+        notifyChange(true);
     }
 
     public void addListener(PlayboardListener listener) {
@@ -972,13 +973,18 @@ public class Playboard implements Serializable {
         listeners.remove(listener);
     }
 
-    private void notifyChange() {
+    private void notifyChange() { notifyChange(false); }
+
+    private void notifyChange(boolean wholeBoard) {
         if (notificationDisabledDepth == 0) {
             updateHistory();
 
             Word currentWord = getCurrentWord();
-            for (PlayboardListener listener : listeners)
-                listener.onPlayboardChange(currentWord, previousWord);
+            for (PlayboardListener listener : listeners) {
+                listener.onPlayboardChange(
+                    wholeBoard, currentWord, previousWord
+                );
+            }
             previousWord = currentWord;
         }
     }
@@ -1120,10 +1126,13 @@ public class Playboard implements Serializable {
          * currentWord and previousWord are the selected words since the
          * last notification. These will be where changes are.
          *
+         * @param wholeBoard true if change affects whole board
          * @param currentWord the currently selected word
          * @param previousWord the word selected in the last
          * notification (may be null)
          */
-        public void onPlayboardChange(Word currentWord, Word previousWord);
+        public void onPlayboardChange(
+            boolean wholeBoard, Word currentWord, Word previousWord
+        );
     }
 }
