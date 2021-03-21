@@ -890,7 +890,7 @@ public class Playboard implements Serializable {
             }
         }
 
-        notifyChange();
+        notifyChange(true);
 
         return changes;
     }
@@ -910,7 +910,7 @@ public class Playboard implements Serializable {
             }
         }
 
-        notifyChange();
+        notifyChange(true);
 
         return changes;
     }
