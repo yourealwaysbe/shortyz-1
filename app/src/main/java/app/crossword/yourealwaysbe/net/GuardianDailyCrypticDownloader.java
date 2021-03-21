@@ -76,16 +76,13 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
+
+        String fileName = createFileName(date);
+
+        FileHandle f = null;
+        boolean success = false;
+
         try {
-
-            String fileName = createFileName(date);
-
-            FileHandle f = fileHandler.createFileHandle(
-                downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
-            );
-            if (f == null)
-                return null;
-
             URL url = new URL(this.baseUrl + urlSuffix);
             JSONObject cw = getCrosswordJSON(url);
 
@@ -94,6 +91,12 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
 
             Puzzle puz = readPuzzleFromJSON(cw, date);
 
+            f = fileHandler.createFileHandle(
+                downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
+            );
+            if (f == null)
+                return null;
+
             try (
                 DataOutputStream dos = new DataOutputStream(
                     fileHandler.getOutputStream(f)
@@ -101,12 +104,16 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             ) {
                 puz.setVersion(IO.VERSION_STRING);
                 IO.saveNative(puz, dos);
+                success = true;
                 return new Downloader.DownloadResult(f);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
+        } finally {
+            if (!success && f != null)
+                fileHandler.delete(f);
         }
 
         return null;

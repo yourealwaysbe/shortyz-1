@@ -80,17 +80,19 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         if (f == null)
             return null;
 
+        boolean success = false;
+
         try (
             InputStream is = url.openStream();
             DataOutputStream dos = new DataOutputStream(
                  fileHandler.getOutputStream(f)
             )
         ) {
-            boolean retVal =
+            success =
                 IndependentXMLIO.convertPuzzle(is, dos,
                                                "Copyright unknown.", date);
 
-            if (!retVal) {
+            if (!success) {
                 LOG.log(Level.SEVERE,
                         "Unable to convert Independent XML puzzle into Across Lite format.");
             } else {
@@ -98,6 +100,9 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
             }
         } catch (IOException ioe) {
             LOG.log(Level.SEVERE, "Exception converting Independent XML puzzle into Across Lite format.", ioe);
+        } finally {
+            if (!success)
+                fileHandler.delete(f);
         }
 
         return null;

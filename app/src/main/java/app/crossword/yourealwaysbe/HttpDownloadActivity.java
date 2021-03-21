@@ -114,6 +114,9 @@ public class HttpDownloadActivity extends ForkyzActivity {
 
         OkHttpClient client = new OkHttpClient();
 
+        FileHandle puzFile = null;
+        boolean success = false;
+
         try {
             Request request = new Request.Builder()
                     .url(u.toString())
@@ -126,7 +129,7 @@ public class HttpDownloadActivity extends ForkyzActivity {
             }
 
             InputStream is = response.body().byteStream();
-            FileHandle puzFile = fileHandler.createFileHandle(
+            puzFile = fileHandler.createFileHandle(
                 crosswordsFolder, filename, FileHandler.MIME_TYPE_PUZ
             );
 
@@ -137,22 +140,23 @@ public class HttpDownloadActivity extends ForkyzActivity {
                     Toast.LENGTH_LONG
                 );
                 t.show();
-                finish();
-            }
+            } else {
+                try (
+                    OutputStream fos = fileHandler.getOutputStream(puzFile)
+                ) {
+                    copyStream(is, fos);
+                }
 
-            try (
-                OutputStream fos = fileHandler.getOutputStream(puzFile)
-            ) {
-                copyStream(is, fos);
-            }
+                success = true;
 
-            Intent i = new Intent(
-                Intent.ACTION_EDIT,
-                fileHandler.getUri(puzFile),
-                this,
-                PlayActivity.class
-            );
-            this.startActivity(i);
+                Intent i = new Intent(
+                    Intent.ACTION_EDIT,
+                    fileHandler.getUri(puzFile),
+                    this,
+                    PlayActivity.class
+                );
+                this.startActivity(i);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Toast t = Toast.makeText(
@@ -161,6 +165,9 @@ public class HttpDownloadActivity extends ForkyzActivity {
                 Toast.LENGTH_LONG
             );
             t.show();
+        } finally {
+            if (!success && puzFile != null)
+                fileHandler.delete(puzFile);
         }
         finish();
     }

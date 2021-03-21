@@ -61,49 +61,61 @@ public class UclickDownloader extends AbstractDownloader {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        String fileName = this.createFileName(date);
+        FileHandle plainText = null;
+        FileHandle downloadTo = null;
+        boolean success = true;
 
-        FileHandle downloadTo = fileHandler.createFileHandle(
-            this.downloadDirectory,
-            this.createFileName(date),
-            FileHandler.MIME_TYPE_PUZ
-        );
-        if (downloadTo == null)
-            return null;
+        try {
+            plainText = downloadToTempFile(date);
+            if (plainText == null)
+                return null;
 
-        FileHandle plainText = downloadToTempFile(date);
+            String fileName = this.createFileName(date);
 
-        if (plainText == null) {
-            return null;
-        }
-
-        try (
-            InputStream is = fileHandler.getInputStream(plainText);
-            DataOutputStream os = new DataOutputStream(
-                fileHandler.getOutputStream(downloadTo)
+            downloadTo = fileHandler.createFileHandle(
+                this.downloadDirectory,
+                this.createFileName(date),
+                FileHandler.MIME_TYPE_PUZ
             );
-        ) {
-            boolean retVal = UclickXMLIO.convertUclickPuzzle(is, os,
-                    "\u00a9 " + date.getYear() + " " + copyright, date);
-            os.close();
-            is.close();
-            fileHandler.delete(plainText);
+            if (downloadTo == null)
+                return null;
 
-            if (!retVal) {
-                LOG.log(Level.SEVERE, "Unable to convert uclick XML puzzle into Across Lite format.");
-                fileHandler.delete(downloadTo);
-                downloadTo = null;
+            try (
+                InputStream is = fileHandler.getInputStream(plainText);
+                DataOutputStream os = new DataOutputStream(
+                    fileHandler.getOutputStream(downloadTo)
+                );
+            ) {
+                boolean converted = UclickXMLIO.convertUclickPuzzle(
+                    is, os, "\u00a9 " + date.getYear() + " " + copyright, date
+                );
+                os.close();
+                is.close();
+
+                if (!converted) {
+                    LOG.log(
+                        Level.SEVERE,
+                        "Unable to convert uclick XML puzzle into Across Lite format."
+                    );
+                } else {
+                    success = true;
+                }
+            } catch (IOException ioe) {
+                LOG.log(
+                    Level.SEVERE,
+                    "Exception converting uclick XML puzzle into Across Lite format.",
+                    ioe
+                );
             }
-        } catch (IOException ioe) {
-            LOG.log(Level.SEVERE, "Exception converting uclick XML puzzle into Across Lite format.", ioe);
-            fileHandler.delete(downloadTo);
-            downloadTo = null;
+        } finally {
+            if (plainText != null)
+                fileHandler.delete(plainText);
+            if (!success && downloadTo != null)
+                fileHandler.delete(downloadTo);
         }
 
-        if (downloadTo == null)
-            return null;
-        else
-            return new Downloader.DownloadResult(downloadTo);
+
+        return success ? new Downloader.DownloadResult(downloadTo) : null;
     }
 
     @Override
@@ -116,8 +128,11 @@ public class UclickDownloader extends AbstractDownloader {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
+        FileHandle tmpFile = null;
+        boolean success = false;
+
         try {
-            FileHandle tmpFile = fileHandler.createFileHandle(
+            tmpFile = fileHandler.createFileHandle(
                 this.tempFolder,
                 "uclick-temp"+System.currentTimeMillis()+".xml",
                 FileHandler.MIME_TYPE_GENERIC_XML
@@ -128,14 +143,17 @@ public class UclickDownloader extends AbstractDownloader {
             }
 
             URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
-            AndroidVersionUtils.Factory.getInstance().downloadFile(
+            success = AndroidVersionUtils.Factory.getInstance().downloadFile(
                 url, tmpFile, EMPTY_MAP, false, null
             );
-            return tmpFile;
         } catch (Exception e) {
             e.printStackTrace();
             LOG.log(Level.SEVERE, "Unable to download uclick XML file.");
-            return null;
+        } finally {
+            if (!success && tmpFile != null)
+                fileHandler.delete(tmpFile);
         }
+
+        return success ? tmpFile : null;
     }
 }

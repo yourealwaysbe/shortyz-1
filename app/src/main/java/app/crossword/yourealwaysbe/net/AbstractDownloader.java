@@ -98,13 +98,15 @@ public abstract class AbstractDownloader implements Downloader {
         Map<String, String> headers,
         boolean canDefer
     ) {
+        FileHandler fileHandler
+            = ForkyzApplication.getInstance().getFileHandler();
+        FileHandle f = null;
+        boolean success = false;
         try {
-            FileHandler fileHandler
-                = ForkyzApplication.getInstance().getFileHandler();
             URL url = new URL(this.baseUrl + urlSuffix);
             System.out.println(url);
 
-            FileHandle f = fileHandler.createFileHandle(
+            f = fileHandler.createFileHandle(
                 downloadDirectory,
                 this.createFileName(date),
                 FileHandler.MIME_TYPE_PUZ
@@ -123,6 +125,7 @@ public abstract class AbstractDownloader implements Downloader {
 
             if (utils.downloadFile(url, f, headers, true, this.getName())) {
                 utils.removeMetas(fileUri);
+                success = true;
                 return new Downloader.DownloadResult(f);
             } else if (canDefer) {
                 return Downloader.DownloadResult.DEFERRED_FILE;
@@ -132,8 +135,10 @@ public abstract class AbstractDownloader implements Downloader {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (!success && f != null)
+                fileHandler.delete(f);
         }
-
         return null;
     }
 
@@ -152,22 +157,25 @@ public abstract class AbstractDownloader implements Downloader {
             "txt-tmp"+System.currentTimeMillis()+".txt",
             FileHandler.MIME_TYPE_PLAIN_TEXT
         );
+        boolean success = false;
 
         if (downloaded != null) {
             try {
                 URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
                 LOG.log(Level.INFO, fullName +" "+url.toExternalForm());
-                utils.downloadFile(url, downloaded, EMPTY_MAP, false, null);
+                success = utils.downloadFile(
+                    url, downloaded, EMPTY_MAP, false, null
+                );
             } catch (Exception e) {
                 e.printStackTrace();
-                fileHandler.delete(downloaded);
-                downloaded = null;
+            } finally {
+                if (!success)
+                    fileHandler.delete(downloaded);
             }
         }
 
-        if (downloaded == null) {
+        if (!success) {
             LOG.log(Level.SEVERE, "Unable to download plain text KFS file.");
-
             return null;
         } else {
             return downloaded;

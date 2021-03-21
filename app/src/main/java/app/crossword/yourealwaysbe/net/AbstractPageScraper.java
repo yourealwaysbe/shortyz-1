@@ -57,13 +57,20 @@ public class AbstractPageScraper {
         if (output == null)
             return null;
 
+        boolean success = false;
+
         try (OutputStream fos = fileHandler.getOutputStream(output)) {
             IO.copyStream(u.openStream(), fos);
-        } catch (Exception e) {
-            fileHandler.delete(output);
-            return null;
+            success = true;
+            return output;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (!success)
+                fileHandler.delete(output);
         }
-        return output;
+
+        return null;
     }
 
     public static Map<String, String> mapURLsToFileNames(List<String> urls) {

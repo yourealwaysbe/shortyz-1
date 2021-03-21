@@ -33,6 +33,10 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
         DownloadResult jpzResult = download(date, urlSuffix, headers, false);
+
+        if (jpzResult == null)
+            return null;
+
         FileHandle jpzFile = jpzResult.getFileHandle();
 
         FileHandle puzFile = fileHandler.createFileHandle(
@@ -42,6 +46,8 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         );
         if (puzFile == null)
             return null;
+
+        boolean success = false;
 
         try (
             InputStream is = fileHandler.getInputStream(jpzFile);
@@ -55,7 +61,12 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            fileHandler.delete(jpzFile);
+            if (!success)
+                fileHandler.delete(puzFile);
         }
+
         return null;
     }
 
@@ -72,17 +83,19 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
     ) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
+        FileHandle f = fileHandler.createFileHandle(
+            downloadDirectory,
+            this.createFileName(date)+".jpz",
+            FileHandler.MIME_TYPE_GENERIC
+        );
+        if (f == null)
+            return null;
+
+        boolean success = false;
+
         try {
             URL url = new URL(this.baseUrl + urlSuffix);
             LOG.info("Downloading from "+url);
-
-            FileHandle f = fileHandler.createFileHandle(
-                downloadDirectory,
-                this.createFileName(date)+".jpz",
-                FileHandler.MIME_TYPE_GENERIC
-            );
-            if (f == null)
-                return null;
 
             PuzzleMeta meta = new PuzzleMeta();
             meta.date = date;
@@ -93,8 +106,11 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             Uri fileUri = fileHandler.getUri(f);
             utils.storeMetas(fileHandler.getUri(f), meta, downloadDirectory);
 
-            if (utils.downloadFile(url, f, headers, true, this.getName())) {
+            success = utils.downloadFile(url, f, headers, true, this.getName());
+
+            if (success) {
                 utils.removeMetas(fileHandler.getUri(f));
+                success = true;
                 return new Downloader.DownloadResult(f);
             } else if (canDefer) {
                 return Downloader.DownloadResult.DEFERRED_FILE;
@@ -104,6 +120,9 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (!success)
+                fileHandler.delete(f);
         }
 
         return null;

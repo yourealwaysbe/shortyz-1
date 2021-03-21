@@ -252,6 +252,9 @@ public abstract class FileHandler {
         FileHandle metaFile = puzHandle.getMetaFileHandle();
         DirHandle puzDir = puzHandle.getDirHandle();
 
+        boolean success = false;
+        boolean metaCreated = false;
+
         if (metaFile == null) {
             String metaName = getMetaFileName(puzFile);
             metaFile = createFileHandle(
@@ -259,6 +262,7 @@ public abstract class FileHandler {
             );
             if (metaFile == null)
                 throw new IOException("Could not create meta file");
+            metaCreated = true;
         }
 
         try (
@@ -268,9 +272,13 @@ public abstract class FileHandler {
                 = new DataOutputStream(getOutputStream(metaFile));
         ) {
             IO.save(puz, puzzle, meta);
+            success = true;
+        } finally {
+            if (!success && metaCreated)
+                delete(metaFile);
+            else
+                puzHandle.setMetaFileHandle(metaFile);
         }
-
-        puzHandle.setMetaFileHandle(metaFile);
     }
 
     /**

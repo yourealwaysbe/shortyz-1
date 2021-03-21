@@ -104,6 +104,7 @@ public class PuzzleDownloadListener implements DownloadListener {
         FileHandle outputFile = fileHandler.createFileHandle(
             crosswordFolder, fileName, FileHandler.MIME_TYPE_PUZ
         );
+        boolean success = false;
 
         if (outputFile == null) {
             sendMessage(
@@ -115,7 +116,7 @@ public class PuzzleDownloadListener implements DownloadListener {
         try (
             InputStream in = OpenHttpConnection(new URL(url), cookies)
         ) {
-            try (OutputStream fout = fileHandler.getOutputStream(outputFile);) {
+            try (OutputStream fout = fileHandler.getOutputStream(outputFile)) {
                 byte[] buffer = new byte[1024];
                 int len = 0;
 
@@ -127,12 +128,11 @@ public class PuzzleDownloadListener implements DownloadListener {
             PuzzleMeta meta = new PuzzleMeta();
             meta.date = LocalDate.now();
 
-            boolean processed
-                = Downloaders.processDownloadedPuzzle(
-                    crosswordFolder, outputFile, meta
-                );
+            success = Downloaders.processDownloadedPuzzle(
+                crosswordFolder, outputFile, meta
+            );
 
-            if (processed) {
+            if (success) {
                 sendMessage(mContext.getString(
                     R.string.puzzle_downloaded_successfully,
                     fileName
@@ -146,6 +146,9 @@ public class PuzzleDownloadListener implements DownloadListener {
             sendMessage(
                 mContext.getString(R.string.error_downloading_puzzle, fileName)
             );
+        } finally {
+            if (!success)
+                fileHandler.delete(outputFile);
         }
     }
 

@@ -48,42 +48,54 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
 
         String fileName = this.createFileName(date);
 
-        FileHandle downloadTo = fileHandler.createFileHandle(
-            this.downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
-        );
-        if (downloadTo == null)
-            return null;
+        FileHandle downloadTo = null;
+        FileHandle plainText = null;
+        boolean success = false;
 
-        FileHandle plainText = downloadToTempFile(this.getName(), date);
-        if (plainText == null)
-            return null;
+        try {
+            plainText = downloadToTempFile(this.getName(), date);
+            if (plainText == null)
+                return null;
 
-        try (
-            InputStream is = fileHandler.getInputStream(plainText);
-            DataOutputStream os = new DataOutputStream(
-                fileHandler.getOutputStream(downloadTo)
+            downloadTo = fileHandler.createFileHandle(
+                this.downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
             );
-        ) {
-            boolean retVal = BrainsOnlyIO.convertBrainsOnly(is, os, date);
+            if (downloadTo == null)
+                return null;
 
-            // not sure if i should really leave these closes in...
-            os.close();
-            is.close();
+            try (
+                InputStream is = fileHandler.getInputStream(plainText);
+                DataOutputStream os = new DataOutputStream(
+                    fileHandler.getOutputStream(downloadTo)
+                );
+            ) {
+                boolean converted
+                    = BrainsOnlyIO.convertBrainsOnly(is, os, date);
 
-            fileHandler.delete(plainText);
-            LOG.log(Level.INFO, "Saved to "+downloadTo);
-            if (!retVal) {
-                LOG.log(Level.SEVERE, "Unable to convert KFS puzzle into Across Lite format.");
-                fileHandler.delete(downloadTo);
-                downloadTo = null;
+                // not sure if i should really leave these closes in...
+                os.close();
+                is.close();
+
+                if (!converted) {
+                    LOG.log(Level.SEVERE, "Unable to convert KFS puzzle into Across Lite format.");
+                } else {
+                    success = true;
+                }
+            } catch (Exception ioe) {
+                LOG.log(
+                    Level.SEVERE,
+                    "Exception converting KFS puzzle into Across Lite format.",
+                    ioe
+                );
             }
-        } catch (Exception ioe) {
-            LOG.log(Level.SEVERE, "Exception converting KFS puzzle into Across Lite format.", ioe);
-            fileHandler.delete(downloadTo);
-            downloadTo = null;
+        } finally {
+            if (!success && downloadTo != null)
+                fileHandler.delete(downloadTo);
+            if (plainText != null)
+                fileHandler.delete(plainText);
         }
 
-        return new Downloader.DownloadResult(downloadTo);
+        return success ? new Downloader.DownloadResult(downloadTo) : null;
     }
 
 }

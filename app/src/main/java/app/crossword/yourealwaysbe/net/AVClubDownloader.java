@@ -55,6 +55,8 @@ public class AVClubDownloader extends AbstractDownloader {
     ) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
+        FileHandle f = null;
+        boolean success = false;
         try {
             URL url = new URL(this.baseUrl + urlSuffix);
             System.out.println(url);
@@ -65,7 +67,7 @@ public class AVClubDownloader extends AbstractDownloader {
             connection.setRequestProperty("Referer", this.baseUrl);
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                FileHandle f = fileHandler.createFileHandle(
+                f = fileHandler.createFileHandle(
                     downloadDirectory,
                     this.createFileName(date),
                     FileHandler.MIME_TYPE_PUZ
@@ -75,14 +77,16 @@ public class AVClubDownloader extends AbstractDownloader {
                 try (OutputStream fos = fileHandler.getOutputStream(f)) {
                     IO.copyStream(connection.getInputStream(), fos);
                 }
+                success = true;
                 return new Downloader.DownloadResult(f);
-            } else {
-                return null;
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (!success && f != null)
+                fileHandler.delete(f);
         }
 
         return null;
