@@ -194,6 +194,14 @@ public class FileHandlerSAF extends FileHandler {
             );
         } catch (FileNotFoundException e) {
             // seems like our work is done
+        } catch (IllegalArgumentException e) {
+            // if the file does not exist, this might be thrown since
+            // Android cannot determine access permissions
+            if (e.getCause() instanceof FileNotFoundException) {
+                // ignore
+            } else {
+                throw e;
+            }
         }
     }
 
