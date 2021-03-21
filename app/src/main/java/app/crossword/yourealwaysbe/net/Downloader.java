@@ -35,6 +35,13 @@ public interface Downloader {
         DayOfWeek.FRIDAY,
         DayOfWeek.SATURDAY
     };
+    DayOfWeek[] DATE_WEEKDAY = new DayOfWeek[] {
+        DayOfWeek.MONDAY,
+        DayOfWeek.TUESDAY,
+        DayOfWeek.WEDNESDAY,
+        DayOfWeek.THURSDAY,
+        DayOfWeek.FRIDAY,
+    };
 
     public static class DownloadResult {
         private FileHandle fileHandle;

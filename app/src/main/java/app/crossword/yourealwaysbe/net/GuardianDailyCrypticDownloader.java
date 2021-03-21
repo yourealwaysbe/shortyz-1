@@ -56,7 +56,7 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
     }
 
     public DayOfWeek[] getDownloadDates() {
-        return DATE_DAILY;
+        return DATE_WEEKDAY;
     }
 
     public String getName() {
