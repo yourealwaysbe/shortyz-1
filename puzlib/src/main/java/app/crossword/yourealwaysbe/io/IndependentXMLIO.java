@@ -54,6 +54,8 @@ import javax.xml.parsers.SAXParserFactory;
 public class IndependentXMLIO {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
+    private static final String UNDEFINED_CLUE = "-";
+
     private static class IndependentXMLParser extends DefaultHandler {
         private String title;
         private int width;
@@ -142,6 +144,7 @@ public class IndependentXMLIO {
                         int x = Integer.parseInt(attributes.getValue("x")) - 1;
                         int y = Integer.parseInt(attributes.getValue("y")) - 1;
                         String solution = attributes.getValue("solution");
+                        String number = attributes.getValue("number");
                         if (solution != null &&
                             0 <= x && x < IndependentXMLParser.this.getWidth() &&
                             0 <= y && y < IndependentXMLParser.this.getHeight()) {
@@ -150,6 +153,12 @@ public class IndependentXMLIO {
                             if (solution.length() > 0)
                                 box.setSolution(solution.charAt(0));
                             box.setBlank();
+
+                            if (number != null) {
+                                int clueNumber = Integer.parseInt(number);
+                                box.setClueNumber(clueNumber);
+                                maxClueNum = Math.max(maxClueNum, clueNumber);
+                            }
 
                             IndependentXMLParser.this.boxes[y][x] = box;
                         }
@@ -332,8 +341,43 @@ public class IndependentXMLIO {
                 state = outerXML;
             } else if (name.equalsIgnoreCase("clues")) {
                 state = outerXML;
+            } else if (name.equalsIgnoreCase("crossword")) {
+                fillInMissingClues();
             }
+        }
 
+        /**
+         * Populate clue maps with "undefined" strings
+         *
+         * Sometimes the Indy format omits the is-link clues
+         */
+        private void fillInMissingClues() {
+            for (int y = 0; y < boxes.length; y++) {
+                for (int x = 0; x < boxes[y].length; x++) {
+                    if (boxes[y][x] != null) {
+                        int clue = boxes[y][x].getClueNumber();
+                        if (clue > 0) {
+                            boolean boxLeft = x > 0 && boxes[y][x-1] != null;
+                            boolean boxRight = x < boxes[y].length - 1
+                                && boxes[y][x+1] != null;
+
+                            boolean boxUp = y > 0 && boxes[y-1][x] != null;
+                            boolean boxDown = y < boxes.length - 1
+                                && boxes[y+1][x] != null;
+
+                            boolean hasAcross
+                                = acrossNumToClueMap.containsKey(clue);
+                            boolean hasDown
+                                = downNumToClueMap.containsKey(clue);
+
+                           if (!boxLeft && boxRight && !hasAcross)
+                                acrossNumToClueMap.put(clue, UNDEFINED_CLUE);
+                           if (!boxUp && boxDown && !hasDown)
+                                downNumToClueMap.put(clue, UNDEFINED_CLUE);
+                        }
+                    }
+                }
+            }
         }
     }
 
