@@ -922,7 +922,8 @@ public class Playboard implements Serializable {
 
         pushNotificationDisabled();
 
-        this.setHighlightLetter(w.start);
+        if (!oldHighlight.equals(w.start))
+            this.setHighlightLetter(w.start);
 
         for (int i = 0; i < w.length; i++) {
             Position p = revealLetter();
