@@ -25,7 +25,7 @@
     <app.crossword.yourealwaysbe.view.ScrollingImageView
         android:id="@+id/miniboard"
         android:layout_width="fill_parent"
-        android:layout_height="0.3in"
+        android:layout_height="48dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
     >
@@ -52,7 +52,7 @@
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/scratchMiniboard"
                 android:layout_width="fill_parent"
-                android:layout_height="0.3in"
+                android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
@@ -81,7 +81,7 @@
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSource"
                 android:layout_width="fill_parent"
-                android:layout_height="0.3in"
+                android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
@@ -95,7 +95,7 @@
             <app.crossword.yourealwaysbe.view.BoardEditText
                 android:id="@+id/anagramSolution"
                 android:layout_width="fill_parent"
-                android:layout_height="0.3in"
+                android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
