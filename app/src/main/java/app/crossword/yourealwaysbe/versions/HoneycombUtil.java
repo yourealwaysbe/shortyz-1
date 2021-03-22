@@ -56,9 +56,13 @@ public class HoneycombUtil extends GingerbreadUtil {
     public void nextNightMode(ForkyzActivity activity){
 		activity.nightMode.next();
         if(activity.nightMode.isNightMode()){
-            activity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            AppCompatDelegate.setDefaultNightMode(
+                AppCompatDelegate.MODE_NIGHT_YES
+            );
         } else {
-            activity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            AppCompatDelegate.setDefaultNightMode(
+                AppCompatDelegate.MODE_NIGHT_NO
+            );
         }
 	}
 

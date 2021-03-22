@@ -89,16 +89,19 @@ public class NightModeHelper {
         if (activity != null) {
             switch (currentMode) {
             case DAY:
-                activity.getDelegate()
-                        .setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_NO
+                );
                 break;
             case NIGHT:
-                activity.getDelegate()
-                        .setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_YES
+                );
                 break;
             case SYSTEM:
-                activity.getDelegate()
-                        .setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                );
                 break;
             }
         }
