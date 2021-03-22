@@ -813,10 +813,6 @@ public class PlayActivity extends PuzzleActivity
         }
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        this.render(true);
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
