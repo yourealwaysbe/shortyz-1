@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.system.Os;
 import android.system.StructStatVfs;
 import androidx.preference.PreferenceManager;
 
+@TargetApi(21)
 public class FileHandlerSAF extends FileHandler {
     private static final Logger LOGGER
         = Logger.getLogger(FileHandlerSAF.class.getCanonicalName());
