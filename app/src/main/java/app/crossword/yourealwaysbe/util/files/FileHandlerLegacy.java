@@ -5,6 +5,8 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 
@@ -30,6 +32,15 @@ public class FileHandlerLegacy extends FileHandlerJavaFile {
 
     @Override
     public boolean isStorageFull() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            return isStorageFull18();
+        else
+            return isStorageFull1();
+    }
+
+
+    @TargetApi(18)
+    private  boolean isStorageFull18() {
         StatFs stats = new StatFs(
             Environment.getExternalStorageDirectory().getAbsolutePath()
         );
@@ -38,5 +49,17 @@ public class FileHandlerLegacy extends FileHandlerJavaFile {
             stats.getAvailableBlocksLong() * stats.getBlockSizeLong()
                 < 1024L * 1024L
         );
+    }
+
+    @TargetApi(1)
+    private  boolean isStorageFull1() {
+        StatFs stats = new StatFs(
+            Environment.getExternalStorageDirectory().getAbsolutePath()
+        );
+
+        long available
+            = (long) stats.getAvailableBlocks() * (long) stats.getBlockSize();
+
+        return (available < 1024L * 1024L);
     }
 }
