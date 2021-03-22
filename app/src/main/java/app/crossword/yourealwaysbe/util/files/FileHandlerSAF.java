@@ -21,12 +21,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract;
-import android.system.ErrnoException;
-import android.system.Os;
-import android.system.StructStatVfs;
 import androidx.preference.PreferenceManager;
 
 @TargetApi(24)
@@ -265,30 +261,7 @@ public class FileHandlerSAF extends FileHandler {
 
     @Override
     public boolean isStorageFull() {
-        // with thanks to https://stackoverflow.com/a/40848958
-        Uri folderUri = DocumentsContract.buildDocumentUriUsingTree(
-                rootUri,
-                DocumentsContract.getTreeDocumentId(rootUri)
-        );
-        try {
-            ParcelFileDescriptor pfd
-                = context
-                    .getContentResolver()
-                    .openFileDescriptor(folderUri, "r");
-
-            if (pfd != null) {
-                StructStatVfs stats = Os.fstatvfs(pfd.getFileDescriptor());
-                long availableBytes = stats.f_bavail * stats.f_bsize;
-                return availableBytes < 1024L * 1024L;
-            }
-        } catch (FileNotFoundException | ErrnoException e) {
-            LOGGER.info("Could not calculate storage available");
-            e.printStackTrace();
-            // fall through
-        }
-
-        // assume false if we failed to find out
-        return false;
+        return SAFStorageCalculator.isStorageFull(context, rootUri);
     }
 
     @Override
