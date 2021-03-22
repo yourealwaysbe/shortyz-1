@@ -43,11 +43,11 @@ public class ClueListActivity extends PuzzleActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case android.R.id.home:
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish();
             return true;
-        case R.id.clue_list_menu_notes:
+        } else if (id == R.id.clue_list_menu_notes) {
             launchNotes();
             return true;
         }

@@ -125,15 +125,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         ) {
             FileHandler fileHandler = getFileHandler();
 
-            switch(menuItem.getItemId()) {
-            case R.id.browse_action_delete:
+            int id = menuItem.getItemId();
+
+            if (id == R.id.browse_action_delete) {
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.delete(puzMeta);
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
-                break;
-            case R.id.browse_action_archive:
+            } else if (id == R.id.browse_action_archive) {
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.moveTo(
                         puzMeta, crosswordsFolder, archiveFolder
@@ -141,8 +141,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
-                break;
-            case R.id.browse_action_unarchive:
+            } else if (id == R.id.browse_action_unarchive) {
                 for(PuzMetaFile puzMeta : selected){
                     fileHandler.moveTo(
                         puzMeta, archiveFolder, crosswordsFolder
@@ -150,7 +149,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
                 puzzleList.invalidate();
                 actionMode.finish();
-                break;
             }
             return true;
         }
@@ -202,17 +200,18 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.browse_menu_app_theme:
+        int id = item.getItemId();
+
+        if (id == R.id.browse_menu_app_theme) {
             this.utils.nextNightMode(this);
             item.setIcon(getNightModeIcon());
             return true;
-        case R.id.browse_menu_settings:
+        } else if (id == R.id.browse_menu_settings) {
             Intent settingsIntent = new Intent(this, PreferencesActivity.class);
             this.startActivity(settingsIntent);
 
             return true;
-        case R.id.browse_menu_archives:
+        } else if (id == R.id.browse_menu_archives) {
             this.viewArchive = !viewArchive;
             item.setTitle(viewArchive ? "Crosswords" : MENU_ARCHIVES); //menu item title
             this.setTitle(!viewArchive ? "Puzzles" : MENU_ARCHIVES); //activity title
@@ -220,30 +219,30 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             render();
 
             return true;
-        case R.id.browse_menu_cleanup:
+        } else if (id == R.id.browse_menu_cleanup) {
             this.cleanup();
 
             return true;
-        case R.id.browse_menu_help:
+        } else if (id == R.id.browse_menu_help) {
             Intent helpIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/filescreen.html"), this,
                     HTMLActivity.class);
             this.startActivity(helpIntent);
             return true;
-        case R.id.browse_menu_sort_source:
+        } else if (id == R.id.browse_menu_sort_source) {
             this.accessor = Accessor.SOURCE;
             prefs.edit()
                  .putInt("sort", 2)
                  .apply();
             this.render();
             return true;
-        case R.id.browse_menu_sort_date_asc:
+        } else if (id == R.id.browse_menu_sort_date_asc) {
             this.accessor = Accessor.DATE_ASC;
             prefs.edit()
                  .putInt("sort", 1)
                  .apply();
             this.render();
             return true;
-        case R.id.browse_menu_sort_date_desc:
+        } else if (id == R.id.browse_menu_sort_date_desc) {
             this.accessor = Accessor.DATE_DESC;
             prefs.edit()
                  .putInt("sort", 0)

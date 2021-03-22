@@ -130,17 +130,15 @@ public class NotesActivity extends PuzzleActivity {
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
                 View focused = getWindow().getCurrentFocus();
-                switch (focused.getId()) {
-                case R.id.scratchMiniboard:
+                int id = focused.getId();
+                if (id == R.id.scratchMiniboard) {
                     NotesActivity.this.executeTransferResponseRequest(
                         TransferResponseRequest.BOARD_TO_SCRATCH, true
                     );
-                    break;
-                case R.id.anagramSolution:
+                } else if (id == R.id.anagramSolution) {
                     NotesActivity.this.executeTransferResponseRequest(
                         TransferResponseRequest.BOARD_TO_ANAGRAM_SOL, true
                     );
-                    break;
                 }
             }
 
