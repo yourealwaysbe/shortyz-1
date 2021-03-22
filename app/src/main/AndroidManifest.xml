@@ -113,11 +113,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="app.crossword.yourealwaysbe.WebBrowserActivity"
-            android:configChanges="orientation"
-            android:label="@string/web_browse_label"
-            android:theme="@style/Theme.Forkyz"/>
-        <activity
             android:name="app.crossword.yourealwaysbe.PuzzleFinishedActivity"
             android:label="@string/puzzle_completed_label"
             android:theme="@style/Theme.AppCompat.Dialog"/>
