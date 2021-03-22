@@ -194,7 +194,7 @@ public class PreferencesFragment
         entries[0] = getString(R.string.internal_storage);
         values[0] = entries[0];
 
-        if (ForkyzApplication.getInstance().isSAFSupported()) {
+        if (FileHandlerSAF.isSAFSupported()) {
             SharedPreferences prefs
                 = PreferenceManager .getDefaultSharedPreferences(
                     getActivity().getApplicationContext()

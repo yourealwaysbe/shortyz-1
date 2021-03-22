@@ -192,10 +192,6 @@ public class ForkyzApplication extends Application {
         return locPref.equals(internalStorage);
     }
 
-    public boolean isSAFSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-    }
-
     public boolean isLegacyStorage() {
         String internalStorage = getString(R.string.internal_storage);
         String legacyStorage = getString(R.string.external_storage_legacy);

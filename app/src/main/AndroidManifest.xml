@@ -16,12 +16,12 @@
 
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="20"
+        android:maxSdkVersion="23"
         tools:ignore="ScopedStorage"
     />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="20"
+        android:maxSdkVersion="23"
         tools:ignore="ScopedStorage"
     />
     <uses-permission android:name="android.permission.INTERNET" />

@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract;
@@ -28,7 +29,7 @@ import android.system.Os;
 import android.system.StructStatVfs;
 import androidx.preference.PreferenceManager;
 
-@TargetApi(21)
+@TargetApi(24)
 public class FileHandlerSAF extends FileHandler {
     private static final Logger LOGGER
         = Logger.getLogger(FileHandlerSAF.class.getCanonicalName());
@@ -62,6 +63,10 @@ public class FileHandlerSAF extends FileHandler {
 
         public String getName() { return name; }
         public long getLastModified() { return lastModified; }
+    }
+
+    public static boolean isSAFSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**
