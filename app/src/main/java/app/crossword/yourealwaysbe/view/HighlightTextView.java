@@ -9,13 +9,13 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
-import android.widget.TextView;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.content.ContextCompat;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 
 
-public class HighlightTextView extends TextView {
+public class HighlightTextView extends AppCompatTextView {
     Paint blackPaint = new Paint();
     Paint highlight = new Paint();
     private DisplayMetrics metrics;

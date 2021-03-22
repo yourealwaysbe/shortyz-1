@@ -27,6 +27,9 @@ android {
         targetSdkVersion 30
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
         multiDexEnabled true
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     compileOptions.with {
