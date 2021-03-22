@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 import android.widget.LinearLayout;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -538,11 +539,9 @@ public class ClueTabs extends LinearLayout
                 color = R.color.textColorFilled;
             }
 
-            clueView.setTextColor(itemView.getContext()
-                                          .getResources()
-                                          .getColor(color,
-                                                    itemView.getContext()
-                                                            .getTheme()));
+            clueView.setTextColor(ContextCompat.getColor(
+                itemView.getContext(), color
+            ));
 
             if (board != null) {
                 Clue selectedClue = board.getClue();
