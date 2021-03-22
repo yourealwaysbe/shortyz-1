@@ -239,15 +239,15 @@ public class PlayboardRenderer {
         }
 
         int boxSize = (int) (BASE_BOX_SIZE_INCHES * this.dpi * scale);
-        Bitmap bitmap = Bitmap.createBitmap((int) (boxes.length * boxSize),
-                                            (int) (boxSize),
+        Bitmap bitmap = Bitmap.createBitmap(boxes.length * boxSize,
+                                            boxSize,
                                             Bitmap.Config.RGB_565);
         bitmap.eraseColor(Color.BLACK);
 
         Canvas canvas = new Canvas(bitmap);
 
         for (int i = 0; i < boxes.length; i++) {
-            int x = (int) (i * boxSize);
+            int x = i * boxSize;
             int y = 0;
             this.drawBox(canvas,
                          x, y,

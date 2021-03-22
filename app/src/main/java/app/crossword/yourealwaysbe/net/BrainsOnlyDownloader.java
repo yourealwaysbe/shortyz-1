@@ -63,30 +63,27 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
             if (downloadTo == null)
                 return null;
 
+            boolean converted = false;
+
             try (
                 InputStream is = fileHandler.getInputStream(plainText);
                 DataOutputStream os = new DataOutputStream(
                     fileHandler.getOutputStream(downloadTo)
                 );
             ) {
-                boolean converted
-                    = BrainsOnlyIO.convertBrainsOnly(is, os, date);
-
-                // not sure if i should really leave these closes in...
-                os.close();
-                is.close();
-
-                if (!converted) {
-                    LOG.log(Level.SEVERE, "Unable to convert KFS puzzle into Across Lite format.");
-                } else {
-                    success = true;
-                }
+                converted = BrainsOnlyIO.convertBrainsOnly(is, os, date);
             } catch (Exception ioe) {
                 LOG.log(
                     Level.SEVERE,
                     "Exception converting KFS puzzle into Across Lite format.",
                     ioe
                 );
+            }
+
+            if (!converted) {
+                LOG.log(Level.SEVERE, "Unable to convert KFS puzzle into Across Lite format.");
+            } else {
+                success = true;
             }
         } finally {
             if (!success && downloadTo != null)

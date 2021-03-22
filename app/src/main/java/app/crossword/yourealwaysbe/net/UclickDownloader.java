@@ -80,26 +80,17 @@ public class UclickDownloader extends AbstractDownloader {
             if (downloadTo == null)
                 return null;
 
+            boolean converted = false;
+
             try (
                 InputStream is = fileHandler.getInputStream(plainText);
                 DataOutputStream os = new DataOutputStream(
                     fileHandler.getOutputStream(downloadTo)
                 );
             ) {
-                boolean converted = UclickXMLIO.convertUclickPuzzle(
+                converted = UclickXMLIO.convertUclickPuzzle(
                     is, os, "\u00a9 " + date.getYear() + " " + copyright, date
                 );
-                os.close();
-                is.close();
-
-                if (!converted) {
-                    LOG.log(
-                        Level.SEVERE,
-                        "Unable to convert uclick XML puzzle into Across Lite format."
-                    );
-                } else {
-                    success = true;
-                }
             } catch (IOException ioe) {
                 LOG.log(
                     Level.SEVERE,
@@ -107,13 +98,21 @@ public class UclickDownloader extends AbstractDownloader {
                     ioe
                 );
             }
+
+            if (!converted) {
+                LOG.log(
+                    Level.SEVERE,
+                    "Unable to convert uclick XML puzzle into Across Lite format."
+                );
+            } else {
+                success = true;
+            }
         } finally {
             if (plainText != null)
                 fileHandler.delete(plainText);
             if (!success && downloadTo != null)
                 fileHandler.delete(downloadTo);
         }
-
 
         return success ? new Downloader.DownloadResult(downloadTo) : null;
     }

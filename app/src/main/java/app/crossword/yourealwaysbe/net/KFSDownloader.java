@@ -77,34 +77,34 @@ public class KFSDownloader extends AbstractDownloader {
 
             String copyright = "\u00a9 " + date.getYear() + " King Features Syndicate.";
 
+            boolean converted = false;
+
             try (
                 InputStream is = fileHandler.getInputStream(plainText);
                 DataOutputStream os = new DataOutputStream(
                     fileHandler.getOutputStream(downloadTo)
                 );
             ) {
-                boolean converted = KingFeaturesPlaintextIO.convertKFPuzzle(
+                converted = KingFeaturesPlaintextIO.convertKFPuzzle(
                     is, os,
                     fullName + ", " + df.format(date),
                     author, copyright, date
                 );
-                os.close();
-                is.close();
-
-                if (!converted) {
-                    LOG.log(
-                        Level.SEVERE,
-                        "Unable to convert KFS puzzle into Across Lite format."
-                    );
-                } else {
-                    success = true;
-                }
             } catch (Exception ioe) {
                 LOG.log(
                     Level.SEVERE,
                     "Exception converting KFS puzzle into Across Lite format.",
                     ioe
                 );
+            }
+
+            if (!converted) {
+                LOG.log(
+                    Level.SEVERE,
+                    "Unable to convert KFS puzzle into Across Lite format."
+                );
+            } else {
+                success = true;
             }
         } finally {
             fileHandler.delete(plainText);

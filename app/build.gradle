@@ -69,7 +69,7 @@ android {
 
     tasks.withType(JavaCompile) {
         configure(options) {
-            options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+            options.compilerArgs << '-Xlint:all'
         }
     }
 }
