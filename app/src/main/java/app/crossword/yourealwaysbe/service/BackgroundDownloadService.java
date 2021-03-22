@@ -9,6 +9,7 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.preference.PreferenceManager;
@@ -44,13 +45,7 @@ public class BackgroundDownloadService extends JobService {
                 .setRequiresCharging(requireCharging)
                 .setPersisted(true);
 
-        if (!requireUnmetered) {
-            if (allowRoaming) {
-                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-            } else {
-                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NOT_ROAMING);
-            }
-        }
+        setRequiredNetworkType(builder, requireUnmetered, allowRoaming);
 
         return builder.build();
     }
@@ -78,6 +73,21 @@ public class BackgroundDownloadService extends JobService {
             scheduleJob(context);
         } else {
             cancelJob(context);
+        }
+    }
+
+    @SuppressWarnings("InlinedApi")
+    private static void setRequiredNetworkType(
+        JobInfo.Builder builder, boolean requireUnmetered, boolean allowRoaming
+    ) {
+        boolean versionSupportsRoaming
+            = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+        if (!requireUnmetered) {
+            if (allowRoaming || !versionSupportsRoaming) {
+                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+            } else {
+                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_NOT_ROAMING);
+            }
         }
     }
 

@@ -129,8 +129,8 @@
     <string name="download_wifi_only_desc_on">Only schedule background downloads when Wifi is available.</string>
     <string name="download_wifi_only_desc_off">Schedule background downloads even when not on Wifi</string>
     <string name="download_roaming">Download when roaming</string>
-    <string name="download_roaming_desc_on">Schedule background downloads when roaming</string>
-    <string name="download_roaming_desc_off">Do not schedule background downloads when roaming</string>
+    <string name="download_roaming_desc_on">Schedule background downloads even when roaming</string>
+    <string name="download_roaming_desc_off">Do not schedule background downloads when roaming (will download when roaming on Android 6 (Marshmallow) or earlier)</string>
     <string name="download_charging">Download while charging only</string>
     <string name="download_charging_desc_on">Only schedule background downloads when charging</string>
     <string name="download_charging_desc_off">Schedule background downloads when on battery</string>
