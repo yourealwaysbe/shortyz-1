@@ -5,6 +5,15 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation group: 'junit', name: 'junit', version: '3.+'
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    // thanks to
+    // https://www.morling.dev/blog/bytebuffer-and-the-dreaded-nosuchmethoderror/
+    // https://github.com/danilovesky/workcraft/commit/6901b6e2de001c720d5e744ac877878c8931f2a7
+    compileJava {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.release = 8
+        }
+    }
 }
