@@ -131,11 +131,5 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true">
         </service>
-
-        <activity android:name="app.crossword.yourealwaysbe.nyt.ErrorActivity"
-            android:theme="@style/NYT"
-            />
     </application>
-
-
 </manifest>
