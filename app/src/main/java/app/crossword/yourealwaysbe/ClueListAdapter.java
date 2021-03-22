@@ -70,7 +70,7 @@ public class ClueListAdapter extends ArrayAdapter<Clue> {
         if (view == null) {
             LayoutInflater inflater = (LayoutInflater) context.getApplicationContext()
                                                               .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.clue_detail_item, null);
+            view = inflater.inflate(R.layout.clue_detail_item, parent);
         }
 
         TextView line = view.findViewById(R.id.clueLine);
