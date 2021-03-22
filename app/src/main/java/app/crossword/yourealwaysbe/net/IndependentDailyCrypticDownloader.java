@@ -12,6 +12,7 @@ import java.time.Month;
 import java.time.Period;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -109,7 +110,8 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
     }
 
     protected String createUrlSuffix(LocalDate date) {
-        return String.format("c_%02d%02d%02d.xml",
+        return String.format(Locale.US,
+                             "c_%02d%02d%02d.xml",
                              date.getYear() % 100,
                              date.getMonthValue(),
                              date.getDayOfMonth());
