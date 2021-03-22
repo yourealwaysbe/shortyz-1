@@ -741,7 +741,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             return;
         }
         if (actionMode == null) {
-            getSupportActionBar().startActionMode(actionModeCallback);
+            startSupportActionMode(actionModeCallback);
         }
         updateSelection(v);
     }
