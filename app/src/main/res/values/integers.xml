@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="keyboardButtonPaddingPcnt">2</integer>
+    <integer name="small_clue_text_size">12</integer>
+    <integer name="medium_clue_text_size">14</integer>
+    <integer name="large_clue_text_size">16</integer>
 </resources>
 

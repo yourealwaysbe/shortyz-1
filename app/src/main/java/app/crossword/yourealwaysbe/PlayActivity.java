@@ -444,7 +444,9 @@ public class PlayActivity extends PuzzleActivity
             }
         });
 
-        this.setClueSize(prefs.getInt("clueSize", 12));
+        int smallClueTextSize
+            = getResources().getInteger(R.integer.small_clue_text_size);
+        this.setClueSize(prefs.getInt("clueSize", smallClueTextSize));
         setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
              + " -	" + neverNull(puz.getCopyright()));
         this.showCount = prefs.getBoolean("showCount", false);
@@ -722,13 +724,19 @@ public class PlayActivity extends PuzzleActivity
             this.startActivity(helpIntent);
             return true;
         } else if (id == R.id.play_menu_clue_size_s) {
-            this.setClueSize(12);
+            this.setClueSize(
+                getResources().getInteger(R.integer.small_clue_text_size)
+            );
             return true;
         } else if (id == R.id.play_menu_clue_size_m) {
-            this.setClueSize(14);
+            this.setClueSize(
+                getResources().getInteger(R.integer.medium_clue_text_size)
+            );
             return true;
         } else if (id == R.id.play_menu_clue_size_l) {
-            this.setClueSize(16);
+            this.setClueSize(
+                getResources().getInteger(R.integer.large_clue_text_size)
+            );
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -890,7 +898,9 @@ public class PlayActivity extends PuzzleActivity
             );
         }
 
-        if (prefs.getInt("clueSize", 12) != dps) {
+        int smallClueTextSize
+            = getResources().getInteger(R.integer.small_clue_text_size);
+        if (prefs.getInt("clueSize", smallClueTextSize) != dps) {
             this.prefs.edit().putInt("clueSize", dps).apply();
         }
     }
