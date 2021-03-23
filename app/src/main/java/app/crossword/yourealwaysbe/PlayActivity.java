@@ -499,11 +499,9 @@ public class PlayActivity extends PuzzleActivity
         } else {
             menu.findItem(R.id.play_menu_show_errors).setChecked(this.showErrors);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                if (ForkyzApplication.isTabletish(metrics)) {
-                    menu.findItem(R.id.play_menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-                    menu.findItem(R.id.play_menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-                }
+            if (ForkyzApplication.isTabletish(metrics)) {
+                menu.findItem(R.id.play_menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+                menu.findItem(R.id.play_menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
             }
         }
 

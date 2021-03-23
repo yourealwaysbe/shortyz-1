@@ -133,16 +133,11 @@ public class ForkyzApplication extends Application {
     }
 
     public static boolean isTabletish(DisplayMetrics metrics) {
-        if(android.os.Build.VERSION.SDK_INT > 12) {
-
-            double x = Math.pow(metrics.widthPixels / metrics.xdpi, 2);
-            double y = Math.pow(metrics.heightPixels / metrics.ydpi, 2);
-            double screenInches = Math.sqrt(x + y);
-            if (screenInches > 9) { // look for a 9" or larger screen.
-                return true;
-            } else {
-                return false;
-            }
+        double x = Math.pow(metrics.widthPixels / metrics.xdpi, 2);
+        double y = Math.pow(metrics.heightPixels / metrics.ydpi, 2);
+        double screenInches = Math.sqrt(x + y);
+        if (screenInches > 9) { // look for a 9" or larger screen.
+            return true;
         } else {
             return false;
         }

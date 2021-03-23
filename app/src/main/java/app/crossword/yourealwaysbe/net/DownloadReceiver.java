@@ -30,13 +30,11 @@ public class DownloadReceiver extends BroadcastReceiver {
 
     private BroadcastReceiver impl;
     {
-        if(android.os.Build.VERSION.SDK_INT >= 9){
-            try{
-                BroadcastReceiver built = (BroadcastReceiver) Class.forName("app.crossword.yourealwaysbe.net.DownloadReceiverGinger").newInstance();
-                impl = built;
-            } catch(Exception e){
-                e.printStackTrace();
-            }
+        try{
+            BroadcastReceiver built = (BroadcastReceiver) Class.forName("app.crossword.yourealwaysbe.net.DownloadReceiverGinger").newInstance();
+            impl = built;
+        } catch(Exception e){
+            e.printStackTrace();
         }
         if(impl == null){
             impl = new DownloadReceiverNoop();

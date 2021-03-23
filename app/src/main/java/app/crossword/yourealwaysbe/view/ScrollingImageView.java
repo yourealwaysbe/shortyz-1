@@ -42,18 +42,16 @@ public class ScrollingImageView extends FrameLayout implements OnGestureListener
         imageView = new ImageView(context);
 
 
-        if (android.os.Build.VERSION.SDK_INT >= 8) {
-            try {
-                aux = (AuxTouchHandler) Class.forName("app.crossword.yourealwaysbe.view.MultitouchHandler")
-                                             .newInstance();
-                aux.init(this);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+        try {
+            aux = (AuxTouchHandler) Class.forName("app.crossword.yourealwaysbe.view.MultitouchHandler")
+                                         .newInstance();
+            aux.init(this);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
