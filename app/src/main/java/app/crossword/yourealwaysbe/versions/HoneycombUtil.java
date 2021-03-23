@@ -1,45 +1,46 @@
 package app.crossword.yourealwaysbe.versions;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
+import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View.OnClickListener;
+import android.view.View;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import android.view.MenuItem;
-import android.view.SubMenu;
-import android.view.View;
-import android.view.View.OnClickListener;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
+import app.crossword.yourealwaysbe.net.DownloadReceiver;
+import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
+import app.crossword.yourealwaysbe.util.files.DirHandle;
 
+public class HoneycombUtil extends DefaultUtil {
 
-@TargetApi(11)
-public class HoneycombUtil extends GingerbreadUtil {
+    public void setContext(Context ctx) { }
 
-	{
-		System.out.println("Honeycomb Utils.");
-	}
-
-	@Override
+    @Override
     public void finishOnHomeButton(final AppCompatActivity a) {
-		ActionBar bar = a.getSupportActionBar();
-		if(bar == null){
-			return;
-		}
-		bar.setDisplayHomeAsUpEnabled(true);
-		View home = a.findViewById(android.R.id.home);
+        ActionBar bar = a.getSupportActionBar();
+        if(bar == null){
+            return;
+        }
+        bar.setDisplayHomeAsUpEnabled(true);
+        View home = a.findViewById(android.R.id.home);
         if(home != null){
-	        home.setOnClickListener(new OnClickListener() {
-	                public void onClick(View arg0) {
-	                    a.finish();
-	                }
-	            });
+            home.setOnClickListener(new OnClickListener() {
+                    public void onClick(View arg0) {
+                        a.finish();
+                    }
+                });
         }
     }
 
-    @TargetApi(11)
-	@Override
+    @Override
     public void holographic(AppCompatActivity a) {
         ActionBar bar = a.getSupportActionBar();
         if (bar != null) {
@@ -49,12 +50,12 @@ public class HoneycombUtil extends GingerbreadUtil {
 
     @Override
     public boolean isNightModeAvailable(){
-		return true;
-	}
+        return true;
+    }
 
-	@Override
+    @Override
     public void nextNightMode(ForkyzActivity activity){
-		activity.nightMode.next();
+        activity.nightMode.next();
         if(activity.nightMode.isNightMode()){
             AppCompatDelegate.setDefaultNightMode(
                 AppCompatDelegate.MODE_NIGHT_YES
@@ -64,10 +65,10 @@ public class HoneycombUtil extends GingerbreadUtil {
                 AppCompatDelegate.MODE_NIGHT_NO
             );
         }
-	}
+    }
 
-	@Override
-	public void restoreNightMode(ForkyzActivity forkyzActivity) {
+    @Override
+    public void restoreNightMode(ForkyzActivity forkyzActivity) {
         restoreNightMode(forkyzActivity.nightMode);
     }
 
@@ -76,7 +77,7 @@ public class HoneycombUtil extends GingerbreadUtil {
         nightMode.restoreNightMode();
     }
 
-	@Override
+    @Override
     public void onActionBarWithText(MenuItem a) {
         a.setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT + MenuItem.SHOW_AS_ACTION_IF_ROOM);
     }
@@ -100,27 +101,58 @@ public class HoneycombUtil extends GingerbreadUtil {
     }
 
     public View onActionBarCustom(AppCompatActivity a, int id) {
-    	ActionBar bar = a.getSupportActionBar();
-    	if(bar == null){
-    		return null;
-    	}
-    	bar.setDisplayShowCustomEnabled(true);
-    	bar.setDisplayShowTitleEnabled(false);
-    	bar.setDisplayShowHomeEnabled(true);
-    	bar.setCustomView(id);
-    	return bar.getCustomView();
-	}
-
-    public void hideWindowTitle(AppCompatActivity a) {
-    	// no op;
+        ActionBar bar = a.getSupportActionBar();
+        if(bar == null){
+            return null;
+        }
+        bar.setDisplayShowCustomEnabled(true);
+        bar.setDisplayShowTitleEnabled(false);
+        bar.setDisplayShowHomeEnabled(true);
+        bar.setCustomView(id);
+        return bar.getCustomView();
     }
 
-	public void hideActionBar(AppCompatActivity a) {
-		ActionBar ab = a.getSupportActionBar();
-		if(ab == null){
-			return;
-		}
-		ab.hide();
-	}
+    public void hideWindowTitle(AppCompatActivity a) {
+        // no op;
+    }
+
+    public void hideActionBar(AppCompatActivity a) {
+        ActionBar ab = a.getSupportActionBar();
+        if(ab == null){
+            return;
+        }
+        ab.hide();
+    }
+
+    public void storeMetas(Uri uri, PuzzleMeta meta, DirHandle parentDir) {
+        DownloadReceiver.metas.put(uri,
+            new DownloadReceiver.Metas(meta, parentDir)
+        );
+    }
+
+    public DownloadReceiver.Metas removeMetas(Uri uri) {
+        return DownloadReceiver.metas.remove(uri);
+    }
+
+    @Override
+    public boolean isBackgroundDownloadAvaliable() {
+        return false;
+    }
+
+    @Override
+    public boolean checkBackgroundDownload(SharedPreferences prefs, boolean hasWritePermissions) {
+        return false;
+    }
+
+    @Override
+    public void clearBackgroundDownload(SharedPreferences prefs) {
+
+    }
+
+    @Override
+    public void createNotificationChannel(Context context) {
+
+    }
+
 
 }

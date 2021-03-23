@@ -53,22 +53,14 @@ public interface AndroidVersionUtils {
             if(INSTANCE != null){
                 return INSTANCE;
             }
-            System.out.println("Creating utils for version: "
-                    + android.os.Build.VERSION.SDK_INT);
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                System.out.println("Using Oreo");
                 return INSTANCE = new OreoUtil();
             }
             else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                System.out.println("Using Lollipop");
                 return INSTANCE = new LollipopUtil();
             }
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                System.out.println("Using Honeycomb");
+            else {
                 return INSTANCE = new HoneycombUtil();
-            } else {
-                System.out.println("Using Gingerbread");
-                return INSTANCE = new GingerbreadUtil();
             }
         }
     }
