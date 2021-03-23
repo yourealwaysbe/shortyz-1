@@ -93,6 +93,7 @@ public class ForkyzActivity extends AppCompatActivity {
         doOrientation();
     }
 
+    @SuppressWarnings("SourceLockedOrientationActivity")
     private void doOrientation() {
         try {
             if ("PORT".equals(prefs.getString("orientationLock", "UNLOCKED"))) {
