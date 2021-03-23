@@ -4,7 +4,6 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-
 /**
  * Washington Post downloader
  * URL: http://www.washingtonpost.com/r/WashingtonPost/Content/Puzzles/Daily/

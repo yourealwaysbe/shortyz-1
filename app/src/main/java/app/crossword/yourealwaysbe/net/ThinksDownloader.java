@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Thinks.com
@@ -39,6 +40,6 @@ public class ThinksDownloader extends AbstractDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return date.getYear() + "-" + nf.format(date.getMonthValue()) + "/" + "dc1-" + date.getYear() +
-        "-" + nf.format(date.getMonthValue()) + "-" + nf.format(date.getDayOfMonth()) + ".puz";
+        "-" + nf.format(date.getMonthValue()) + "-" + nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 }

@@ -34,6 +34,9 @@ public abstract class FileHandler {
     public static final String MIME_TYPE_GENERIC = "application/octet-stream";
     public static final String MIME_TYPE_GENERIC_XML = "text/xml";
 
+    public static final String FILE_EXT_PUZ = ".puz";
+    public static final String FILE_EXT_FORKYZ = ".forkyz";
+
     public abstract DirHandle getCrosswordsDirectory();
     public abstract DirHandle getArchiveDirectory();
     public abstract DirHandle getTempDirectory();
@@ -129,9 +132,9 @@ public abstract class FileHandler {
 
         for (FileHandle f : listFiles(dirHandle)) {
             String fileName = getName(f);
-            if (fileName.endsWith(".puz")) {
+            if (fileName.endsWith(FILE_EXT_PUZ)) {
                 puzFiles.put(fileName, f);
-            } else if (fileName.endsWith(".forkyz")) {
+            } else if (fileName.endsWith(FILE_EXT_FORKYZ)) {
                 metaFiles.put(fileName, f);
             } else {
             }
@@ -302,6 +305,6 @@ public abstract class FileHandler {
 
     protected String getMetaFileName(FileHandle puzFile) {
         String name = getName(puzFile);
-        return name.substring(0, name.lastIndexOf(".")) + ".forkyz";
+        return name.substring(0, name.lastIndexOf(".")) + FileHandler.FILE_EXT_FORKYZ;
     }
 }

@@ -3,6 +3,9 @@ package app.crossword.yourealwaysbe.net;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+
+import app.crossword.yourealwaysbe.util.files.FileHandler;
+
 /**
  * http://wij.theworld.com/puzzles/dailyrecord/DR110401.puz
  * @author robert.cooper
@@ -28,7 +31,7 @@ public class ISwearDownloader extends AbstractDownloader {
 
     @Override
     protected String createUrlSuffix(LocalDate date) {
-        return "DR" + (date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + ".puz";
+        return "DR" + (date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 
 	public String getName() {

@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Jonesin' Crosswords Downloader
@@ -34,6 +35,6 @@ public class JonesinDownloader extends AbstractDownloader {
 
     @Override
     protected String createUrlSuffix(LocalDate date) {
-        return "jz" + (date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + ".puz";
+        return "jz" + (date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 }

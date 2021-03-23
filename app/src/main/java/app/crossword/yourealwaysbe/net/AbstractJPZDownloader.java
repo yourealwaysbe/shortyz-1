@@ -72,7 +72,7 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
 
     public String createFileName(LocalDate date) {
         return date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "-" +
-        this.getName().replaceAll(" ", "") + ".puz";
+        this.getName().replaceAll(" ", "") + FileHandler.FILE_EXT_PUZ;
     }
 
     protected Downloader.DownloadResult download(

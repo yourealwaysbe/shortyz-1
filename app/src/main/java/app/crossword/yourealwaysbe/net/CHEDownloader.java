@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Chronicle of Higher Education
@@ -36,6 +37,6 @@ public class CHEDownloader extends AbstractDownloader {
 
     @Override
     protected String createUrlSuffix(LocalDate date) {
-        return date.getYear() + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + ".puz";
+        return date.getYear() + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 }

@@ -70,7 +70,7 @@ public abstract class AbstractDownloader implements Downloader {
             date.getYear() + "-" +
             date.getMonthValue() + "-" +
             date.getDayOfMonth() + "-" +
-            this.downloaderName.replaceAll(" ", "") + ".puz"
+            this.downloaderName.replaceAll(" ", "") + FileHandler.FILE_EXT_PUZ
         );
     }
 

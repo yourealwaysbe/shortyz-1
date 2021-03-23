@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Boston Globe
@@ -35,6 +36,6 @@ public class OldBostonGlobeDownloader extends AbstractDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return "boston_" + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) + date.getYear() +
-        ".puz";
+        FileHandler.FILE_EXT_PUZ;
     }
 }

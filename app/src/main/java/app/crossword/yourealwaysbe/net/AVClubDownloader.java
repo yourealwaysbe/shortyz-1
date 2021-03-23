@@ -46,7 +46,7 @@ public class AVClubDownloader extends AbstractDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return "av" + this.nf.format(date.getYear() % 100) + this.nf.format(date.getMonthValue()) +
-        this.nf.format(date.getDayOfMonth()) + ".puz";
+        this.nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 
     @Override

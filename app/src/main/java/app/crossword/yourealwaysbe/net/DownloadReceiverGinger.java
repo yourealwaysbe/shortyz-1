@@ -39,7 +39,7 @@ public class DownloadReceiverGinger extends BroadcastReceiver {
                     .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
             uri = Uri.parse(uriString);
             c.close();
-            if (uri == null || !uri.toString().endsWith(".puz")) {
+            if (uri == null || !uri.toString().endsWith(FileHandler.FILE_EXT_PUZ)) {
                 return;
             }
         } catch (CursorIndexOutOfBoundsException e) {

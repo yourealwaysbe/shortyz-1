@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Philadelphia Inquirer
@@ -35,6 +36,6 @@ public class PhillyDownloader extends AbstractDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return "pi" + nf.format(date.getYear() % 100) + nf.format(date.getMonthValue() ) + nf.format(date.getDayOfMonth()) +
-        ".puz";
+        FileHandler.FILE_EXT_PUZ;
     }
 }

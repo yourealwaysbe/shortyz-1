@@ -5,6 +5,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Los Angeles Times
@@ -36,7 +37,7 @@ public class OldLATDownloader extends AbstractDownloader {
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return "lat" + this.nf.format(date.getYear() % 100) + this.nf.format(date.getMonthValue()) +
-        this.nf.format(date.getDayOfMonth()) + ".puz";
+        this.nf.format(date.getDayOfMonth()) + FileHandler.FILE_EXT_PUZ;
     }
 
     @Override
