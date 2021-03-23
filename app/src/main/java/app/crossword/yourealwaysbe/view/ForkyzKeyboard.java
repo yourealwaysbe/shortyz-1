@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -36,7 +37,7 @@ public class ForkyzKeyboard
     private static final int KEY_REPEAT_DELAY = 300;
     private static final int KEY_REPEAT_INTERVAL = 75;
 
-    private SparseArray<Integer> keyCodes = new SparseArray<>();
+    private SparseIntArray keyCodes = new SparseIntArray();
     private SparseArray<Timer> keyTimers = new SparseArray<>();
     private InputConnection inputConnection;
     private int countKeysDown = 0;
