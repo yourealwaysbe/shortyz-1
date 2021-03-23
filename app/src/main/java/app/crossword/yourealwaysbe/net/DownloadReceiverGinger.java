@@ -1,8 +1,8 @@
 package app.crossword.yourealwaysbe.net;
 
-import android.annotation.SuppressLint;
-import android.app.DownloadManager;
+import android.annotation.TargetApi;
 import android.app.DownloadManager.Query;
+import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,15 +16,13 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
 public class DownloadReceiverGinger extends BroadcastReceiver {
 
     @Override
-    @SuppressLint("NewApi")
     public void onReceive(Context ctx, Intent intent) {
         DownloadManager mgr = (DownloadManager) ctx
                 .getSystemService(Context.DOWNLOAD_SERVICE);
         long id = intent.getLongExtra("extra_download_id", -1);
 
-        if (android.os.Build.VERSION.SDK_INT >= 11
-                && !"application/x-crossword".equals(mgr
-                        .getMimeTypeForDownloadedFile(id))) {
+        if(!FileHandler.MIME_TYPE_PUZ.equals(
+            mgr.getMimeTypeForDownloadedFile(id))) {
             return;
         }
         Uri uri = null;
@@ -39,7 +37,6 @@ public class DownloadReceiverGinger extends BroadcastReceiver {
             c.moveToFirst();
             String uriString = c.getString(c
                     .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
-            System.out.println("uriString: " + uriString);
             uri = Uri.parse(uriString);
             c.close();
             if (uri == null || !uri.toString().endsWith(".puz")) {
