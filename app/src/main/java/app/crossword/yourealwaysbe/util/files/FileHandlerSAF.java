@@ -189,7 +189,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public void delete(FileHandle fileHandle) {
+    protected void deleteUnsync(FileHandle fileHandle) {
         try {
             DocumentsContract.deleteDocument(
                 context.getContentResolver(),
@@ -209,7 +209,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public void moveTo(
+    protected void moveToUnsync(
         FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
     ) {
         try {

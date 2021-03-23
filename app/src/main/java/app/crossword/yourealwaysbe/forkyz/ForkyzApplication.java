@@ -88,20 +88,37 @@ public class ForkyzApplication extends Application {
         return puzHandle;
     }
 
-    public void saveBoard() throws IOException {
+    /**
+     * Save the puzzle
+     *
+     * Will block, but saving is quick, so probably safer to let it
+     * block onPause.
+     */
+    public void saveBoard() {
         PuzHandle puzHandle = getPuzHandle();
-        if (puzHandle == null)
-            throw new IOException("No puz handle to save puzzle to.");
+        if (puzHandle == null) {
+            LOGGER.severe("No puz handle to save puzzle to.");
+            return;
+        }
 
         Playboard board = getBoard();
-        if (board == null)
-            throw new IOException("No board to save.");
+        if (board == null) {
+            LOGGER.severe("No board to save.");
+            return;
+        }
 
         Puzzle puz = board.getPuzzle();
-        if (puz == null)
-            throw new IOException("No puzzle associated to the board to save.");
+        if (puz == null) {
+            LOGGER.severe("No puzzle associated to the board to save.");
+            return;
+        }
 
-        getFileHandler().save(puz, puzHandle);
+        try {
+            getFileHandler().save(puz, puzHandle);
+        } catch (IOException e) {
+            LOGGER.severe("Error saving puzzle.");
+            e.printStackTrace();
+        }
     }
 
     public void setRenderer(PlayboardRenderer renderer){

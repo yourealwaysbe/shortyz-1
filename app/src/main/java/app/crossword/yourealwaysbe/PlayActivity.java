@@ -122,7 +122,7 @@ public class PlayActivity extends PuzzleActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final FileHandler fileHandler = getFileHandler();
+        setContentView(R.layout.play);
 
         metrics = getResources().getDisplayMetrics();
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
@@ -150,245 +150,287 @@ public class PlayActivity extends PuzzleActivity
         setFullScreenMode();
 
         PuzHandle puzHandle = null;
-        Puzzle puz = null;
 
-        try {
-            puzHandle = ForkyzApplication.getInstance().getPuzHandle();
+        puzHandle = ForkyzApplication.getInstance().getPuzHandle();
 
-            if (puzHandle == null) {
-                LOG.info("PlayActivity started but no Puzzle selected, finishing.");
-                finish();
+        if (puzHandle == null) {
+            LOG.info("PlayActivity started but no Puzzle selected, finishing.");
+            finish();
+        }
+
+        setContentView(R.layout.play);
+
+        this.constraintLayout
+            = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
+
+        this.clue = this.findViewById(R.id.clueLine);
+        if (clue != null && clue.getVisibility() != View.GONE) {
+            ConstraintSet set = new ConstraintSet();
+            set.clone(constraintLayout);
+            set.setVisibility(clue.getId(), ConstraintSet.GONE);
+            set.applyTo(constraintLayout);
+
+            View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
+            if (custom != null) {
+                clue = custom.findViewById(R.id.clueLine);
             }
+        }
 
-            puz = fileHandler.load(puzHandle);
+        this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
+        this.clueTabs = this.findViewById(R.id.playClueTab);
 
-            if (puz == null || puz.getBoxes() == null) {
-                throw new IOException("Puzzle is null or contains no boxes.");
-            }
+        ForkyzKeyboard keyboardView
+            = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
+        keyboardManager
+            = new KeyboardManager(this, keyboardView, null);
 
-            ForkyzApplication.getInstance().setBoard(
-                    new Playboard(puz,
-                                  movement,
-                                  prefs.getBoolean("preserveCorrectLettersInShowErrors",
-                                                   false),
-                                  prefs.getBoolean("dontDeleteCrossing", true)),
-                    puzHandle
-            );
-            ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
+        startLoadPuzzle(puzHandle);
+    }
 
-            float scale = prefs.getFloat(SCALE, 1.0F);
-
-            if (scale > getRenderer().getDeviceMaxScale()) {
-                scale = getRenderer().getDeviceMaxScale();
-            } else if (scale < getRenderer().getDeviceMinScale()) {
-                scale = getRenderer().getDeviceMinScale();
-            } else if (Float.isNaN(scale)) {
-                scale = 1F;
-            }
-            prefs.edit().putFloat(SCALE, scale).apply();
-
-            getRenderer().setScale(scale);
-            getBoard().setSkipCompletedLetters(this.prefs.getBoolean("skipFilled",
-                    false));
-
-            setContentView(R.layout.play);
-
-            this.constraintLayout
-                = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
-
-            this.clue = this.findViewById(R.id.clueLine);
-            if (clue != null && clue.getVisibility() != View.GONE) {
-                ConstraintSet set = new ConstraintSet();
-                set.clone(constraintLayout);
-                set.setVisibility(clue.getId(), ConstraintSet.GONE);
-                set.applyTo(constraintLayout);
-
-                View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
-                if (custom != null) {
-                    clue = custom.findViewById(R.id.clueLine);
-                }
-            }
-            if(this.clue != null) {
-                this.clue.setClickable(true);
-                this.clue.setOnClickListener(new OnClickListener() {
-                    public void onClick(View arg0) {
-                        if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
-                            PlayActivity.this.hideClueTabs();
-                            PlayActivity.this.render(true);
-                        } else {
-                            PlayActivity.this.showClueTabs();
-                            PlayActivity.this.render(true);
-                        }
+    /**
+     * Load the puzzle in a background thread
+     *
+     * Update/enable/create full UI once loaded
+     */
+    private void startLoadPuzzle(PuzHandle puzHandle) {
+        View pleaseWait = findViewById(R.id.please_wait_notice);
+        pleaseWait.setVisibility(View.VISIBLE);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FileHandler fileHandler = getFileHandler();
+                try {
+                    Puzzle puz = fileHandler.load(puzHandle);
+                    if (puz == null || puz.getBoxes() == null) {
+                        throw new IOException(
+                            "Puzzle is null or contains no boxes."
+                        );
                     }
-                });
-                this.clue.setOnLongClickListener(new OnLongClickListener() {
-                    public boolean onLongClick(View arg0) {
-                        PlayActivity.this.launchClueList();
-                        return true;
-                    }
-                });
-            }
-
-            this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
-            this.boardView.setCurrentScale(scale);
-            this.boardView.setFocusable(true);
-            this.registerForContextMenu(boardView);
-            boardView.setContextMenuListener(new ClickListener() {
-                public void onContextMenu(final Point e) {
                     handler.post(new Runnable() {
+                        @Override
                         public void run() {
-                            try {
-                                Position p = getRenderer().findBox(e);
-                                Word w = getBoard().setHighlightLetter(p);
-                                boolean displayScratch = prefs.getBoolean("displayScratch", false);
-                                getRenderer().draw(w,
-                                                   displayScratch,
-                                                   displayScratch);
+                            pleaseWait.setVisibility(View.GONE);
+                            PlayActivity.this.postLoadPuzzle(puzHandle, puz);
+                        }
+                    });
+                } catch (IOException e) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pleaseWait.setVisibility(View.GONE);
 
-                                launchNotes();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
+                            String filename = null;
+
+                            try {
+                                filename = fileHandler.getName(
+                                    puzHandle.getPuzFileHandle()
+                                );
+                            } catch (Exception ee) {
+                                e.printStackTrace();
                             }
+
+                            Toast t = Toast.makeText(
+                                PlayActivity.this,
+                                PlayActivity.this.getString(
+                                    R.string.unable_to_read_file,
+                                    (filename != null ?  filename : "")
+                                ),
+                                Toast.LENGTH_SHORT
+                            );
+                            t.show();
+                            PlayActivity.this.finish();
                         }
                     });
                 }
+            }
+        }).run();
+    }
 
-                public void onTap(Point e) {
-                    try {
-                        if (prefs.getBoolean("doubleTap", false)
-                                && ((System.currentTimeMillis() - lastTap) < 300)) {
-                            if (fitToScreen) {
-                                getRenderer().setScale(prefs.getFloat(SCALE, 1F));
-                                boardView.setCurrentScale(1F);
-                                getBoard().setHighlightLetter(getRenderer().findBox(e));
-                            } else {
-                                int w = boardView.getWidth();
-                                int h = boardView.getHeight();
-                                float scale = getRenderer().fitTo((w < h) ? w : h);
-                                boardView.setCurrentScale(scale);
-                                render(true);
-                                boardView.scrollTo(0, 0);
-                            }
+    private void postLoadPuzzle(PuzHandle puzHandle, Puzzle puz) {
+        FileHandler fileHandler
+            = ForkyzApplication.getInstance().getFileHandler();
 
-                            fitToScreen = !fitToScreen;
-                        } else {
-                            Position p = getRenderer().findBox(e);
-                            if (getBoard().isInWord(p)) {
-                                Word previous = getBoard().setHighlightLetter(p);
-                                displayKeyboard(previous);
-                            }
-                        }
+        ForkyzApplication.getInstance().setBoard(
+            new Playboard(
+                puz,
+                movement,
+                prefs.getBoolean("preserveCorrectLettersInShowErrors", false),
+                prefs.getBoolean("dontDeleteCrossing", true)
+            ),
+            puzHandle
+        );
+        ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
 
-                        lastTap = System.currentTimeMillis();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-            // i know this is not needed because of onKeyUp / onKeyDown,
-            // but it seems cleaner to me that we don't rely on the
-            // keypress finding its way from the board to the activity
-            this.boardView.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View view, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_UP)
-                        return PlayActivity.this.onKeyUp(keyCode, event);
-                    if (event.getAction() == KeyEvent.ACTION_DOWN)
-                        return PlayActivity.this.onKeyDown(keyCode, event);
-                    else
-                        return false;
-                }
-            });
-            // constrain to 1:1 if clueTabs is showing
-            boardView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                public void onLayoutChange(View v,
-                  int left, int top, int right, int bottom,
-                  int leftWas, int topWas, int rightWas, int bottomWas
-                ) {
-                    boolean constrainedDims = false;
+        super.postLoadPuzzle();
 
-                    ConstraintSet set = new ConstraintSet();
-                    set.clone(constraintLayout);
+        float scale = prefs.getFloat(SCALE, 1.0F);
 
-                    boolean showCluesTab = PlayActivity.this.prefs.getBoolean(
-                        SHOW_CLUES_TAB, true
-                    );
+        if (scale > getRenderer().getDeviceMaxScale()) {
+            scale = getRenderer().getDeviceMaxScale();
+        } else if (scale < getRenderer().getDeviceMinScale()) {
+            scale = getRenderer().getDeviceMinScale();
+        } else if (Float.isNaN(scale)) {
+            scale = 1F;
+        }
+        prefs.edit().putFloat(SCALE, scale).apply();
 
-                    if (showCluesTab) {
-                        int height = bottom - top;
-                        int width = right - left;
+        getRenderer().setScale(scale);
+        getBoard().setSkipCompletedLetters(this.prefs.getBoolean("skipFilled",
+                false));
 
-                        int orientation
-                            = PlayActivity.this
-                                .getResources()
-                                .getConfiguration()
-                                .orientation;
-
-                        boolean portrait
-                            = orientation == Configuration.ORIENTATION_PORTRAIT;
-
-                        if (portrait && height > width) {
-                            constrainedDims = true;
-                            set.constrainMaxHeight(
-                                boardView.getId(),
-                                (int)(BOARD_DIM_RATIO * width)
-                            );
-                        }
+        if(this.clue != null) {
+            this.clue.setClickable(true);
+            this.clue.setOnClickListener(new OnClickListener() {
+                public void onClick(View arg0) {
+                    if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+                        PlayActivity.this.hideClueTabs();
+                        PlayActivity.this.render(true);
                     } else {
-                        set.constrainMaxHeight(boardView.getId(), 0);
-                    }
-
-                    set.applyTo(constraintLayout);
-
-                    // if the view changed size, then rescale the view
-                    // cannot change layout during a layout change, so
-                    // use a predraw listener that requests a new layout
-                    // (via render) and returns false to cancel the
-                    // current draw
-                    if (constrainedDims ||
-                        left != leftWas || right != rightWas ||
-                        top != topWas || bottom != bottomWas) {
-                        boardView.getViewTreeObserver()
-                                 .addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                            public boolean onPreDraw() {
-                                PlayActivity.this.render(true);
-                                PlayActivity.this
-                                            .boardView
-                                            .getViewTreeObserver()
-                                            .removeOnPreDrawListener(this);
-                                return false;
-                            }
-                        });
+                        PlayActivity.this.showClueTabs();
+                        PlayActivity.this.render(true);
                     }
                 }
             });
-        } catch (IOException e) {
-            System.err.println(this.getIntent().getData());
-            e.printStackTrace();
+            this.clue.setOnLongClickListener(new OnLongClickListener() {
+                public boolean onLongClick(View arg0) {
+                    PlayActivity.this.launchClueList();
+                    return true;
+                }
+            });
+        }
 
-            String filename = null;
+        this.boardView.setCurrentScale(scale);
+        this.boardView.setFocusable(true);
+        this.registerForContextMenu(boardView);
+        boardView.setContextMenuListener(new ClickListener() {
+            public void onContextMenu(final Point e) {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            Position p = getRenderer().findBox(e);
+                            Word w = getBoard().setHighlightLetter(p);
+                            boolean displayScratch = prefs.getBoolean("displayScratch", false);
+                            getRenderer().draw(w,
+                                               displayScratch,
+                                               displayScratch);
 
-            try {
-                filename = fileHandler.getName(
-                    this.getPuzHandle().getPuzFileHandle()
-                );
-            } catch (Exception ee) {
-                e.printStackTrace();
+                            launchNotes();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
             }
 
-            Toast t = Toast
-                    .makeText(
-                            this,
-                            "Unable to read file" +
-                                    (filename != null ?
-                                            (" \n" + filename)
-                                    : "")
-                            , Toast.LENGTH_SHORT);
-            t.show();
-            this.finish();
+            public void onTap(Point e) {
+                try {
+                    if (prefs.getBoolean("doubleTap", false)
+                            && ((System.currentTimeMillis() - lastTap) < 300)) {
+                        if (fitToScreen) {
+                            getRenderer().setScale(prefs.getFloat(SCALE, 1F));
+                            boardView.setCurrentScale(1F);
+                            getBoard().setHighlightLetter(getRenderer().findBox(e));
+                        } else {
+                            int w = boardView.getWidth();
+                            int h = boardView.getHeight();
+                            float scale = getRenderer().fitTo((w < h) ? w : h);
+                            boardView.setCurrentScale(scale);
+                            render(true);
+                            boardView.scrollTo(0, 0);
+                        }
 
-            return;
-        }
+                        fitToScreen = !fitToScreen;
+                    } else {
+                        Position p = getRenderer().findBox(e);
+                        if (getBoard().isInWord(p)) {
+                            Word previous = getBoard().setHighlightLetter(p);
+                            displayKeyboard(previous);
+                        }
+                    }
+
+                    lastTap = System.currentTimeMillis();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        // i know this is not needed because of onKeyUp / onKeyDown,
+        // but it seems cleaner to me that we don't rely on the
+        // keypress finding its way from the board to the activity
+        this.boardView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_UP)
+                    return PlayActivity.this.onKeyUp(keyCode, event);
+                if (event.getAction() == KeyEvent.ACTION_DOWN)
+                    return PlayActivity.this.onKeyDown(keyCode, event);
+                else
+                    return false;
+            }
+        });
+        // constrain to 1:1 if clueTabs is showing
+        boardView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            public void onLayoutChange(View v,
+              int left, int top, int right, int bottom,
+              int leftWas, int topWas, int rightWas, int bottomWas
+            ) {
+                boolean constrainedDims = false;
+
+                ConstraintSet set = new ConstraintSet();
+                set.clone(constraintLayout);
+
+                boolean showCluesTab = PlayActivity.this.prefs.getBoolean(
+                    SHOW_CLUES_TAB, true
+                );
+
+                if (showCluesTab) {
+                    int height = bottom - top;
+                    int width = right - left;
+
+                    int orientation
+                        = PlayActivity.this
+                            .getResources()
+                            .getConfiguration()
+                            .orientation;
+
+                    boolean portrait
+                        = orientation == Configuration.ORIENTATION_PORTRAIT;
+
+                    if (portrait && height > width) {
+                        constrainedDims = true;
+                        set.constrainMaxHeight(
+                            boardView.getId(),
+                            (int)(BOARD_DIM_RATIO * width)
+                        );
+                    }
+                } else {
+                    set.constrainMaxHeight(boardView.getId(), 0);
+                }
+
+                set.applyTo(constraintLayout);
+
+                // if the view changed size, then rescale the view
+                // cannot change layout during a layout change, so
+                // use a predraw listener that requests a new layout
+                // (via render) and returns false to cancel the
+                // current draw
+                if (constrainedDims ||
+                    left != leftWas || right != rightWas ||
+                    top != topWas || bottom != bottomWas) {
+                    boardView.getViewTreeObserver()
+                             .addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                        public boolean onPreDraw() {
+                            PlayActivity.this.render(true);
+                            PlayActivity.this
+                                        .boardView
+                                        .getViewTreeObserver()
+                                        .removeOnPreDrawListener(this);
+                            return false;
+                        }
+                    });
+                }
+            }
+        });
 
         this.boardView.setFocusable(true);
         this.boardView.setScaleListener(new ScaleListener() {
@@ -433,7 +475,6 @@ public class PlayActivity extends PuzzleActivity
             getBoard().toggleShowErrors();
         }
 
-        this.clueTabs = this.findViewById(R.id.playClueTab);
         this.clueTabs.setBoard(getBoard());
         this.clueTabs.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             public void onLayoutChange(View v,
@@ -472,12 +513,9 @@ public class PlayActivity extends PuzzleActivity
 
         }
 
-        ForkyzKeyboard keyboardView
-            = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
-        keyboardManager
-            = new KeyboardManager(this, keyboardView, boardView);
+        registerBoard();
 
-        this.render(true);
+        invalidateOptionsMenu();
     }
 
     private static String neverNull(String val) {
@@ -506,7 +544,29 @@ public class PlayActivity extends PuzzleActivity
         }
 
         menu.findItem(R.id.play_menu_scratch_mode).setChecked(this.scratchMode);
+
+        if (getBoard() == null) {
+            setMenuVisibility(menu, false);
+        }
+
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        setMenuVisibility(menu, getBoard() != null);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void setMenuVisibility(Menu menu, boolean visible) {
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            int id = item.getItemId();
+
+            // don't mess with back button
+            if (id != android.R.id.home)
+                menu.getItem(i).setVisible(visible);
+        }
     }
 
     private SpannableString createSpannableForMenu(String value){
@@ -539,78 +599,82 @@ public class PlayActivity extends PuzzleActivity
 
         keyboardManager.pushBlockHide();
 
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_SEARCH:
-                getBoard().setMovementStrategy(MovementStrategy.MOVE_NEXT_CLUE);
-                getBoard().nextWord();
-                getBoard().setMovementStrategy(this.getMovementStrategy());
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-                getBoard().moveDown();
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_DPAD_UP:
-                getBoard().moveUp();
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                getBoard().moveLeft();
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                getBoard().moveRight();
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_DPAD_CENTER:
-                getBoard().toggleDirection();
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_SPACE:
-                if (prefs.getBoolean("spaceChangesDirection", true)) {
-                    getBoard().toggleDirection();
-                } else if (this.scratchMode) {
-                    getBoard().playScratchLetter(' ');
-                } else {
-                    getBoard().playLetter(' ');
-                }
-                handled = true;
-                break;
-
-            case KeyEvent.KEYCODE_ENTER:
-                if (prefs.getBoolean("enterChangesDirection", true)) {
-                    getBoard().toggleDirection();
-                } else {
+        if (getBoard() != null) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_SEARCH:
+                    getBoard().setMovementStrategy(
+                        MovementStrategy.MOVE_NEXT_CLUE
+                    );
                     getBoard().nextWord();
-                }
-                handled = true;
-                break;
+                    getBoard().setMovementStrategy(this.getMovementStrategy());
+                    handled = true;
+                    break;
 
-            case KeyEvent.KEYCODE_DEL:
-                if (this.scratchMode) {
-                    getBoard().deleteScratchLetter();
-                } else {
-                    getBoard().deleteLetter();
-                }
-                handled = true;
-                break;
-        }
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    getBoard().moveDown();
+                    handled = true;
+                    break;
 
-        char c = Character.toUpperCase(event.getDisplayLabel());
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    getBoard().moveUp();
+                    handled = true;
+                    break;
 
-        if (!handled && ALPHA.indexOf(c) != -1) {
-            if (this.scratchMode) {
-                getBoard().playScratchLetter(c);
-            } else {
-                getBoard().playLetter(c);
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    getBoard().moveLeft();
+                    handled = true;
+                    break;
+
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    getBoard().moveRight();
+                    handled = true;
+                    break;
+
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                    getBoard().toggleDirection();
+                    handled = true;
+                    break;
+
+                case KeyEvent.KEYCODE_SPACE:
+                    if (prefs.getBoolean("spaceChangesDirection", true)) {
+                        getBoard().toggleDirection();
+                    } else if (this.scratchMode) {
+                        getBoard().playScratchLetter(' ');
+                    } else {
+                        getBoard().playLetter(' ');
+                    }
+                    handled = true;
+                    break;
+
+                case KeyEvent.KEYCODE_ENTER:
+                    if (prefs.getBoolean("enterChangesDirection", true)) {
+                        getBoard().toggleDirection();
+                    } else {
+                        getBoard().nextWord();
+                    }
+                    handled = true;
+                    break;
+
+                case KeyEvent.KEYCODE_DEL:
+                    if (this.scratchMode) {
+                        getBoard().deleteScratchLetter();
+                    } else {
+                        getBoard().deleteLetter();
+                    }
+                    handled = true;
+                    break;
             }
-            handled = true;
+
+            char c = Character.toUpperCase(event.getDisplayLabel());
+
+            if (!handled && ALPHA.indexOf(c) != -1) {
+                if (this.scratchMode) {
+                    getBoard().playScratchLetter(c);
+                } else {
+                    getBoard().playLetter(c);
+                }
+                handled = true;
+            }
         }
 
         if (!handled)
@@ -633,110 +697,119 @@ public class PlayActivity extends PuzzleActivity
         if (id == android.R.id.home) {
             finish();
             return true;
-        } else if (id == R.id.play_menu_reveal_letter) {
-            getBoard().revealLetter();
-            return true;
-        } else if (id == R.id.play_menu_reveal_word) {
-            getBoard().revealWord();
-            return true;
-        } else if (id == R.id.play_menu_reveal_errors) {
-            getBoard().revealErrors();
-            return true;
-        } else if (id == R.id.play_menu_reveal_puzzle) {
-            showRevealPuzzleDialog();
-            return true;
-        } else if (id == R.id.play_menu_show_errors) {
-            getBoard().toggleShowErrors();
-            item.setChecked(getBoard().isShowErrors());
-            this.prefs.edit().putBoolean("showErrors", getBoard().isShowErrors())
-                    .apply();
-            return true;
-        } else if (id == R.id.play_menu_scratch_mode) {
-            this.scratchMode = !this.scratchMode;
-            item.setChecked(this.scratchMode);
-            this.prefs.edit().putBoolean("scratchMode", this.scratchMode).apply();
-            return true;
-        } else if (id == R.id.play_menu_settings) {
-            Intent i = new Intent(this, PreferencesActivity.class);
-            this.startActivity(i);
-
-            return true;
-        } else if (id == R.id.play_menu_zoom_in) {
-            this.boardView.scrollTo(0, 0);
-            {
-                float newScale = getRenderer().zoomIn();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                this.fitToScreen = false;
-                boardView.setCurrentScale(newScale);
-            }
-            this.render(true);
-
-            return true;
-        } else if (id == R.id.play_menu_zoom_in_max) {
-            this.boardView.scrollTo(0, 0);
-            {
-                float newScale = getRenderer().zoomInMax();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                this.fitToScreen = false;
-                boardView.setCurrentScale(newScale);
-            }
-            this.render(true);
-
-            return true;
-        } else if (id == R.id.play_menu_zoom_out) {
-            this.boardView.scrollTo(0, 0);
-            {
-                float newScale = getRenderer().zoomOut();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                this.fitToScreen = false;
-                boardView.setCurrentScale(newScale);
-            }
-            this.render(true);
-
-            return true;
-        } else if (id == R.id.play_menu_zoom_fit) {
-            fitToScreen();
-
-            return true;
-        } else if (id == R.id.play_menu_zoom_reset) {
-            float newScale = getRenderer().zoomReset();
-            boardView.setCurrentScale(newScale);
-            this.prefs.edit().putFloat(SCALE, newScale).apply();
-            this.render(true);
-            this.boardView.scrollTo(0, 0);
-
-            return true;
-        } else if (id == R.id.play_menu_info) {
-            showInfoDialog();
-            return true;
-        } else if (id == R.id.play_menu_clues) {
-            PlayActivity.this.launchClueList();
-            return true;
-        } else if (id == R.id.play_menu_notes) {
-            launchNotes();
-            return true;
-        } else if (id == R.id.play_menu_help) {
-            Intent helpIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("file:///android_asset/playscreen.html"), this,
-                    HTMLActivity.class);
-            this.startActivity(helpIntent);
-            return true;
-        } else if (id == R.id.play_menu_clue_size_s) {
-            this.setClueSize(
-                getResources().getInteger(R.integer.small_clue_text_size)
-            );
-            return true;
-        } else if (id == R.id.play_menu_clue_size_m) {
-            this.setClueSize(
-                getResources().getInteger(R.integer.medium_clue_text_size)
-            );
-            return true;
-        } else if (id == R.id.play_menu_clue_size_l) {
-            this.setClueSize(
-                getResources().getInteger(R.integer.large_clue_text_size)
-            );
-            return true;
         }
+
+        if (getBoard() != null) {
+            if (id == R.id.play_menu_reveal_letter) {
+                getBoard().revealLetter();
+                return true;
+            } else if (id == R.id.play_menu_reveal_word) {
+                getBoard().revealWord();
+                return true;
+            } else if (id == R.id.play_menu_reveal_errors) {
+                getBoard().revealErrors();
+                return true;
+            } else if (id == R.id.play_menu_reveal_puzzle) {
+                showRevealPuzzleDialog();
+                return true;
+            } else if (id == R.id.play_menu_show_errors) {
+                getBoard().toggleShowErrors();
+                item.setChecked(getBoard().isShowErrors());
+                this.prefs.edit().putBoolean(
+                    "showErrors", getBoard().isShowErrors()
+                ).apply();
+                return true;
+            } else if (id == R.id.play_menu_scratch_mode) {
+                this.scratchMode = !this.scratchMode;
+                item.setChecked(this.scratchMode);
+                this.prefs.edit().putBoolean(
+                    "scratchMode", this.scratchMode
+                ).apply();
+                return true;
+            } else if (id == R.id.play_menu_settings) {
+                Intent i = new Intent(this, PreferencesActivity.class);
+                this.startActivity(i);
+                return true;
+            } else if (id == R.id.play_menu_zoom_in) {
+                this.boardView.scrollTo(0, 0);
+                {
+                    float newScale = getRenderer().zoomIn();
+                    this.prefs.edit().putFloat(SCALE, newScale).apply();
+                    this.fitToScreen = false;
+                    boardView.setCurrentScale(newScale);
+                }
+                this.render(true);
+
+                return true;
+            } else if (id == R.id.play_menu_zoom_in_max) {
+                this.boardView.scrollTo(0, 0);
+                {
+                    float newScale = getRenderer().zoomInMax();
+                    this.prefs.edit().putFloat(SCALE, newScale).apply();
+                    this.fitToScreen = false;
+                    boardView.setCurrentScale(newScale);
+                }
+                this.render(true);
+
+                return true;
+            } else if (id == R.id.play_menu_zoom_out) {
+                this.boardView.scrollTo(0, 0);
+                {
+                    float newScale = getRenderer().zoomOut();
+                    this.prefs.edit().putFloat(SCALE, newScale).apply();
+                    this.fitToScreen = false;
+                    boardView.setCurrentScale(newScale);
+                }
+                this.render(true);
+
+                return true;
+            } else if (id == R.id.play_menu_zoom_fit) {
+                fitToScreen();
+                return true;
+            } else if (id == R.id.play_menu_zoom_reset) {
+                float newScale = getRenderer().zoomReset();
+                boardView.setCurrentScale(newScale);
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                this.render(true);
+                this.boardView.scrollTo(0, 0);
+
+                return true;
+            } else if (id == R.id.play_menu_info) {
+                showInfoDialog();
+                return true;
+            } else if (id == R.id.play_menu_clues) {
+                PlayActivity.this.launchClueList();
+                return true;
+            } else if (id == R.id.play_menu_notes) {
+                launchNotes();
+                return true;
+            } else if (id == R.id.play_menu_help) {
+                Intent helpIntent = new Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("file:///android_asset/playscreen.html"),
+                    this,
+                    HTMLActivity.class
+                );
+                this.startActivity(helpIntent);
+                return true;
+            } else if (id == R.id.play_menu_clue_size_s) {
+                this.setClueSize(
+                    getResources().getInteger(R.integer.small_clue_text_size)
+                );
+                return true;
+            } else if (id == R.id.play_menu_clue_size_m) {
+                this.setClueSize(
+                    getResources().getInteger(R.integer.medium_clue_text_size)
+                );
+                return true;
+            } else if (id == R.id.play_menu_clue_size_l) {
+                this.setClueSize(
+                    getResources().getInteger(R.integer.large_clue_text_size)
+                );
+                return true;
+            }
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -838,40 +911,41 @@ public class PlayActivity extends PuzzleActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Playboard board = getBoard();
-
-        if (board != null) {
-            board.setSkipCompletedLetters(this.prefs.getBoolean("skipFilled", false));
-            board.setMovementStrategy(this.getMovementStrategy());
-            board.addListener(this);
-        }
 
         this.showCount = prefs.getBoolean("showCount", false);
         this.onConfigurationChanged(getBaseContext().getResources()
                                                     .getConfiguration());
 
+        if (keyboardManager != null)
+            keyboardManager.onResume();
+
+        if (prefs.getBoolean(SHOW_CLUES_TAB, false)) {
+            showClueTabs();
+        } else {
+            hideClueTabs();
+        }
+
+        registerBoard();
+    }
+
+    private void registerBoard() {
+        Playboard board = getBoard();
+
         if (clueTabs != null) {
             clueTabs.addListener(this);
             clueTabs.listenBoard();
             clueTabs.refresh();
-
-            if (clueTabs.getBoardDelMeNotReallyNeeded() != board) {
-                Toast t = Toast.makeText(this,
-                                         "Clue tabs board not match app",
-                                         Toast.LENGTH_SHORT);
-                t.show();
-            }
-
-            if (prefs.getBoolean(SHOW_CLUES_TAB, false)) {
-                showClueTabs();
-            } else {
-                hideClueTabs();
-            }
         }
 
-        render(true);
+        if (board != null) {
+            board.setSkipCompletedLetters(this.prefs.getBoolean("skipFilled", false));
+            board.setMovementStrategy(this.getMovementStrategy());
+            board.addListener(this);
 
-        keyboardManager.onResume();
+            keyboardManager.attachKeyboardToView(boardView);
+
+            render(true);
+        }
     }
 
     @Override
@@ -959,6 +1033,9 @@ public class PlayActivity extends PuzzleActivity
     }
 
     private void render(Word previous, boolean rescale) {
+        if (getBoard() == null)
+            return;
+
         Clue c = getBoard().getClue();
         if (c.hint == null) {
             getBoard().toggleDirection();
@@ -1200,9 +1277,10 @@ public class PlayActivity extends PuzzleActivity
                     R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            PlayActivity activity
-                                = (PlayActivity) getActivity();
-                            activity.getBoard().revealPuzzle();
+                            Playboard board
+                                = ((PlayActivity) getActivity()).getBoard();
+                            if (board != null)
+                                 board.revealPuzzle();
                         }
                     }
                 )

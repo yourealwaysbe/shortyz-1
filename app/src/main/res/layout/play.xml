@@ -28,16 +28,39 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:layout_constraintTop_toBottomOf="@id/clueLine"
-        app:layout_constraintBottom_toTopOf="@id/playClueTab"
+        app:layout_constraintBottom_toTopOf="@id/please_wait_notice"
         app:layout_constraintVertical_weight="100"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-    />
+        />
+    <LinearLayout
+        android:id="@+id/please_wait_notice"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/board"
+        app:layout_constraintBottom_toTopOf="@id/playClueTab"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:gravity="center"
+    >
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+        />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/please_wait"
+            android:textSize="20sp"
+        />
+    </LinearLayout>
     <app.crossword.yourealwaysbe.view.ClueTabs
         android:id="@+id/playClueTab"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/board"
+        app:layout_constraintTop_toBottomOf="@id/please_wait_notice"
         app:layout_constraintBottom_toBottomOf="@id/keyboard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

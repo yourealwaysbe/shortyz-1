@@ -37,7 +37,7 @@ public class KeyboardManager {
      * @param activity the activity the keyboard is for
      * @param keyboardView the keyboard view of the activity
      * @param initialView the initial view the keyboard should be
-     * attached to if always shown
+     * attached to if always shown or null if none
      */
     public KeyboardManager(
         Activity activity, ForkyzKeyboard keyboardView, View initialView
@@ -89,6 +89,13 @@ public class KeyboardManager {
             keyboardView.setVisibility(View.VISIBLE);
             keyboardView.attachToView(view);
         }
+    }
+
+    /**
+     * Attach the keyboard to a view without changing visibilty
+     */
+    public void attachKeyboardToView(View view) {
+        keyboardView.attachToView(view);
     }
 
     public boolean hideKeyboard() { return hideKeyboard(false); }

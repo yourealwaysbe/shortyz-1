@@ -41,7 +41,13 @@ public abstract class PuzzleActivity
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        postLoadPuzzle();
+    }
 
+    /**
+     * Called after the board has been set if it was not set onCreate
+     */
+    protected void postLoadPuzzle() {
         Puzzle puz = getPuzzle();
 
         if (puz != null && puz.getPercentComplete() != 100) {
@@ -64,10 +70,12 @@ public abstract class PuzzleActivity
         }
 
         Playboard board = getBoard();
-        boolean preserveCorrect = prefs.getBoolean(PRESERVE_CORRECT, true);
-        board.setPreserveCorrectLettersInShowErrors(preserveCorrect);
-        boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, true);
-        board.setDontDeleteCrossing(noDelCrossing);
+        if (board != null) {
+            boolean preserveCorrect = prefs.getBoolean(PRESERVE_CORRECT, true);
+            board.setPreserveCorrectLettersInShowErrors(preserveCorrect);
+            boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, true);
+            board.setDontDeleteCrossing(noDelCrossing);
+        }
     }
 
     public void onPlayboardChange(
@@ -103,11 +111,7 @@ public abstract class PuzzleActivity
                 setTimer(null);
             }
 
-            try {
-                saveBoard();
-            } catch (IOException ioe) {
-                LOG.log(Level.SEVERE, null, ioe);
-            }
+            saveBoard();
         }
 
         Playboard board = getBoard();
@@ -186,7 +190,7 @@ public abstract class PuzzleActivity
         return ForkyzApplication.getInstance().getPuzHandle();
     }
 
-    protected void saveBoard() throws IOException {
+    protected void saveBoard() {
         ForkyzApplication.getInstance().saveBoard();
     }
 }

@@ -48,7 +48,6 @@ public abstract class FileHandler {
     public abstract Uri getUri(FileHandle f);
     public abstract String getName(FileHandle f);
     public abstract long getLastModified(FileHandle file);
-    public abstract void delete(FileHandle fileHandle);
     public abstract OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException;
     public abstract InputStream getInputStream(FileHandle fileHandle)
@@ -67,11 +66,30 @@ public abstract class FileHandler {
     );
 
     /**
-     * Move from srcDir to destDir
+     * Provide a moveTo implementation
+     *
+     * Assume in a synced class
      */
-    public abstract void moveTo(
+    protected abstract void moveToUnsync(
         FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
     );
+
+    /**
+     * Provide a delete implementation
+     *
+     * Assume in a synced class
+     */
+    protected abstract void deleteUnsync(FileHandle fileHandle);
+
+    public synchronized void delete(FileHandle fileHandle) {
+        deleteUnsync(fileHandle);
+    }
+
+    public synchronized void moveTo(
+        FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
+    ) {
+        moveToUnsync(fileHandle, srcDirHandle, destDirHandle);
+    }
 
     public boolean exists(PuzMetaFile pm) {
         return exists(pm.getPuzHandle());
@@ -87,24 +105,24 @@ public abstract class FileHandler {
         }
     }
 
-    public void delete(PuzMetaFile pm) {
+    public synchronized void delete(PuzMetaFile pm) {
         delete(pm.getPuzHandle());
     }
 
-    public void delete(PuzHandle ph) {
+    public synchronized void delete(PuzHandle ph) {
         delete(ph.getPuzFileHandle());
         FileHandle metaHandle = ph.getMetaFileHandle();
         if (metaHandle != null)
             delete(metaHandle);
     }
 
-    public void moveTo(
+    public synchronized void moveTo(
         PuzMetaFile pm, DirHandle srcDirHandle, DirHandle destDirHandle
     ) {
         moveTo(pm.getPuzHandle(), srcDirHandle, destDirHandle);
     }
 
-    public void moveTo(
+    public synchronized void moveTo(
         PuzHandle ph, DirHandle srcDirHandle, DirHandle destDirHandle
     ) {
         moveTo(ph.getPuzFileHandle(), srcDirHandle, destDirHandle);
@@ -163,7 +181,26 @@ public abstract class FileHandler {
         return files.toArray(new PuzMetaFile[files.size()]);
     }
 
-    public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) {
+    /**
+     * Gets the set of file names in the two directories
+     *
+     * Slightly odd method, but useful in various places. dir1 and dir2
+     * are usually the crosswords and archive folders.
+     */
+    public Set<String> getFileNames(DirHandle dir1, DirHandle dir2) {
+        Set<String> fileNames = new HashSet<>();
+        for (FileHandle fh : listFiles(dir1))
+            fileNames.add(getName(fh));
+        for (FileHandle fh : listFiles(dir2))
+            fileNames.add(getName(fh));
+        return fileNames;
+    }
+
+    /**
+     * Synchronized to avoid reading/writing from the same file at the same
+     * time.
+     */
+    public synchronized PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) {
         FileHandle metaHandle = puzHandle.getMetaFileHandle();
         PuzzleMeta meta = null;
 
@@ -183,21 +220,10 @@ public abstract class FileHandler {
     }
 
     /**
-     * Gets the set of file names in the two directories
-     *
-     * Slightly odd method, but useful in various places. dir1 and dir2
-     * are usually the crosswords and archive folders.
+     * Synchronized to avoid reading/writing from the same file at the same
+     * time.
      */
-    public Set<String> getFileNames(DirHandle dir1, DirHandle dir2) {
-        Set<String> fileNames = new HashSet<>();
-        for (FileHandle fh : listFiles(dir1))
-            fileNames.add(getName(fh));
-        for (FileHandle fh : listFiles(dir2))
-            fileNames.add(getName(fh));
-        return fileNames;
-    }
-
-    public Puzzle load(PuzMetaFile pm) throws IOException {
+    public synchronized Puzzle load(PuzMetaFile pm) throws IOException {
         return load(pm.getPuzHandle());
     }
 
@@ -205,8 +231,11 @@ public abstract class FileHandler {
      * Loads puzzle with meta
      *
      * If the meta file of puz handle is null, loads without meta
+     *
+     * Synchronized to avoid reading/writing from the same file at the same
+     * time.
      */
-    public Puzzle load(PuzHandle ph) throws IOException {
+    public synchronized Puzzle load(PuzHandle ph) throws IOException {
         FileHandle metaFile = ph.getMetaFileHandle();
 
         if (metaFile == null)
@@ -228,8 +257,11 @@ public abstract class FileHandler {
 
     /**
      * Loads without any meta data
+     *
+     * Synchronized to avoid reading/writing from the same file at the same
+     * time.
      */
-    public Puzzle load(FileHandle fileHandle) throws IOException {
+    public synchronized Puzzle load(FileHandle fileHandle) throws IOException {
         try (
             DataInputStream fis
                 = new DataInputStream(getInputStream(fileHandle))
@@ -238,17 +270,21 @@ public abstract class FileHandler {
         }
     }
 
-    public void save(Puzzle puz, PuzMetaFile puzMeta) throws IOException {
+    public synchronized void save(Puzzle puz, PuzMetaFile puzMeta)
+            throws IOException {
         save(puz, puzMeta.getPuzHandle());
     }
 
-    /**
-     * Save puzzle and meta data
+    /** Save puzzle and meta data
      *
-     * If puzHandle's meta handle is null, a new meta file will be
-     * created and puzHandle is updated with the new meta file handle
+     * If puzHandle's meta handle is null, a new meta file will be created and
+     * puzHandle is updated with the new meta file handle
+     *
+     * Synchronized to avoid reading/writing from the same file at the same
+     * time.
      */
-    public void save(Puzzle puz, PuzHandle puzHandle) throws IOException {
+    public synchronized void save(Puzzle puz, PuzHandle puzHandle)
+            throws IOException {
         long incept = System.currentTimeMillis();
 
         FileHandle puzFile = puzHandle.getPuzFileHandle();
@@ -287,13 +323,15 @@ public abstract class FileHandler {
     /**
      * Save the puz file to the file handle and create a meta file
      *
-     * Assumed that a meta file does not exist already
+     * Assumed that a meta file does not exist already. Synchronized to avoid
+     * reading/writing from the same file at the same time.
      *
      * @param puzDir the directory containing puzFile (and where the
      * metta will be created)
      */
-    public void saveCreateMeta(Puzzle puz, DirHandle puzDir, FileHandle puzFile)
-        throws IOException {
+    public synchronized void saveCreateMeta(
+        Puzzle puz, DirHandle puzDir, FileHandle puzFile
+    ) throws IOException {
         save(puz, new PuzHandle(puzDir, puzFile, null));
     }
 

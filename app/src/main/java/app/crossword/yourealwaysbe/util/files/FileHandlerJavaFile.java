@@ -122,13 +122,13 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     }
 
     @Override
-    public void delete(FileHandle fileHandle) {
+    protected void deleteUnsync(FileHandle fileHandle) {
         if (exists(fileHandle))
             fileHandle.getFile().delete();
     }
 
     @Override
-    public void moveTo(
+    protected void moveToUnsync(
         FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
     ) {
         File file = fileHandle.getFile();
