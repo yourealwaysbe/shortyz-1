@@ -41,9 +41,19 @@ public class SourceListAdapter extends BaseAdapter {
 
     public View getView(int index, View view, ViewGroup group) {
         String value = (index == 0) ? ALL_SOURCES : sources.get(index - 1);
-        LayoutInflater inflater = (LayoutInflater) context.getApplicationContext()
-                                                          .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        view = inflater.inflate(value.equals(this.current) ? R.layout.source_item_highlight : R.layout.source_item, null);
+        LayoutInflater inflater
+            = (LayoutInflater) context
+                .getApplicationContext()
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        if (view == null || !(view instanceof TextView)) {
+            view = inflater.inflate(
+                value.equals(this.current)
+                    ? R.layout.source_item_highlight
+                    : R.layout.source_item,
+                group
+            );
+        }
 
         TextView text = (TextView) view;
 
