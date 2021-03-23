@@ -78,4 +78,8 @@
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:tint">@color/textColorPrimary</item>
     </style>
+
+    <style name="puzzleInfoDialogStyle" parent="Theme.Forkyz">
+        <item name="android:background">@color/background_dark</item>
+    </style>
 </resources>

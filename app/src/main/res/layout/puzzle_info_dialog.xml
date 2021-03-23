@@ -1,81 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:orientation="vertical"
-  android:gravity="center_horizontal"
-  android:background="@color/background_dark"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:theme="@style/puzzleInfoDialogStyle"
 >
-  
-  <TextView 
-  android:id="@+id/puzzle_info_title"
-  android:textSize="30sp"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="@string/puzzle_title"
-  android:textColor="@color/textColorPrimary"
-  android:gravity="center_horizontal"/>
-  
-  <TextView 
-  android:id="@+id/puzzle_info_author"
-  android:textSize="20sp"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="@string/by_author"
-  android:textColor="@color/textColorPrimary"
-   android:gravity="center_horizontal"/>
-  
-  <TextView 
-  android:id="@+id/puzzle_info_copyright"
-  android:textSize="10sp"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="@string/copyright_info"
-  android:textColor="@color/textColorPrimary"
-  android:gravity="center_horizontal"/>
-  
-  
-   <TextView 
-  android:id="@+id/puzzle_info_time"
-  android:textSize="20sp"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:text="@string/elapsed_time_labelled_dummy"
-  android:textColor="@color/textColorPrimary"
-  android:gravity="center_horizontal"/>
-  
-  <ProgressBar
-  		style="?android:attr/progressBarStyleHorizontal"
-  		android:layout_width="fill_parent"
-  		android:layout_height="5dp"
-  		android:max="100"
-  		android:progress="80"
-  		android:id="@+id/puzzle_info_progress"
-  		
-  		/>
-  
-  <TextView 
-    android:id="@+id/puzzle_info_filename"
-    android:textSize="12sp"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:scrollbars="vertical"
-  android:textColor="@color/textColorPrimary"
-    android:gravity="center_horizontal"/>
+  <TextView
+      android:id="@+id/puzzle_info_title"
+      android:textSize="30sp"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/puzzle_title"
+      android:textColor="@color/textColorPrimary"
+      android:gravity="center_horizontal"
+    />
 
-  <ScrollView
+    <TextView
+        android:id="@+id/puzzle_info_author"
+        android:textSize="20sp"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-    <TextView 
-    android:id="@+id/puzzle_info_notes"
-    android:textSize="20sp"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/puzzle_notes"
-    android:scrollbars="vertical"
-  android:textColor="@color/textColorPrimary"
-    android:gravity="center_horizontal"/>
-  </ScrollView> 
+        android:layout_height="wrap_content"
+        android:text="@string/by_author"
+        android:textColor="@color/textColorPrimary"
+        android:gravity="center_horizontal"
+    />
 
+    <TextView
+        android:id="@+id/puzzle_info_copyright"
+        android:textSize="10sp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/copyright_info"
+        android:textColor="@color/textColorPrimary"
+        android:gravity="center_horizontal"
+    />
+
+   <TextView
+        android:id="@+id/puzzle_info_time"
+        android:textSize="20sp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/elapsed_time_labelled_dummy"
+        android:textColor="@color/textColorPrimary"
+       android:gravity="center_horizontal"
+    />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="5dp"
+        android:max="100"
+        android:progress="80"
+        android:id="@+id/puzzle_info_progress"
+    />
+
+    <TextView
+        android:id="@+id/puzzle_info_filename"
+        android:textSize="12sp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:textColor="@color/textColorPrimary"
+        android:gravity="center_horizontal"
+    />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+    >
+        <TextView
+            android:id="@+id/puzzle_info_notes"
+            android:textSize="20sp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/puzzle_notes"
+            android:scrollbars="vertical"
+            android:textColor="@color/textColorPrimary"
+            android:gravity="center_horizontal"
+        />
+  </ScrollView>
 </LinearLayout>
