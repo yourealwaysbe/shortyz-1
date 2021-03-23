@@ -38,8 +38,14 @@
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
     <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
-    <string name="share_message_with_date">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hints!"</string>
-    <string name="share_message_no_date">I finished the %1$s crossword in #Forkyz with %2$d hints!"</string>
+    <plurals name="share_message_with_date">
+        <item quantity="one">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hint!</item>
+        <item quantity="other">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hints!</item>
+    </plurals>
+    <plurals name="share_message_no_date">
+        <item quantity="one">I finished the %1$s crossword in #Forkyz with %2$d hint!</item>
+        <item quantity="other">I finished the %1$s crossword in #Forkyz with %2$d hints!</item>
+    </plurals>
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>

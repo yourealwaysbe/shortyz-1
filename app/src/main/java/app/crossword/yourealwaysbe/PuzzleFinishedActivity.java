@@ -85,13 +85,15 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
             DateTimeFormatter dateFormat
                 = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
 
-            shareMessage = getString(
-                R.string.share_message_with_date,
+            shareMessage = getResources().getQuantityString(
+                R.plurals.share_message_with_date,
+                cheatedBoxes,
                 source, dateFormat.format(puz.getDate()), cheatedBoxes
             );
         } else {
-            shareMessage = getString(
-                R.string.share_message_no_date,
+            shareMessage = getResources().getQuantityString(
+                R.plurals.share_message_no_date,
+                cheatedBoxes,
                 source, cheatedBoxes
             );
         }
