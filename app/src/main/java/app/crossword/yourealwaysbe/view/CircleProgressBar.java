@@ -31,7 +31,8 @@ public class CircleProgressBar extends View {
     private DisplayMetrics metrics;
     private float circleStroke;
     private float circleFine;
-
+    private Paint paint;
+    private RectF pcntFilledRect;
 
     public CircleProgressBar(Context context) {
         super(context);
@@ -52,6 +53,7 @@ public class CircleProgressBar extends View {
     }
 
     private void loadColors(Context context) {
+        paint = new Paint();
         nullColor = ContextCompat.getColor(context, R.color.progressNull);
         inProgressColor = ContextCompat.getColor(context, R.color.progressInProgress);
         doneColor = ContextCompat.getColor(context, R.color.progressDone);
@@ -66,6 +68,7 @@ public class CircleProgressBar extends View {
             icons1 = Typeface.createFromAsset(context.getAssets(), "icons1.ttf");
             icons4 = Typeface.createFromAsset(context.getAssets(), "icons4.ttf");
         }
+        pcntFilledRect = new RectF(0, 0, 0, 0);
     }
 
     public void setPercentFilled(int percentFilled) {
@@ -85,12 +88,14 @@ public class CircleProgressBar extends View {
     public boolean getComplete() {
         return complete;
     }
+
     @Override
     protected void onMeasure(int widthSpecId, int heightSpecId) {
         this.height = View.MeasureSpec.getSize(heightSpecId);
         this.width = View.MeasureSpec.getSize(widthSpecId);
         setMeasuredDimension(this.width, this.height);
     }
+
     @Override
     protected void onDraw(Canvas canvas) {
         float halfWidth = width / 2;
@@ -98,7 +103,6 @@ public class CircleProgressBar extends View {
         float halfStroke = circleStroke / 2;
         float textSize = halfWidth * 0.75f;
 
-        Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(nullColor);
         paint.setStyle(Paint.Style.STROKE);
@@ -131,9 +135,13 @@ public class CircleProgressBar extends View {
             canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - 1f, paint);
             paint.setStrokeWidth(circleStroke);
 
-            RectF rect = new RectF(0 + circleStroke ,0 + circleStroke ,
-                    width - circleStroke , width - circleStroke);
-            canvas.drawArc(rect, -90,  360F * percentFilled / 100F, false, paint);
+            pcntFilledRect.set(
+                0 + circleStroke, 0 + circleStroke,
+                width - circleStroke , width - circleStroke
+            );
+            canvas.drawArc(
+                pcntFilledRect, -90,  360F * percentFilled / 100F, false, paint
+            );
             paint.setStyle(Paint.Style.FILL);
             textSize = halfWidth * 0.5f;
             paint.setTextSize(textSize);
