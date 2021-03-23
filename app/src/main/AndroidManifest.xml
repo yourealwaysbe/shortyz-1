@@ -39,7 +39,9 @@
         android:label="@string/app_name"
         android:restoreAnyVersion="true"
         android:largeHeap="true"
-        android:allowBackup="true">
+        android:allowBackup="true"
+        android:fullBackupContent="true"
+    >
 
         <activity
             android:name="app.crossword.yourealwaysbe.HttpDownloadActivity"
