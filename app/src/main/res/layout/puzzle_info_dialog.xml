@@ -10,7 +10,7 @@
   
   <TextView 
   android:id="@+id/puzzle_info_title"
-  android:textSize="30dp"
+  android:textSize="30sp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="@string/puzzle_title"
@@ -19,7 +19,7 @@
   
   <TextView 
   android:id="@+id/puzzle_info_author"
-  android:textSize="20dp"
+  android:textSize="20sp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="@string/by_author"
@@ -28,7 +28,7 @@
   
   <TextView 
   android:id="@+id/puzzle_info_copyright"
-  android:textSize="10dp"
+  android:textSize="10sp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="@string/copyright_info"
@@ -38,7 +38,7 @@
   
    <TextView 
   android:id="@+id/puzzle_info_time"
-  android:textSize="20dp"
+  android:textSize="20sp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:text="@string/elapsed_time_labelled_dummy"
@@ -57,7 +57,7 @@
   
   <TextView 
     android:id="@+id/puzzle_info_filename"
-    android:textSize="12dp"
+    android:textSize="12sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:scrollbars="vertical"
@@ -69,7 +69,7 @@
         android:layout_height="fill_parent">
     <TextView 
     android:id="@+id/puzzle_info_notes"
-    android:textSize="20dp"
+    android:textSize="20sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:text="@string/puzzle_notes"

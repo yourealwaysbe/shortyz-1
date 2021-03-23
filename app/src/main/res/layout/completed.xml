@@ -20,7 +20,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/completed_in"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
             
@@ -30,7 +30,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/elapsed_time_dummy"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
         </TableRow>
@@ -44,7 +44,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/total_clues"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
             
@@ -54,7 +54,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/dummy_xx"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
         </TableRow>
@@ -68,7 +68,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/total_boxes"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
             
@@ -78,7 +78,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/dummy_xx"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
         </TableRow>
@@ -93,7 +93,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/hinted_boxes"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
             
@@ -103,7 +103,7 @@
 		        android:layout_height="wrap_content"
                 android:text="@string/dummy_xx_w_pcnt"
 		        android:textColor="#fff"
-		        android:textSize="16dp"
+		        android:textSize="16sp"
 		        android:padding="7dp"
                 />
         </TableRow>
