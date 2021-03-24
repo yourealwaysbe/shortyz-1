@@ -249,7 +249,7 @@ public class PlayActivity extends PuzzleActivity
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        ForkyzApplication.getInstance().setBoard(
+        setBoard(
             new Playboard(
                 puz,
                 movement,
@@ -259,8 +259,6 @@ public class PlayActivity extends PuzzleActivity
             puzHandle
         );
         ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
-
-        super.postLoadPuzzle();
 
         float scale = prefs.getFloat(SCALE, 1.0F);
 

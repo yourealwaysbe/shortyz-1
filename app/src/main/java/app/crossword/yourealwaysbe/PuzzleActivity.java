@@ -41,13 +41,15 @@ public abstract class PuzzleActivity
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        postLoadPuzzle();
+        startTimer();
     }
 
-    /**
-     * Called after the board has been set if it was not set onCreate
-     */
-    protected void postLoadPuzzle() {
+    protected void setBoard(Playboard board, PuzHandle puzHandle) {
+        ForkyzApplication.getInstance().setBoard(board, puzHandle);
+        startTimer();
+    }
+
+    private void startTimer() {
         Puzzle puz = getPuzzle();
 
         if (puz != null && puz.getPercentComplete() != 100) {
