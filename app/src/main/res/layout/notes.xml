@@ -70,6 +70,7 @@
                 android:gravity="top"
                 android:typeface="monospace"
                 android:inputType="text|textMultiLine"
+                android:autofillHints=".AUTOFILL_HINT_NOT_APPLICABLE"
             />
             <TextView
                 android:id="@+id/anagramSourceLab"
