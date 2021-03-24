@@ -29,7 +29,7 @@
 
     <TextView
         android:id="@+id/puzzle_info_copyright"
-        android:textSize="10sp"
+        android:textSize="12sp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/copyright_info"

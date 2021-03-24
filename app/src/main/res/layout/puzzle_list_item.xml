@@ -25,7 +25,7 @@
         android:paddingLeft="10dp"
         android:text="@string/puzzle_date"
         android:textColor="@color/textColorSecondary"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 
     <app.crossword.yourealwaysbe.view.CircleProgressBar
         android:id="@+id/puzzle_progress"
