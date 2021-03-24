@@ -196,8 +196,6 @@ public class PlayActivity extends PuzzleActivity
      * Update/enable/create full UI once loaded
      */
     private void startLoadPuzzle(PuzHandle puzHandle) {
-        View pleaseWait = findViewById(R.id.please_wait_notice);
-        pleaseWait.setVisibility(View.VISIBLE);
         executorService.execute(() -> {
             FileHandler fileHandler = getFileHandler();
             try {
@@ -211,8 +209,6 @@ public class PlayActivity extends PuzzleActivity
                     handler.post(() -> {
                         if (executorService.isShutdown())
                             return;
-
-                        pleaseWait.setVisibility(View.GONE);
                         PlayActivity.this.postLoadPuzzle(puzHandle, puz);
                     });
                 }
@@ -223,8 +219,6 @@ public class PlayActivity extends PuzzleActivity
                 handler.post(() -> {
                     if (executorService.isShutdown())
                         return;
-
-                    pleaseWait.setVisibility(View.GONE);
 
                     String filename = null;
 
