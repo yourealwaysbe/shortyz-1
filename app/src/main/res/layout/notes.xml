@@ -69,6 +69,7 @@
                 android:layout_weight="1.0"
                 android:gravity="top"
                 android:typeface="monospace"
+                android:inputType="text|textMultiLine"
             />
             <TextView
                 android:id="@+id/anagramSourceLab"
