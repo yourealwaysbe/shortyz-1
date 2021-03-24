@@ -28,18 +28,12 @@
             android:datePickerMode="spinner"
             tools:ignore="UnusedAttribute"
         />
-        <LinearLayout
-          android:layout_width="fill_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal"
-          android:padding="5dip">
-            <Spinner
-              android:id="@+id/puzzleSelect"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:layout_weight="2"
-              android:drawSelectorOnTop="true"
-              android:prompt="@string/puzzle_select"/>
-        </LinearLayout>
+        <Spinner
+            android:id="@+id/puzzleSelect"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:prompt="@string/puzzle_select"
+        />
     </LinearLayout>
 </ScrollView>

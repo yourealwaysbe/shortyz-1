@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+>
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/view_pager"
             android:layout_width="fill_parent"
@@ -37,7 +40,9 @@
                     android:id="@+id/skip"
                     android:textColor="#ffffff"
                     android:layout_weight="0.2"
-                    android:text="@string/skip_button"/>
+                    android:text="@string/skip_button"
+                    tools:ignore="NestedWeights"
+                />
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
@@ -45,7 +50,9 @@
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:layout_weight="0.8"
-                    android:layout_gravity="center">
+                    android:layout_gravity="center"
+                    tools:ignore="NestedWeights"
+                >
                 </LinearLayout>
                 <ImageButton
                     android:layout_width="wrap_content"
@@ -55,8 +62,9 @@
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_gravity="center"
                     android:layout_weight="0.2"
-                    android:src="@drawable/ic_navigate_next_white_24dp"/>
-
+                    android:src="@drawable/ic_navigate_next_white_24dp"
+                    tools:ignore="NestedWeights"
+                />
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
@@ -68,7 +76,9 @@
                     android:textColor="#ffffff"
                     android:layout_gravity="start"
                     android:layout_weight="0.2"
-                    android:text="@string/done_button"/>
+                    android:text="@string/done_button"
+                    tools:ignore="NestedWeights"
+                />
             </LinearLayout>
         </LinearLayout>
 </RelativeLayout>
