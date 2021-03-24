@@ -480,14 +480,12 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                         );
                         if (uiExecutorService.isShutdown())
                             return;
-                        handler.post(new Runnable() {
-                            public void run() {
-                                if (uiExecutorService.isShutdown())
-                                    return;
-                                currentAdapter.notifyItemChanged(
-                                    updateListPos
-                                );
-                            }
+                        handler.post(() -> {
+                            if (uiExecutorService.isShutdown())
+                                return;
+                            currentAdapter.notifyItemChanged(
+                                updateListPos
+                            );
                         });
                         break;
                     }
@@ -668,12 +666,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
                 if (downloadExecutorService.isShutdown())
                     return;
-                handler.post(new Runnable() {
-                    public void run() {
-                        if (downloadExecutorService.isShutdown())
-                            return;
-                        BrowseActivity.this.render();
-                    }
+                handler.post(() -> {
+                    if (downloadExecutorService.isShutdown())
+                        return;
+                    BrowseActivity.this.render();
                 });
             }
         });
@@ -703,13 +699,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 if (uiExecutorService.isShutdown())
                     return;
 
-                BrowseActivity.this.handler.post(new Runnable() {
-                    public void run() {
-                        if (uiExecutorService.isShutdown())
-                            return;
-                        BrowseActivity.this.setPuzzleListAdapter(adapter);
-                        progressBar.setVisibility(View.GONE);
-                    }
+                BrowseActivity.this.handler.post(() -> {
+                    if (uiExecutorService.isShutdown())
+                        return;
+                    BrowseActivity.this.setPuzzleListAdapter(adapter);
+                    progressBar.setVisibility(View.GONE);
                 });
             });
         } else {
@@ -734,27 +728,21 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (!selected.isEmpty()) {
             updateSelection(v);
         } else {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
-                    if (selectedPuzMeta == null) {
-                        return;
-                    }
-
-                    FileHandler fileHandler
-                        = BrowseActivity.this.getFileHandler();
-
-                    Intent i = new Intent(
-                        BrowseActivity.this, PlayActivity.class
-                    );
-
-                    ForkyzApplication.getInstance().setBoard(
-                        null, selectedPuzMeta.getPuzHandle()
-                    );
-
-                    startActivity(i);
+            handler.postDelayed(() -> {
+                PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
+                if (selectedPuzMeta == null) {
+                    return;
                 }
+
+                Intent i = new Intent(
+                    BrowseActivity.this, PlayActivity.class
+                );
+
+                ForkyzApplication.getInstance().setBoard(
+                    null, selectedPuzMeta.getPuzHandle()
+                );
+
+                startActivity(i);
             }, 450);
         }
     }

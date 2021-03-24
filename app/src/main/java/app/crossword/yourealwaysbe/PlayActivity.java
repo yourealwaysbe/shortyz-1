@@ -208,50 +208,44 @@ public class PlayActivity extends PuzzleActivity
                     );
                 }
                 if (!executorService.isShutdown()) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (executorService.isShutdown())
-                                return;
+                    handler.post(() -> {
+                        if (executorService.isShutdown())
+                            return;
 
-                            pleaseWait.setVisibility(View.GONE);
-                            PlayActivity.this.postLoadPuzzle(puzHandle, puz);
-                        }
+                        pleaseWait.setVisibility(View.GONE);
+                        PlayActivity.this.postLoadPuzzle(puzHandle, puz);
                     });
                 }
             } catch (IOException e) {
                 if (executorService.isShutdown())
                     return;
 
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (executorService.isShutdown())
-                            return;
+                handler.post(() -> {
+                    if (executorService.isShutdown())
+                        return;
 
-                        pleaseWait.setVisibility(View.GONE);
+                    pleaseWait.setVisibility(View.GONE);
 
-                        String filename = null;
+                    String filename = null;
 
-                        try {
-                            filename = fileHandler.getName(
-                                puzHandle.getPuzFileHandle()
-                            );
-                        } catch (Exception ee) {
-                            e.printStackTrace();
-                        }
-
-                        Toast t = Toast.makeText(
-                            PlayActivity.this,
-                            PlayActivity.this.getString(
-                                R.string.unable_to_read_file,
-                                (filename != null ?  filename : "")
-                            ),
-                            Toast.LENGTH_SHORT
+                    try {
+                        filename = fileHandler.getName(
+                            puzHandle.getPuzFileHandle()
                         );
-                        t.show();
-                        PlayActivity.this.finish();
+                    } catch (Exception ee) {
+                        e.printStackTrace();
                     }
+
+                    Toast t = Toast.makeText(
+                        PlayActivity.this,
+                        PlayActivity.this.getString(
+                            R.string.unable_to_read_file,
+                            (filename != null ?  filename : "")
+                        ),
+                        Toast.LENGTH_SHORT
+                    );
+                    t.show();
+                    PlayActivity.this.finish();
                 });
             }
         });
@@ -315,20 +309,18 @@ public class PlayActivity extends PuzzleActivity
         this.registerForContextMenu(boardView);
         boardView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(final Point e) {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try {
-                            Position p = getRenderer().findBox(e);
-                            Word w = getBoard().setHighlightLetter(p);
-                            boolean displayScratch = prefs.getBoolean("displayScratch", false);
-                            getRenderer().draw(w,
-                                               displayScratch,
-                                               displayScratch);
+                handler.post(() -> {
+                    try {
+                        Position p = getRenderer().findBox(e);
+                        Word w = getBoard().setHighlightLetter(p);
+                        boolean displayScratch = prefs.getBoolean("displayScratch", false);
+                        getRenderer().draw(w,
+                                           displayScratch,
+                                           displayScratch);
 
-                            launchNotes();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+                        launchNotes();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 });
             }
@@ -459,17 +451,15 @@ public class PlayActivity extends PuzzleActivity
                 t = new TimerTask() {
                     @Override
                     public void run() {
-                        handler.post(new Runnable() {
-                            public void run() {
-                                int w = boardView.getImageView().getWidth();
-                                int h = boardView.getImageView().getHeight();
-                                float scale = getRenderer().fitTo((w < h) ? w : h);
-                                prefs.edit()
-                                        .putFloat(SCALE,
-                                                scale)
-                                        .apply();
-                                getBoard().setHighlightLetter(getRenderer().findBox(center));
-                            }
+                        handler.post(() -> {
+                            int w = boardView.getImageView().getWidth();
+                            int h = boardView.getImageView().getHeight();
+                            float scale = getRenderer().fitTo((w < h) ? w : h);
+                            prefs.edit()
+                                    .putFloat(SCALE,
+                                            scale)
+                                    .apply();
+                            getBoard().setHighlightLetter(getRenderer().findBox(center));
                         });
                     }
                 };
@@ -504,7 +494,7 @@ public class PlayActivity extends PuzzleActivity
         this.showCount = prefs.getBoolean("showCount", false);
         if (this.prefs.getBoolean("fitToScreen", false) || (ForkyzApplication.isLandscape(metrics)) && (ForkyzApplication.isTabletish(metrics) || ForkyzApplication.isMiniTabletish(metrics))) {
             this.handler.postDelayed(new Runnable() {
-
+                @Override
                 public void run() {
                     boardView.scrollTo(0, 0);
 
@@ -519,7 +509,6 @@ public class PlayActivity extends PuzzleActivity
                     prefs.edit().putFloat(SCALE, newScale).apply();
                     render();
                 }
-
             }, 100);
 
         }
