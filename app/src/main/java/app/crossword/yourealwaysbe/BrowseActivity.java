@@ -728,22 +728,20 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (!selected.isEmpty()) {
             updateSelection(v);
         } else {
-            handler.postDelayed(() -> {
-                PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
-                if (selectedPuzMeta == null) {
-                    return;
-                }
+            PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
+            if (selectedPuzMeta == null) {
+                return;
+            }
 
-                Intent i = new Intent(
-                    BrowseActivity.this, PlayActivity.class
-                );
+            Intent i = new Intent(
+                BrowseActivity.this, PlayActivity.class
+            );
 
-                ForkyzApplication.getInstance().setBoard(
-                    null, selectedPuzMeta.getPuzHandle()
-                );
+            ForkyzApplication.getInstance().setBoard(
+                null, selectedPuzMeta.getPuzHandle()
+            );
 
-                startActivity(i);
-            }, 450);
+            startActivity(i);
         }
     }
 
