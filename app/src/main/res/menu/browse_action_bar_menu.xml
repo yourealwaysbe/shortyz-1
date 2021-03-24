@@ -7,18 +7,18 @@
         android:id="@+id/browse_action_delete"
         android:icon="@android:drawable/ic_menu_delete"
         android:title="@string/delete"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
     />
     <item
         android:id="@+id/browse_action_archive"
         android:icon="@drawable/ic_menu_archive"
         android:title="@string/archive"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
     />
     <item
         android:id="@+id/browse_action_unarchive"
         android:icon="@drawable/ic_menu_unarchive"
         android:title="@string/unarchive"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
     />
 </menu>

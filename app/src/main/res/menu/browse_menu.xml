@@ -7,7 +7,7 @@
         android:id="@+id/browse_menu_app_theme"
         android:icon="@drawable/system_daynight_mode"
         android:title="@string/app_theme"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
     />
     <item
         android:id="@+id/browse_menu_sort"
