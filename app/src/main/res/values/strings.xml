@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="puzzle_select">Select a puzzle:</string>
-    <string name="action_settings">Settings</string>
-    <string name="skip_button">Skip</string>
-    <string name="done_button">Done</string>
-    <string name="across">Across</string>
-    <string name="down">Down</string>
     <string name="anagram_source_lab">Anagram remaining letters:</string>
     <string name="anagram_solution_lab">Anagram solution:</string>
     <string name="board_lab">Board:</string>
@@ -27,15 +22,9 @@
     <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
     <string name="download_notification_channel_name">Downloads</string>
     <string name="download_notification_channel_desc">Notifications about downloaded puzzles</string>
-    <string name="online">Online</string>
-    <string name="dummy_x">X</string>
     <string name="preview">Preview</string>
     <string name="unable_to_read_file">Unable to read file %1$s</string>
     <string name="unable_to_download_from">Unable to download from\n%1$s</string>
-    <string name="puzzle_already_exists">Puzzle %1$s already exists</string>
-    <string name="error_downloading_puzzle">Error downloading puzzle %1$s</string>
-    <string name="error_parsing_puzzle">Error parsing puzzle %1$s</string>
-    <string name="puzzle_downloaded_successfully">Puzzle %1$s downloaded successfully</string>
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
     <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
@@ -212,9 +201,6 @@
     <string name="cleanup">Cleanup</string>
     <string name="archives">Archives</string>
 
-    <!-- web browser view -->
-    <string name="close_browser">Close Browser</string>
-
     <!-- puzzle list item -->
     <string name="puzzle_date">Puzzle Date</string>
     <string name="puzzle_name">Puzzle Name</string>
@@ -245,7 +231,6 @@
     <string name="clues_list_label">Clues</string>
     <string name="notes_label">Notes</string>
     <string name="html_label">Forkyz</string>
-    <string name="web_browse_label">Browse for Puzzles</string>
     <string name="puzzle_completed_label">Puzzle Completed!</string>
 
     <!-- keyboard -->

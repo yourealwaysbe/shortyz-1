@@ -6,7 +6,6 @@
     <color name="textColorSecondary">#777</color>
     <color name="textColorFilled">@color/textColorSecondary</color>
     <color name="accentText">#eee</color>
-    <color name="transparent">#00000000</color>
     <color name="background_light">#333</color>
     <color name="background_dark">#222</color>
     <color name="header_color">@color/background_dark</color>
