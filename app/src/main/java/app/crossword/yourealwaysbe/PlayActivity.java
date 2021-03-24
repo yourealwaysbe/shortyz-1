@@ -62,8 +62,9 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-
 
 public class PlayActivity extends PuzzleActivity
                           implements Playboard.PlayboardListener,
@@ -75,6 +76,8 @@ public class PlayActivity extends PuzzleActivity
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
+
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
@@ -195,55 +198,63 @@ public class PlayActivity extends PuzzleActivity
     private void startLoadPuzzle(PuzHandle puzHandle) {
         View pleaseWait = findViewById(R.id.please_wait_notice);
         pleaseWait.setVisibility(View.VISIBLE);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                FileHandler fileHandler = getFileHandler();
-                try {
-                    Puzzle puz = fileHandler.load(puzHandle);
-                    if (puz == null || puz.getBoxes() == null) {
-                        throw new IOException(
-                            "Puzzle is null or contains no boxes."
-                        );
-                    }
+        executorService.execute(() -> {
+            FileHandler fileHandler = getFileHandler();
+            try {
+                Puzzle puz = fileHandler.load(puzHandle);
+                if (puz == null || puz.getBoxes() == null) {
+                    throw new IOException(
+                        "Puzzle is null or contains no boxes."
+                    );
+                }
+                if (!executorService.isShutdown()) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            if (executorService.isShutdown())
+                                return;
+
                             pleaseWait.setVisibility(View.GONE);
                             PlayActivity.this.postLoadPuzzle(puzHandle, puz);
                         }
                     });
-                } catch (IOException e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            pleaseWait.setVisibility(View.GONE);
-
-                            String filename = null;
-
-                            try {
-                                filename = fileHandler.getName(
-                                    puzHandle.getPuzFileHandle()
-                                );
-                            } catch (Exception ee) {
-                                e.printStackTrace();
-                            }
-
-                            Toast t = Toast.makeText(
-                                PlayActivity.this,
-                                PlayActivity.this.getString(
-                                    R.string.unable_to_read_file,
-                                    (filename != null ?  filename : "")
-                                ),
-                                Toast.LENGTH_SHORT
-                            );
-                            t.show();
-                            PlayActivity.this.finish();
-                        }
-                    });
                 }
+            } catch (IOException e) {
+                if (executorService.isShutdown())
+                    return;
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (executorService.isShutdown())
+                            return;
+
+                        pleaseWait.setVisibility(View.GONE);
+
+                        String filename = null;
+
+                        try {
+                            filename = fileHandler.getName(
+                                puzHandle.getPuzFileHandle()
+                            );
+                        } catch (Exception ee) {
+                            e.printStackTrace();
+                        }
+
+                        Toast t = Toast.makeText(
+                            PlayActivity.this,
+                            PlayActivity.this.getString(
+                                R.string.unable_to_read_file,
+                                (filename != null ?  filename : "")
+                            ),
+                            Toast.LENGTH_SHORT
+                        );
+                        t.show();
+                        PlayActivity.this.finish();
+                    }
+                });
             }
-        }).run();
+        });
     }
 
     private void postLoadPuzzle(PuzHandle puzHandle, Puzzle puz) {
@@ -896,6 +907,7 @@ public class PlayActivity extends PuzzleActivity
     @Override
     protected void onPause() {
         super.onPause();
+
         keyboardManager.onPause();
 
         Playboard board = getBoard();
@@ -961,6 +973,7 @@ public class PlayActivity extends PuzzleActivity
         super.onDestroy();
         if (keyboardManager != null)
             keyboardManager.onDestroy();
+        executorService.shutdownNow();
     }
 
     private void setClueSize(int dps) {

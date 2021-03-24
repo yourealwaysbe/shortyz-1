@@ -64,15 +64,22 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
     private static final String MENU_ARCHIVES = "Archives";
     private static final int REQUEST_WRITE_STORAGE = 1002;
     private static final long DAY = 24L * 60L * 60L * 1000L;
     private static final Logger LOGGER = Logger.getLogger(BrowseActivity.class.getCanonicalName());
+
+    // not fixed in case user creates loads of downloads
+    // TODO: move downloads to downloader service or WorkManager
+    ExecutorService downloadExecutorService = Executors.newCachedThreadPool();
+    ExecutorService uiExecutorService = Executors.newSingleThreadExecutor();
+
     private Accessor accessor = Accessor.DATE_DESC;
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
         currentAdapter = null;
@@ -412,6 +419,13 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     @Override
+    protected void onDestroy() {
+        uiExecutorService.shutdownNow();
+        downloadExecutorService.shutdownNow();
+        super.onDestroy();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -436,45 +450,50 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (lastAccessed == null)
             return;
 
-        new Thread(new Runnable() {
-            public void run() {
-                for (SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>.IndexedSectionAdapter indexedSectionAdapter : currentAdapter.getIndexedSectionAdapters()) {
-                    int startPos = indexedSectionAdapter.getIndex();
-                    FileAdapter adapter
-                        = indexedSectionAdapter.getSectionAdapter();
+        if (uiExecutorService.isShutdown())
+            return;
 
-                    FileHandle lastAccessedPuzFile
-                        = lastAccessed.getPuzFileHandle();
+        uiExecutorService.execute(() -> {
+            for (SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>.IndexedSectionAdapter indexedSectionAdapter : currentAdapter.getIndexedSectionAdapters()) {
+                int startPos = indexedSectionAdapter.getIndex();
+                FileAdapter adapter
+                    = indexedSectionAdapter.getSectionAdapter();
 
-                    for (int pos = 0; pos < adapter.getItemCount(); pos++) {
-                        PuzMetaFile posMeta = adapter.getPuzMetaFile(pos);
+                FileHandle lastAccessedPuzFile
+                    = lastAccessed.getPuzFileHandle();
 
-                        FileHandle posPuzFile
-                            = posMeta.getPuzHandle().getPuzFileHandle();
+                for (int pos = 0; pos < adapter.getItemCount(); pos++) {
+                    PuzMetaFile posMeta = adapter.getPuzMetaFile(pos);
 
-                        if (posPuzFile.equals(lastAccessedPuzFile)) {
-                            final int updateSectionPos = pos;
-                            final int updateListPos = startPos + pos;
-                            PuzMetaFile newPuzMeta
-                                = fileHandler.loadPuzMetaFile(
-                                    lastAccessed
-                                );
-                            adapter.setPuzMetaFile(
-                                updateSectionPos, newPuzMeta
+                    FileHandle posPuzFile
+                        = posMeta.getPuzHandle().getPuzFileHandle();
+
+                    if (posPuzFile.equals(lastAccessedPuzFile)) {
+                        final int updateSectionPos = pos;
+                        final int updateListPos = startPos + pos;
+                        PuzMetaFile newPuzMeta
+                            = fileHandler.loadPuzMetaFile(
+                                lastAccessed
                             );
-                            handler.post(new Runnable() {
-                                public void run() {
-                                    currentAdapter.notifyItemChanged(
-                                        updateListPos
-                                    );
-                                }
-                            });
-                            break;
-                        }
+                        adapter.setPuzMetaFile(
+                            updateSectionPos, newPuzMeta
+                        );
+                        if (uiExecutorService.isShutdown())
+                            return;
+                        handler.post(new Runnable() {
+                            public void run() {
+                                if (uiExecutorService.isShutdown())
+                                    return;
+                                currentAdapter.notifyItemChanged(
+                                    updateListPos
+                                );
+                            }
+                        });
+                        break;
                     }
                 }
             }
-        }).start();
+        });
     }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
@@ -612,49 +631,52 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         final Downloaders dls = new Downloaders(prefs, nm, this);
         LOGGER.info("Downloading from "+downloaders);
-        new Thread(new Runnable() {
-                public void run() {
-                    dls.download(d, downloaders);
+        downloadExecutorService.execute(() -> {
+            dls.download(d, downloaders);
 
-                    if (scrape) {
-                        Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
-                        scrapes.scrape();
-                    }
+            if (scrape) {
+                Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
+                scrapes.scrape();
+            }
 
-                    handler.post(new Runnable() {
-                            public void run() {
-                                BrowseActivity.this.render();
-                            }
-                        });
-                }
-            }).start();
+            if (downloadExecutorService.isShutdown())
+                return;
+            handler.post(() -> {
+                if (downloadExecutorService.isShutdown())
+                    return;
+                BrowseActivity.this.render();
+            });
+        });
     }
 
     private void downloadTen() {
         if (!hasWritePermissions) return;
 
-        new Thread(new Runnable() {
-                public void run() {
-                    Downloaders dls = new Downloaders(prefs, nm, BrowseActivity.this);
-                    dls.supressMessages(true);
+        downloadExecutorService.execute(() -> {
+            Downloaders dls = new Downloaders(prefs, nm, BrowseActivity.this);
+            dls.supressMessages(true);
 
-                    Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
-                    scrapes.supressMessages(true);
-                    scrapes.scrape();
+            Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
+            scrapes.supressMessages(true);
+            scrapes.scrape();
 
-                    LocalDate d = LocalDate.now();
+            LocalDate d = LocalDate.now();
 
-                    for (int i = 0; i < 5; i++) {
-                        d = d.minus(Period.ofDays(1));
-                        dls.download(d);
-                        handler.post(new Runnable() {
-                                public void run() {
-                                    BrowseActivity.this.render();
-                                }
-                            });
+            for (int i = 0; i < 5; i++) {
+                d = d.minus(Period.ofDays(1));
+                dls.download(d);
+
+                if (downloadExecutorService.isShutdown())
+                    return;
+                handler.post(new Runnable() {
+                    public void run() {
+                        if (downloadExecutorService.isShutdown())
+                            return;
+                        BrowseActivity.this.render();
                     }
-                }
-            }).start();
+                });
+            }
+        });
     }
 
     private void render() {
@@ -667,27 +689,29 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         boolean dirExists = fileHandler.exists(directory);
 
-        if (dirExists) {
+        if (dirExists && !uiExecutorService.isShutdown()) {
             final View progressBar
                 = BrowseActivity.this.findViewById(R.id.please_wait_notice);
             progressBar.setVisibility(View.VISIBLE);
 
-            Runnable r = new Runnable() {
-                public void run() {
-                    SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
-                        adapter = BrowseActivity.this.buildList(
-                            directory, BrowseActivity.this.accessor
-                        );
-                    BrowseActivity.this.handler.post(new Runnable() {
-                        public void run() {
-                            BrowseActivity.this.setPuzzleListAdapter(adapter);
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
-                }
-            };
+            uiExecutorService.execute(() -> {
+                SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
+                    adapter = BrowseActivity.this.buildList(
+                        directory, BrowseActivity.this.accessor
+                    );
 
-            new Thread(r).start();
+                if (uiExecutorService.isShutdown())
+                    return;
+
+                BrowseActivity.this.handler.post(new Runnable() {
+                    public void run() {
+                        if (uiExecutorService.isShutdown())
+                            return;
+                        BrowseActivity.this.setPuzzleListAdapter(adapter);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                });
+            });
         } else {
             setPuzzleListAdapter(this.buildList(directory, accessor));
         }
