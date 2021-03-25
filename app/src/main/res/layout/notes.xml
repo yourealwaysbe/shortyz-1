@@ -71,6 +71,7 @@
                 android:typeface="monospace"
                 android:inputType="text|textMultiLine"
                 android:autofillHints=".AUTOFILL_HINT_NOT_APPLICABLE"
+                android:hint="@string/general_clue_notes"
             />
             <TextView
                 android:id="@+id/anagramSourceLab"

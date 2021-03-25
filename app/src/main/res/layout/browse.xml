@@ -76,6 +76,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="16dp"
+        android:contentDescription="@string/download_puzzles"
     />
 
 </RelativeLayout>

@@ -39,6 +39,9 @@
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
+    <string name="download_puzzles">Download Puzzles</string>
+    <string name="back">Back</string>
+    <string name="general_clue_notes">Free-form notes about clue</string>
 
     <!-- preferences -->
     <string name="storage_location">Storage Location</string>

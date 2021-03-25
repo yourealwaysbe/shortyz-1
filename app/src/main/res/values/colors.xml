@@ -5,7 +5,6 @@
     <color name="textColorPrimary">#262626</color>
     <color name="textColorSecondary">#767676</color>
     <color name="textColorFilled">@color/textColorSecondary</color>
-    <color name="accentText">#fff</color>
     <color name="background_light">#fafafa</color>
     <color name="background_dark">#bbb</color>
     <color name="header_color">#ccc</color>
