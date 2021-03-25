@@ -56,8 +56,6 @@ public class ClueTabs extends LinearLayout
     private Context context;
     private boolean listening = false;
     private Set<ClueTabsListener> listeners = WeakSet.buildSet();
-    private GestureDetectorCompat tabSwipeDetector;
-    private OnGestureListener tabSwipeListener;
 
     public static interface ClueTabsListener {
         /**
@@ -154,11 +152,7 @@ public class ClueTabs extends LinearLayout
             }
         ).attach();
 
-        tabLayout.setOnTouchListener(new OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent e) {
-                return tabSwipeDetector.onTouchEvent(e);
-            }
-        });
+        setTabLayoutOnTouchListener();
 
         LinearLayout tabStrip = (LinearLayout) tabLayout.getChildAt(0);
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
@@ -170,31 +164,6 @@ public class ClueTabs extends LinearLayout
                 }
             });
         }
-
-        tabSwipeListener = new SimpleOnGestureListener() {
-            // as recommended by the docs
-            // https://developer.android.com/training/gestures/detector
-            public boolean onDown(MotionEvent e) {
-                return true;
-            }
-
-            public boolean onFling(MotionEvent e1,
-                                   MotionEvent e2,
-                                   float velocityX,
-                                   float velocityY) {
-                if (Math.abs(velocityY) < Math.abs(velocityX))
-                    return false;
-
-                if (velocityY > 0)
-                    ClueTabs.this.notifyListenersTabsBarSwipeDown();
-                else
-                    ClueTabs.this.notifyListenersTabsBarSwipeUp();
-
-                return true;
-            }
-        };
-        tabSwipeDetector = new GestureDetectorCompat(tabLayout.getContext(),
-                                                     tabSwipeListener);
     }
 
     public void setPage(int pageNumber) {
@@ -549,6 +518,46 @@ public class ClueTabs extends LinearLayout
                                     selectedClue.number == clue.number);
             }
         }
+    }
+
+    // suppress because the swipe detector does not consume clicks
+    @SuppressWarnings("ClickableViewAccessibility")
+    private void setTabLayoutOnTouchListener() {
+        TabLayout tabLayout = findViewById(R.id.clueTabsTabLayout);
+
+        OnGestureListener tabSwipeListener
+            = new SimpleOnGestureListener() {
+                // as recommended by the docs
+                // https://developer.android.com/training/gestures/detector
+                public boolean onDown(MotionEvent e) {
+                    return true;
+                }
+
+                public boolean onFling(MotionEvent e1,
+                                       MotionEvent e2,
+                                       float velocityX,
+                                       float velocityY) {
+                    if (Math.abs(velocityY) < Math.abs(velocityX))
+                        return false;
+
+                    if (velocityY > 0)
+                        ClueTabs.this.notifyListenersTabsBarSwipeDown();
+                    else
+                        ClueTabs.this.notifyListenersTabsBarSwipeUp();
+
+                    return true;
+                }
+            };
+
+        GestureDetectorCompat tabSwipeDetector = new GestureDetectorCompat(
+            tabLayout.getContext(), tabSwipeListener
+        );
+
+        tabLayout.setOnTouchListener(new OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent e) {
+                return tabSwipeDetector.onTouchEvent(e);
+            }
+        });
     }
 }
 

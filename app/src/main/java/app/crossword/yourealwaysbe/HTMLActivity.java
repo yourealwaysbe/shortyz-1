@@ -44,7 +44,7 @@ public class HTMLActivity extends ForkyzActivity {
                 }
             });
             download.setImageBitmap(createBitmap("icons1.ttf", "k"));
-            webview.setOnTouchListener(new ShowHideOnScroll(download));
+            setWebViewOnTouchListener(webview, download);
         }
     }
 
@@ -67,5 +67,13 @@ public class HTMLActivity extends ForkyzActivity {
             return true;
         }
         return false;
+    }
+
+    // suppress because ShowHideOnScroll does not consume/handle clicks
+    @SuppressWarnings("ClickableViewAccessibility")
+    private void setWebViewOnTouchListener(
+        WebView webview, FloatingActionButton download
+    ) {
+        webview.setOnTouchListener(new ShowHideOnScroll(download));
     }
 }

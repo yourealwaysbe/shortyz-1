@@ -346,8 +346,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 }
             });
             download.setImageBitmap(createBitmap("icons1.ttf", ","));
-            this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
-
+            setPuzzleListOnTouchListener();
         }
 
         highlightColor = ContextCompat.getColor(this, R.color.accent);
@@ -933,5 +932,12 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             return dpd.getInstance();
         }
+    }
+
+    // suppress this warning because ShowHideOnScroll does not implement click
+    // functionality
+    @SuppressWarnings("ClickableViewAccessibility")
+    private void setPuzzleListOnTouchListener() {
+        this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
     }
 }
