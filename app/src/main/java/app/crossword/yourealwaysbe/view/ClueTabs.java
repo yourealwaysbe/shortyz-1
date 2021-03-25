@@ -53,7 +53,6 @@ public class ClueTabs extends LinearLayout
 
     private ViewPager2 viewPager;
     private Playboard board;
-    private Context context;
     private boolean listening = false;
     private Set<ClueTabsListener> listeners = WeakSet.buildSet();
 
@@ -115,7 +114,6 @@ public class ClueTabs extends LinearLayout
 
     public ClueTabs(Context context, AttributeSet as) {
         super(context, as);
-        this.context = context;
         LayoutInflater.from(context).inflate(R.layout.clue_tabs, this);
     }
 
@@ -218,7 +216,9 @@ public class ClueTabs extends LinearLayout
             viewPager.getAdapter().notifyDataSetChanged();
 
             SharedPreferences prefs
-                = PreferenceManager.getDefaultSharedPreferences(ClueTabs.this.context);
+                = PreferenceManager.getDefaultSharedPreferences(
+                    ClueTabs.this.getContext()
+                );
 
             if (prefs.getBoolean("snapClue", false)) {
                 if (board.isAcross())
@@ -352,7 +352,9 @@ public class ClueTabs extends LinearLayout
 
             if (board != null) {
                 SharedPreferences prefs
-                    = PreferenceManager.getDefaultSharedPreferences(ClueTabs.this.context);
+                    = PreferenceManager.getDefaultSharedPreferences(
+                        ClueTabs.this.getContext()
+                    );
 
                 if (prefs.getBoolean("snapClue", false)) {
 
