@@ -100,8 +100,6 @@ public class NotesActivity extends PuzzleActivity {
 
         Clue c = board.getClue();
 
-        boolean showCount = prefs.getBoolean("showCount", false);
-
         TextView clue = (TextView) this.findViewById(R.id.clueLine);
         if (clue != null && clue.getVisibility() != View.GONE) {
             clue.setVisibility(View.GONE);
@@ -116,14 +114,7 @@ public class NotesActivity extends PuzzleActivity {
             );
         }
 
-        clue.setText("("
-            + (board.isAcross() ? "across" : "down")
-            + ") "
-            + c.number
-            + ". "
-            + c.hint
-            + (showCount ? ("  ["
-            + curWordLen + "]") : ""));
+        clue.setText(getLongClueText(board.isAcross(), c, curWordLen));
 
         imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
         imageView.setAllowOverScroll(false);

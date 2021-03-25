@@ -13,16 +13,15 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
-import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class PuzzleFinishedActivity extends ForkyzActivity {
     private static final long SECONDS = 1000;
     private static final long MINUTES = SECONDS * 60;
     private static final long HOURS = MINUTES * 60;
-    private final NumberFormat two_int = NumberFormat.getIntegerInstance();
 
     /** Percentage varying from 0 to 100. */
     private int cheatLevel = 0;
@@ -38,8 +37,6 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
 
         Puzzle puz = ForkyzApplication.getInstance().getBoard().getPuzzle();
 
-        two_int.setMinimumIntegerDigits(2);
-
         long elapsed = puz.getTime();
         finishedTime = elapsed;
 
@@ -51,9 +48,18 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
 
         long seconds = elapsed / SECONDS;
 
-        String elapsedString = (hours > 0 ? two_int.format(hours) + ":" : "") +
-                two_int.format(minutes) + ":"+
-                two_int.format(seconds);
+        String elapsedString;
+        if (hours > 0) {
+            elapsedString = getString(
+                R.string.completed_time_format_with_hours,
+                hours, minutes, seconds
+            );
+        } else {
+            elapsedString = getString(
+                R.string.completed_time_format_no_hours,
+                minutes, seconds
+            );
+        }
 
         int totalClues = puz.getAcrossClues().length + puz.getDownClues().length;
         int totalBoxes = 0;
@@ -72,7 +78,9 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
         if(this.cheatLevel == 0 && cheatedBoxes > 0){
             this.cheatLevel = 1;
         }
-        String cheatedString = cheatedBoxes + " (" + cheatLevel + "%)";
+        String cheatedString = getString(
+            R.string.num_hinted_boxes, cheatedBoxes, cheatLevel
+        );
 
         String source = puz.getSource();
         if (source == null)
@@ -102,10 +110,14 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
         elapsedTime.setText(elapsedString);
 
         TextView totalCluesView = this.findViewById(R.id.totalClues);
-        totalCluesView.setText(Integer.toString(totalClues));
+        totalCluesView.setText(String.format(
+            Locale.getDefault(), "%d", totalClues)
+        );
 
         TextView totalBoxesView = this.findViewById(R.id.totalBoxes);
-        totalBoxesView.setText(Integer.toString(totalBoxes));
+        totalBoxesView.setText(String.format(
+            Locale.getDefault(), "%d", totalBoxes
+        ));
 
         TextView cheatedBoxesView = this.findViewById(R.id.cheatedBoxes);
         cheatedBoxesView.setText(cheatedString);
@@ -116,7 +128,9 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
                 Intent sendIntent = new Intent(Intent.ACTION_SEND);
                 sendIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
                 sendIntent.setType("text/plain");
-                startActivity(Intent.createChooser(sendIntent, "Share your time"));
+                startActivity(Intent.createChooser(
+                    sendIntent, getString(R.string.share_your_time)
+                ));
             }
         });
 

@@ -6,8 +6,6 @@
     <string name="board_lab">Board:</string>
     <string name="scratch_lab">Scratch:</string>
     <string name="notes_lab">Notes:</string>
-    <string name="tap_to_show_full_notes">Tap to show full notes.</string>
-    <string name="tap_to_hide_full_notes">Tap to hide full notes.</string>
     <string name="please_wait">Please wait&#8230;</string>
     <string name="copy_conflict">Copy Conflict</string>
     <string name="transfer_overwrite_warning">Transferring the response conflicts with existing entries. Overwrite anyway?</string>
@@ -28,20 +26,27 @@
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
     <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
-    <plurals name="share_message_with_date">
-        <item quantity="one">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hint!</item>
-        <item quantity="other">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hints!</item>
-    </plurals>
-    <plurals name="share_message_no_date">
-        <item quantity="one">I finished the %1$s crossword in #Forkyz with %2$d hint!</item>
-        <item quantity="other">I finished the %1$s crossword in #Forkyz with %2$d hints!</item>
-    </plurals>
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
+
+    <!-- clue formats -->
+    <string name="clue_format_no_direction_short">%1$d. %2$s</string>
+    <string name="clue_format_across_short">%1$da. %2$s</string>
+    <string name="clue_format_down_short">%1$dd. %2$s</string>
+    <string name="clue_format_across_long">(across) %1$d. %2$s</string>
+    <string name="clue_format_down_long">(down) %1$d. %2$s</string>
+    <string name="clue_format_across_long_with_length">(across) %1$d. %2$s [%3$d]</string>
+    <string name="clue_format_down_long_with_length">(down) %1$d. %2$s [%3$d]</string>
+
+    <!-- Puzzle Info Dialog -->
+    <string name="tap_to_show_full_notes_no_text">(Tap to show full notes.)</string>
+    <string name="tap_to_hide_full_notes_no_text">(Tap to hide full notes.)</string>
+    <string name="tap_to_show_full_notes_with_text">%1$s\n(Tap to show full notes.)</string>
+    <string name="tap_to_hide_full_notes_with_text">%1$s\n(Tap to hide full notes.)</string>
 
     <!-- preferences -->
     <string name="storage_location">Storage Location</string>
@@ -226,6 +231,18 @@
     <string name="dummy_xx_w_pcnt">XX (XX%)</string>
     <string name="share">Share</string>
     <string name="done">Done</string>
+    <string name="num_hinted_boxes">%1$d (%2$d%%)</string>
+    <string name="share_your_time">Share your time</string>
+    <string name="completed_time_format_no_hours">%1$02d:%2$02d</string>
+    <string name="completed_time_format_with_hours">%1$02d:%2$02d:%3$02d</string>
+    <plurals name="share_message_with_date">
+        <item quantity="one">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hint!</item>
+        <item quantity="other">I finished the %1$s crossword for %2$s in #Forkyz with %3$d hints!</item>
+    </plurals>
+    <plurals name="share_message_no_date">
+        <item quantity="one">I finished the %1$s crossword in #Forkyz with %2$d hint!</item>
+        <item quantity="other">I finished the %1$s crossword in #Forkyz with %2$d hints!</item>
+    </plurals>
 
     <!-- manifest -->
     <string name="app_name">Forkyz</string>

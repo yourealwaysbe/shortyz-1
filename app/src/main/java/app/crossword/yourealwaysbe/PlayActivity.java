@@ -88,7 +88,6 @@ public class PlayActivity extends PuzzleActivity
     private TextView clue;
     private boolean fitToScreen;
 
-    private boolean showCount = false;
     private boolean showErrors = false;
     private boolean scratchMode = false;
     private long lastTap = 0;
@@ -483,7 +482,6 @@ public class PlayActivity extends PuzzleActivity
         this.setClueSize(prefs.getInt("clueSize", smallClueTextSize));
         setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
              + " -	" + neverNull(puz.getCopyright()));
-        this.showCount = prefs.getBoolean("showCount", false);
         if (this.prefs.getBoolean("fitToScreen", false) || (ForkyzApplication.isLandscape(metrics)) && (ForkyzApplication.isTabletish(metrics) || ForkyzApplication.isMiniTabletish(metrics))) {
             this.handler.postDelayed(new Runnable() {
                 @Override
@@ -905,7 +903,6 @@ public class PlayActivity extends PuzzleActivity
     protected void onResume() {
         super.onResume();
 
-        this.showCount = prefs.getBoolean("showCount", false);
         this.onConfigurationChanged(getBaseContext().getResources()
                                                     .getConfiguration());
 
@@ -1084,15 +1081,11 @@ public class PlayActivity extends PuzzleActivity
 
         }
 
-        this.clue
-                .setText("("
-                        + (getBoard().isAcross() ? "across" : "down")
-                        + ") "
-                        + c.number
-                        + ". "
-                        + c.hint
-                        + (this.showCount ? ("  ["
-                        + getBoard().getCurrentWord().length + "]") : ""));
+        this.clue.setText(getLongClueText(
+            getBoard().isAcross(),
+            c,
+            getBoard().getCurrentWord().length
+        ));
 
         this.boardView.requestFocus();
     }
@@ -1230,28 +1223,45 @@ public class PlayActivity extends PuzzleActivity
 
             final String text = (split.length > 1) ? split[0].trim() : null;
 
-            String tapShow = getString(R.string.tap_to_show_full_notes);
-            if (text != null && text.length() > 0)
-                view.setText(text + "\n(" + tapShow + ")");
-            else
-                view.setText("(" + tapShow + ")");
+            if (text != null && text.length() > 0) {
+                view.setText(getString(
+                    R.string.tap_to_show_full_notes_with_text, text
+                ));
+            } else {
+                view.setText(getString(
+                    R.string.tap_to_show_full_notes_no_text
+                ));
+            }
 
             view.setOnClickListener(new OnClickListener() {
                 private boolean showAll = true;
-                private String tapShow
-                    = getString(R.string.tap_to_show_full_notes);
-                private String tapHide
-                    = getString(R.string.tap_to_hide_full_notes);
 
                 public void onClick(View view) {
                     TextView tv = (TextView) view;
 
-                    if (showAll)
-                        tv.setText(notes + "\n(" + tapHide + ")");
-                    else if (text == null || text.length() == 0)
-                        tv.setText("(" + tapShow + ")");
-                    else
-                        tv.setText(text + "\n(" + tapShow + ")");
+                    if (showAll) {
+                        if (notes == null || notes.length() == 0) {
+                            tv.setText(getString(
+                                R.string.tap_to_hide_full_notes_no_text
+                            ));
+                        } else {
+                            tv.setText(getString(
+                                R.string.tap_to_hide_full_notes_with_text,
+                                notes
+                            ));
+                        }
+                    } else {
+                        if (text == null || text.length() == 0) {
+                            tv.setText(getString(
+                                R.string.tap_to_show_full_notes_no_text
+                            ));
+                        } else {
+                            tv.setText(getString(
+                                R.string.tap_to_show_full_notes_with_text,
+                                text
+                            ));
+                        }
+                    }
 
                     showAll = !showAll;
                 }

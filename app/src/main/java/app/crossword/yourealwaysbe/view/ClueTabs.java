@@ -499,11 +499,23 @@ public class ClueTabs extends LinearLayout
             this.index = index;
             this.across = across;
 
-            String direction = "";
-            if (showDirection)
-                direction = across ? "a" : "d";
+            String clueText;
+            if (showDirection) {
+                int clueFormat = across
+                    ? R.string.clue_format_across_short
+                    : R.string.clue_format_down_short;
+                clueText = ClueTabs.this.getContext().getString(
+                    clueFormat,
+                    clue.number, clue.hint
+                );
+            } else {
+                clueText = ClueTabs.this.getContext().getString(
+                    R.string.clue_format_no_direction_short,
+                    clue.number, clue.hint
+                );
+            }
 
-            clueView.setText(clue.number + direction + ". " + clue.hint);
+            clueView.setText(clueText);
 
             int color = R.color.textColorPrimary;
             if (board != null && board.isFilled(index, across)) {

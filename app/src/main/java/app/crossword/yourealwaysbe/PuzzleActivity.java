@@ -8,7 +8,9 @@ import android.os.Handler;
 import android.os.Looper;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
@@ -194,5 +196,27 @@ public abstract class PuzzleActivity
 
     protected void saveBoard() {
         ForkyzApplication.getInstance().saveBoard();
+    }
+
+    protected String getLongClueText(
+        boolean across, Clue clue, int wordLen
+    ) {
+        boolean showCount = prefs.getBoolean("showCount", false);
+
+        if (showCount) {
+            int clueFormat = across
+                ? R.string.clue_format_across_long_with_length
+                : R.string.clue_format_down_long_with_length;
+            return getString(
+                clueFormat, clue.number, clue.hint, wordLen
+            );
+        } else {
+            int clueFormat = across
+                ? R.string.clue_format_across_long
+                : R.string.clue_format_down_long;
+            return getString(
+                clueFormat, clue.number, clue.hint
+            );
+        }
     }
 }
