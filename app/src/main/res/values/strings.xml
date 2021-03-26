@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="puzzle_select">Select a puzzle:</string>
-    <string name="anagram_source_lab">Anagram remaining letters:</string>
-    <string name="anagram_solution_lab">Anagram solution:</string>
-    <string name="board_lab">Board:</string>
-    <string name="scratch_lab">Scratch:</string>
-    <string name="notes_lab">Notes:</string>
     <string name="please_wait">Please wait&#8230;</string>
-    <string name="copy_conflict">Copy Conflict</string>
-    <string name="transfer_overwrite_warning">Transferring the response conflicts with existing entries. Overwrite anyway?</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="reveal_puzzle">Reveal Entire Puzzle</string>
@@ -32,6 +25,15 @@
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
+
+    <!-- notes page -->
+    <string name="anagram_source_lab">Anagram remaining letters</string>
+    <string name="anagram_solution_lab">Anagram solution</string>
+    <string name="board_lab">Board</string>
+    <string name="scratch_lab">Scratch</string>
+    <string name="notes_lab">Notes</string>
+    <string name="copy_conflict">Copy Conflict</string>
+    <string name="transfer_overwrite_warning">Transferring the response conflicts with existing entries. Overwrite anyway?</string>
 
     <!-- clue formats -->
     <string name="clue_format_no_direction_short">%1$d. %2$s</string>
