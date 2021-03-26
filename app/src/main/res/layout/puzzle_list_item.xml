@@ -20,9 +20,13 @@
         android:layout_width="70dp"
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:gravity="center_horizontal|center_vertical"
         android:lines="2"
         android:paddingLeft="10dp"
+        android:paddingStart="10dp"
+        android:paddingRight="10dp"
+        android:paddingEnd="10dp"
         android:text="@string/puzzle_date"
         android:textColor="@color/textColorSecondary"
         android:textSize="12sp" />
@@ -32,15 +36,18 @@
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@id/puzzle_date" />
+        android:layout_toRightOf="@id/puzzle_date"
+        android:layout_toEndOf="@id/puzzle_date" />
 
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/puzzle_progress"
+        android:layout_toEndOf="@id/puzzle_progress"
         android:gravity="center_vertical"
         android:orientation="vertical">
 
@@ -52,6 +59,9 @@
             android:gravity="center_vertical"
             android:lines="1"
             android:paddingLeft="10dp"
+            android:paddingStart="10dp"
+            android:paddingRight="10dp"
+            android:paddingEnd="10dp"
             android:paddingTop="2dp"
             android:singleLine="true"
             android:text="@string/puzzle_name"
@@ -64,7 +74,10 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:lines="1"
-            android:paddingLeft="12dp"
+            android:paddingLeft="10dp"
+            android:paddingStart="10dp"
+            android:paddingRight="10dp"
+            android:paddingEnd="10dp"
             android:text="@string/caption_text"
             android:textColor="@color/textColorSecondary"
             android:textSize="15sp" />

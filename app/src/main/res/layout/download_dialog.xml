@@ -16,6 +16,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/dayOfWeek"
             android:textAlignment="center"
+            android:gravity="center"
             android:layout_margin="20dp"
             android:textColor="@color/textColorPrimary"
         />

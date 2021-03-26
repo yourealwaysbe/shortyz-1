@@ -9,6 +9,7 @@
     <LinearLayout
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical"
@@ -75,6 +76,7 @@
         app:backgroundTint="#ff669900"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:contentDescription="@string/download_puzzles"
     />
