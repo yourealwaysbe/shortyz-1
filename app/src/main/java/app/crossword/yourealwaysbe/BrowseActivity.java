@@ -63,6 +63,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -98,7 +99,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private FloatingActionButton download;
     private int highlightColor;
     private int normalColor;
-    private HashSet<PuzMetaFile> selected = new HashSet<>();
+    private Set<PuzMetaFile> selected = new HashSet<>();
     private int pleaseWaitDepth = 0;
     private View pleaseWaitView;
     private boolean puzzleListLoadInProgress = false;
@@ -141,33 +142,43 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             int id = menuItem.getItemId();
 
-            if (id == R.id.browse_action_delete) {
-                for(PuzMetaFile puzMeta : selected){
-                    fileHandler.delete(puzMeta);
+            Set<PuzMetaFile> toAction = new HashSet<>(selected);
+
+            uiExecutorService.execute(() -> {
+                if (id == R.id.browse_action_delete) {
+                    for  (PuzMetaFile puzMeta : toAction) {
+                        fileHandler.delete(puzMeta);
+                    }
+                } else if (id == R.id.browse_action_archive) {
+                    for (PuzMetaFile puzMeta : toAction) {
+                        fileHandler.moveTo(
+                            puzMeta, crosswordsFolder, archiveFolder
+                        );
+                    }
+                } else if (id == R.id.browse_action_unarchive) {
+                    for (PuzMetaFile puzMeta : toAction) {
+                        fileHandler.moveTo(
+                            puzMeta, archiveFolder, crosswordsFolder
+                        );
+                    }
                 }
-                actionMode.finish();
-            } else if (id == R.id.browse_action_archive) {
-                for(PuzMetaFile puzMeta : selected){
-                    fileHandler.moveTo(
-                        puzMeta, crosswordsFolder, archiveFolder
-                    );
+
+                if (!uiExecutorService.isShutdown()) {
+                    handler.post(() -> {
+                        if (!uiExecutorService.isShutdown())
+                            startLoadPuzzleList();
+                    });
                 }
-                actionMode.finish();
-            } else if (id == R.id.browse_action_unarchive) {
-                for(PuzMetaFile puzMeta : selected){
-                    fileHandler.moveTo(
-                        puzMeta, archiveFolder, crosswordsFolder
-                    );
-                }
-                actionMode.finish();
-            }
+            });
+
+            actionMode.finish();
+
             return true;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             selected.clear();
-            startLoadPuzzleList();
             download.setVisibility(View.VISIBLE);
             actionMode = null;
         }
@@ -267,8 +278,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final FileHandler fileHandler = getFileHandler();
-
         setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
         this.setContentView(R.layout.browse);
         this.puzzleList = (RecyclerView) this.findViewById(R.id.puzzleList);
@@ -299,22 +308,39 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 if(!(viewHolder instanceof FileViewHolder)){
                     return;
                 }
-                PuzMetaFile puzMeta = (PuzMetaFile) ((FileViewHolder) viewHolder).itemView.getTag();
-                if("DELETE".equals(prefs.getString("swipeAction", "DELETE"))) {
-                    fileHandler.delete(puzMeta);
-                } else {
-                    if (model.getIsViewArchive()) {
-                        fileHandler.moveTo(
-                            puzMeta, archiveFolder, crosswordsFolder
-                        );
+                PuzMetaFile puzMeta =
+                    (PuzMetaFile) ((FileViewHolder) viewHolder).itemView.getTag();
+
+                FileHandler fileHandler = getFileHandler();
+
+                uiExecutorService.execute(() -> {
+                    boolean delete = "DELETE".equals(
+                        prefs.getString("swipeAction", "DELETE")
+                    );
+                    if (delete) {
+                        fileHandler.delete(puzMeta);
                     } else {
-                        fileHandler.moveTo(
-                            puzMeta, crosswordsFolder, archiveFolder
-                        );
+                        if (model.getIsViewArchive()) {
+                            fileHandler.moveTo(
+                                puzMeta, archiveFolder, crosswordsFolder
+                            );
+                        } else {
+                            fileHandler.moveTo(
+                                puzMeta, crosswordsFolder, archiveFolder
+                            );
+                        }
                     }
-                }
-                currentAdapter.onItemDismiss(viewHolder.getAdapterPosition());
-                puzzleList.invalidate();
+                    if (!uiExecutorService.isShutdown()) {
+                        handler.post(() -> {
+                            if (!uiExecutorService.isShutdown()) {
+                                currentAdapter.onItemDismiss(
+                                    viewHolder.getAdapterPosition()
+                                );
+                                puzzleList.invalidate();
+                            }
+                        });
+                    }
+                });
             }
         });
         helper.attachToRecyclerView(this.puzzleList);
