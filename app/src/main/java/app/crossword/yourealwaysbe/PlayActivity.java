@@ -140,7 +140,7 @@ public class PlayActivity extends PuzzleActivity
         this.scratchMode = this.prefs.getBoolean("scratchMode", false);
         setDefaultKeyMode(Activity.DEFAULT_KEYS_DISABLE);
 
-        MovementStrategy movement = this.getMovementStrategy();
+        MovementStrategy movement = getMovementStrategy();
 
         setFullScreenMode();
 
@@ -903,7 +903,7 @@ public class PlayActivity extends PuzzleActivity
         if (movement != null) {
             return movement;
         } else {
-            return super.getMovementStrategy();
+            return ForkyzApplication.getInstance().getMovementStrategy();
         }
     }
 

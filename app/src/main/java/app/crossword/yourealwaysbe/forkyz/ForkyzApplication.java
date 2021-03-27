@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.MovementStrategy;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
@@ -217,6 +218,25 @@ public class ForkyzApplication extends Application {
             && ContextCompat.checkSelfPermission(
                 this, Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) != PackageManager.PERMISSION_GRANTED;
+    }
+
+    public MovementStrategy getMovementStrategy() {
+        String stratName = settings.getString(
+            "movementStrategy", "MOVE_NEXT_ON_AXIS"
+        );
+        switch (stratName) {
+        case "MOVE_NEXT_ON_AXIS":
+            return MovementStrategy.MOVE_NEXT_ON_AXIS;
+        case "STOP_ON_END":
+            return MovementStrategy.STOP_ON_END;
+        case "MOVE_NEXT_CLUE":
+            return MovementStrategy.MOVE_NEXT_CLUE;
+        case "MOVE_PARALLEL_WORD":
+            return MovementStrategy.MOVE_PARALLEL_WORD;
+        default:
+            LOGGER.severe("Unknown MovementStrategy " + stratName);
+            return null;
+        }
     }
 
     private void setFileHander() {

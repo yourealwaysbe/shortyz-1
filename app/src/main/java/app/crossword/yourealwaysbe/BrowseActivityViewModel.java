@@ -1,17 +1,33 @@
 
 package app.crossword.yourealwaysbe;
 
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
+import app.crossword.yourealwaysbe.forkyz.R;
+import app.crossword.yourealwaysbe.net.Downloader;
+import app.crossword.yourealwaysbe.net.Downloaders;
+import app.crossword.yourealwaysbe.net.Scrapers;
+import app.crossword.yourealwaysbe.puz.Playboard;
+import app.crossword.yourealwaysbe.puz.Puzzle;
+import app.crossword.yourealwaysbe.util.SingleLiveEvent;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
 
+import java.io.IOException;
+import java.lang.Void;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +43,11 @@ public class BrowseActivityViewModel extends ViewModel {
 
     private ExecutorService executorService
         = Executors.newSingleThreadExecutor();
+    // not fixed num in case user creates loads of downloads
+    private ExecutorService downloadExecutorService
+        = Executors.newCachedThreadPool();
     private Handler handler = new Handler(Looper.getMainLooper());
+    private SharedPreferences prefs;
 
     private boolean isViewArchive = false;
 
@@ -36,9 +56,14 @@ public class BrowseActivityViewModel extends ViewModel {
     // busy with something that isn't downloading
     private MutableLiveData<Boolean> isUIBusy
         = new MutableLiveData<Boolean>();
+    private SingleLiveEvent<Void> puzzleLoadEvents
+        = new SingleLiveEvent<>();
 
     public BrowseActivityViewModel() {
         isUIBusy.setValue(false);
+        prefs = PreferenceManager.getDefaultSharedPreferences(
+            ForkyzApplication.getInstance()
+        );
     }
 
     public MutableLiveData<PuzMetaFile[]> getPuzzleFiles() {
@@ -47,6 +72,10 @@ public class BrowseActivityViewModel extends ViewModel {
 
     public MutableLiveData<Boolean> getIsUIBusy() {
         return isUIBusy;
+    }
+
+    public SingleLiveEvent<Void> getPuzzleLoadEvents() {
+        return puzzleLoadEvents;
     }
 
     public boolean getIsViewArchive() {
@@ -134,9 +163,7 @@ public class BrowseActivityViewModel extends ViewModel {
         });
     }
 
-    public void cleanUpPuzzles(
-        boolean deleteOnCleanup, LocalDate maxAge, LocalDate archiveMaxAge
-    ) {
+    public void cleanUpPuzzles() {
         if (isUIBusy.getValue())
             return;
 
@@ -144,6 +171,13 @@ public class BrowseActivityViewModel extends ViewModel {
 
         executorService.execute(() -> {
             FileHandler fileHandler = getFileHandler();
+
+            boolean deleteOnCleanup
+                = prefs.getBoolean("deleteOnCleanup", false);
+            LocalDate maxAge
+                = getMaxAge(prefs.getString("cleanupAge", "2"));
+            LocalDate archiveMaxAge
+                = getMaxAge(prefs.getString("archiveCleanupAge", "-1"));
 
             DirHandle crosswords
                 = fileHandler.getCrosswordsDirectory();
@@ -193,6 +227,103 @@ public class BrowseActivityViewModel extends ViewModel {
         });
     }
 
+    public void download(
+        LocalDate date, List<Downloader> downloaders, boolean scrape
+    ) {
+        downloadExecutorService.execute(() -> {
+            NotificationManager nm
+                = (NotificationManager)
+                    ForkyzApplication
+                        .getInstance()
+                        .getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Downloaders dls = new Downloaders(
+                prefs, nm, ForkyzApplication.getInstance()
+            );
+
+            dls.download(date, downloaders);
+
+            if (scrape) {
+                Scrapers scrapes = new Scrapers(
+                    prefs, nm, ForkyzApplication.getInstance()
+                );
+                scrapes.scrape();
+            }
+
+            handler.post(() -> {
+                startLoadFiles();
+            });
+        });
+    }
+
+    public void loadPuzzle(PuzMetaFile puzMeta) {
+        if (isUIBusy.getValue())
+            return;
+
+        isUIBusy.setValue(true);
+
+        executorService.execute(() -> {
+            FileHandler fileHandler = getFileHandler();
+            try {
+                Puzzle puz = fileHandler.load(puzMeta);
+                if (puz == null || puz.getBoxes() == null) {
+                    throw new IOException(
+                        "Puzzle is null or contains no boxes."
+                    );
+                }
+                handler.post(() -> {
+                    isUIBusy.setValue(false);
+                    ForkyzApplication application
+                        = ForkyzApplication.getInstance();
+                    application.setBoard(
+                        new Playboard(
+                            puz,
+                            application.getMovementStrategy(),
+                            prefs.getBoolean(
+                                "preserveCorrectLettersInShowErrors", false
+                            ),
+                            prefs.getBoolean("dontDeleteCrossing", true)
+                        ),
+                        puzMeta.getPuzHandle()
+                    );
+                    puzzleLoadEvents.call();
+                });
+            } catch (IOException e) {
+                isUIBusy.setValue(false);
+                handler.post(() -> {
+                    String filename = null;
+                    try {
+                        filename = fileHandler.getName(
+                            puzMeta.getPuzHandle().getPuzFileHandle()
+                        );
+                    } catch (Exception ee) {
+                        e.printStackTrace();
+                    }
+
+                    ForkyzApplication application
+                        = ForkyzApplication.getInstance();
+
+                    Toast t = Toast.makeText(
+                        application,
+                        application.getString(
+                            R.string.unable_to_read_file,
+                            (filename != null ?  filename : "")
+                        ),
+                        Toast.LENGTH_SHORT
+                    );
+                    t.show();
+                });
+            }
+        });
+    }
+
+    private LocalDate getMaxAge(String preferenceValue) {
+        int cleanupValue = Integer.parseInt(preferenceValue) + 1;
+        if (cleanupValue > 0)
+            return LocalDate.now().minus(Period.ofDays(cleanupValue));
+        else
+            return null;
+    }
 
     private void setIsViewArchive(boolean isViewArchive) {
         this.isViewArchive = isViewArchive;
@@ -201,6 +332,7 @@ public class BrowseActivityViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         executorService.shutdown();
+        downloadExecutorService.shutdown();
     }
 
     private FileHandler getFileHandler() {

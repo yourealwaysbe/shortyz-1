@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
-import app.crossword.yourealwaysbe.puz.MovementStrategy;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.util.files.FileHandlerSAF;
@@ -129,24 +128,5 @@ public class ForkyzActivity extends AppCompatActivity {
         p.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(character, size/2, size - size / 9, p );
         return bitmap;
-    }
-
-    protected MovementStrategy getMovementStrategy() {
-        String stratName = this.prefs.getString(
-            "movementStrategy", "MOVE_NEXT_ON_AXIS"
-        );
-        switch (stratName) {
-        case "MOVE_NEXT_ON_AXIS":
-            return MovementStrategy.MOVE_NEXT_ON_AXIS;
-        case "STOP_ON_END":
-            return MovementStrategy.STOP_ON_END;
-        case "MOVE_NEXT_CLUE":
-            return MovementStrategy.MOVE_NEXT_CLUE;
-        case "MOVE_PARALLEL_WORD":
-            return MovementStrategy.MOVE_PARALLEL_WORD;
-        default:
-            LOG.severe("Unknown MovementStrategy " + stratName);
-            return null;
-        }
     }
 }

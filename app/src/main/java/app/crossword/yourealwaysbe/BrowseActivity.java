@@ -1,5 +1,6 @@
 package app.crossword.yourealwaysbe;
 
+
 import android.Manifest;
 import android.app.Dialog;
 import android.app.NotificationManager;
@@ -20,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.app.ActivityCompat;
@@ -37,9 +37,6 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.net.Downloader;
 import app.crossword.yourealwaysbe.net.Downloaders;
-import app.crossword.yourealwaysbe.net.Scrapers;
-import app.crossword.yourealwaysbe.puz.Playboard;
-import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.files.Accessor;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
@@ -75,10 +72,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
 
-    // not fixed in case user creates loads of downloads
-    // TODO: move downloads to downloader service or WorkManager
-    private ExecutorService downloadExecutorService
-        = Executors.newCachedThreadPool();
     private ExecutorService uiExecutorService
         = Executors.newSingleThreadExecutor();
 
@@ -100,8 +93,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private int highlightColor;
     private int normalColor;
     private Set<PuzMetaFile> selected = new HashSet<>();
-    private boolean puzzleListLoadInProgress = false;
-    private boolean puzzleLoadInProgress = false;
     private MenuItem viewCrosswordsArchiveMenuItem;
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
@@ -218,7 +209,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             startLoadPuzzleList(!model.getIsViewArchive());
             return true;
         } else if (id == R.id.browse_menu_cleanup) {
-            this.cleanup();
+            model.cleanUpPuzzles();
             return true;
         } else if (id == R.id.browse_menu_help) {
             Intent helpIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/filescreen.html"), this,
@@ -367,9 +358,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         model.getPuzzleFiles().observe(this, (v) -> {
             BrowseActivity.this.setViewCrosswordsOrArchiveUI();
             BrowseActivity.this.loadPuzzleAdapter();
-            if (isPuzzleListLoadFlagged()) {
-                unflagPuzzleListLoad();
-            }
         });
 
         final View pleaseWaitView = findViewById(R.id.please_wait_notice);
@@ -378,6 +366,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                 pleaseWaitView.setVisibility(View.VISIBLE);
             else
                 pleaseWaitView.setVisibility(View.GONE);
+        });
+
+        model.getPuzzleLoadEvents().observe(this, (v) -> {
+            Intent i = new Intent(BrowseActivity.this, PlayActivity.class);
+            BrowseActivity.this.startActivity(i);
         });
 
         setViewCrosswordsOrArchiveUI();
@@ -413,7 +406,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @Override
     protected void onDestroy() {
         uiExecutorService.shutdownNow();
-        downloadExecutorService.shutdownNow();
         super.onDestroy();
     }
 
@@ -535,52 +527,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         if (prefs.getBoolean("dlOnStartup", false) &&
                 ((System.currentTimeMillis() - (long) (12 * 60 * 60 * 1000)) > lastDL)) {
-            this.download(LocalDate.now(), null, true);
+            model.download(LocalDate.now(), null, true);
             prefs.edit()
                     .putLong("dlLast", System.currentTimeMillis())
                     .apply();
         }
-    }
-
-    private LocalDate getMaxAge(String preferenceValue) {
-        int cleanupValue = Integer.parseInt(preferenceValue) + 1;
-        if (cleanupValue > 0)
-            return LocalDate.now().minus(Period.ofDays(cleanupValue));
-        else
-            return null;
-    }
-
-    private void cleanup() {
-        boolean deleteOnCleanup
-            = prefs.getBoolean("deleteOnCleanup", false);
-        LocalDate maxAge
-            = getMaxAge(prefs.getString("cleanupAge", "2"));
-        LocalDate archiveMaxAge
-            = getMaxAge(prefs.getString("archiveCleanupAge", "-1"));
-
-        model.cleanUpPuzzles(deleteOnCleanup, maxAge, archiveMaxAge);
-    }
-
-    private void download(final LocalDate d, final List<Downloader> downloaders, final boolean scrape) {
-        if (!hasWritePermissions) return;
-
-        final Downloaders dls = new Downloaders(prefs, nm, this);
-        downloadExecutorService.execute(() -> {
-            dls.download(d, downloaders);
-
-            if (scrape) {
-                Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
-                scrapes.scrape();
-            }
-
-            if (downloadExecutorService.isShutdown())
-                return;
-            handler.post(() -> {
-                if (downloadExecutorService.isShutdown())
-                    return;
-                BrowseActivity.this.startLoadPuzzleList();
-            });
-        });
     }
 
     private void startLoadPuzzleList() {
@@ -588,9 +539,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private void startLoadPuzzleList(boolean archive) {
-        if (!flagPuzzleListLoad())
-            return;
-
         if (!hasWritePermissions) return;
 
         utils.clearBackgroundDownload(prefs);
@@ -625,80 +573,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             if (selectedPuzMeta == null) {
                 return;
             }
-            loadPuzzleAndStartPlay(selectedPuzMeta.getPuzHandle());
-
+            model.loadPuzzle(selectedPuzMeta);
         }
-    }
-
-    private void loadPuzzleAndStartPlay(PuzHandle puzHandle) {
-        if (!flagPuzzleLoad())
-            return;
-
-        // too intricate for runWithUIExecutor
-        uiExecutorService.execute(() -> {
-            FileHandler fileHandler = getFileHandler();
-            try {
-                Puzzle puz = fileHandler.load(puzHandle);
-                if (puz == null || puz.getBoxes() == null) {
-                    throw new IOException(
-                        "Puzzle is null or contains no boxes."
-                    );
-                }
-                if (uiExecutorService.isShutdown()) {
-                    unflagPuzzleLoad();
-                } else {
-                    handler.post(() -> {
-                        unflagPuzzleLoad();
-                        if (uiExecutorService.isShutdown())
-                            return;
-                        setBoardAndStartPlay(puzHandle, puz);
-                    });
-                }
-            } catch (IOException e) {
-                unflagPuzzleLoad();
-                if (uiExecutorService.isShutdown())
-                    return;
-                handler.post(() -> {
-                    if (uiExecutorService.isShutdown())
-                        return;
-
-                    String filename = null;
-                    try {
-                        filename = fileHandler.getName(
-                            puzHandle.getPuzFileHandle()
-                        );
-                    } catch (Exception ee) {
-                        e.printStackTrace();
-                    }
-
-                    Toast t = Toast.makeText(
-                        BrowseActivity.this,
-                        BrowseActivity.this.getString(
-                            R.string.unable_to_read_file,
-                            (filename != null ?  filename : "")
-                        ),
-                        Toast.LENGTH_SHORT
-                    );
-                    t.show();
-                });
-            }
-        });
-    }
-
-    private void setBoardAndStartPlay(PuzHandle puzHandle, Puzzle puz) {
-        ForkyzApplication.getInstance().setBoard(
-            new Playboard(
-                puz,
-                getMovementStrategy(),
-                prefs.getBoolean("preserveCorrectLettersInShowErrors", false),
-                prefs.getBoolean("dontDeleteCrossing", true)
-            ),
-            puzHandle
-        );
-        Intent i = new Intent(
-            BrowseActivity.this, PlayActivity.class
-        );
-        startActivity(i);
     }
 
     @Override
@@ -764,44 +640,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @SuppressWarnings("ClickableViewAccessibility")
     private void setPuzzleListOnTouchListener() {
         this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
-    }
-
-    /**
-     * Returns true if there was not a load in progress
-     *
-     * Used to avoid multiple puzzle loads from the UI thread. Not
-     * thread safe.
-     */
-    private boolean flagPuzzleLoad() {
-        if (puzzleLoadInProgress)
-            return false;
-        puzzleLoadInProgress = true;
-        return true;
-    }
-
-    private void unflagPuzzleLoad() {
-        puzzleLoadInProgress = false;
-    }
-
-    /**
-     * Returns true if there was not a load in progress
-     *
-     * Used to avoid multiple puzzle loads from the UI thread. Not
-     * thread safe.
-     */
-    private boolean flagPuzzleListLoad() {
-        if (puzzleListLoadInProgress)
-            return false;
-        puzzleListLoadInProgress = true;
-        return true;
-    }
-
-    private boolean isPuzzleListLoadFlagged() {
-        return puzzleListLoadInProgress;
-    }
-
-    private void unflagPuzzleListLoad() {
-        puzzleListLoadInProgress = false;
     }
 
     private void runWithUIExecutor(Runnable offUI, Runnable postOp) {
@@ -915,8 +753,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                         scrape = false;
                     }
 
-                    BrowseActivity activity = (BrowseActivity) getActivity();
-                    activity.download(d, toDownload, scrape);
+                    BrowseActivityViewModel model
+                        = new ViewModelProvider(getActivity())
+                            .get(BrowseActivityViewModel.class);
+
+                    model.download(d, toDownload, scrape);
                 }
             };
 
