@@ -144,32 +144,28 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             Set<PuzMetaFile> toAction = new HashSet<>(selected);
 
-            uiExecutorService.execute(() -> {
-                if (id == R.id.browse_action_delete) {
-                    for  (PuzMetaFile puzMeta : toAction) {
-                        fileHandler.delete(puzMeta);
+            runWithUIExecutor(
+                () -> {
+                    if (id == R.id.browse_action_delete) {
+                        for  (PuzMetaFile puzMeta : toAction) {
+                            fileHandler.delete(puzMeta);
+                        }
+                    } else if (id == R.id.browse_action_archive) {
+                        for (PuzMetaFile puzMeta : toAction) {
+                            fileHandler.moveTo(
+                                puzMeta, crosswordsFolder, archiveFolder
+                            );
+                        }
+                    } else if (id == R.id.browse_action_unarchive) {
+                        for (PuzMetaFile puzMeta : toAction) {
+                            fileHandler.moveTo(
+                                puzMeta, archiveFolder, crosswordsFolder
+                            );
+                        }
                     }
-                } else if (id == R.id.browse_action_archive) {
-                    for (PuzMetaFile puzMeta : toAction) {
-                        fileHandler.moveTo(
-                            puzMeta, crosswordsFolder, archiveFolder
-                        );
-                    }
-                } else if (id == R.id.browse_action_unarchive) {
-                    for (PuzMetaFile puzMeta : toAction) {
-                        fileHandler.moveTo(
-                            puzMeta, archiveFolder, crosswordsFolder
-                        );
-                    }
-                }
-
-                if (!uiExecutorService.isShutdown()) {
-                    handler.post(() -> {
-                        if (!uiExecutorService.isShutdown())
-                            startLoadPuzzleList();
-                    });
-                }
-            });
+                },
+                () -> { startLoadPuzzleList(); }
+            );
 
             actionMode.finish();
 
@@ -313,34 +309,32 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
                 FileHandler fileHandler = getFileHandler();
 
-                uiExecutorService.execute(() -> {
-                    boolean delete = "DELETE".equals(
-                        prefs.getString("swipeAction", "DELETE")
-                    );
-                    if (delete) {
-                        fileHandler.delete(puzMeta);
-                    } else {
-                        if (model.getIsViewArchive()) {
-                            fileHandler.moveTo(
-                                puzMeta, archiveFolder, crosswordsFolder
-                            );
+                runWithUIExecutor(
+                    () -> {
+                        boolean delete = "DELETE".equals(
+                            prefs.getString("swipeAction", "DELETE")
+                        );
+                        if (delete) {
+                            fileHandler.delete(puzMeta);
                         } else {
-                            fileHandler.moveTo(
-                                puzMeta, crosswordsFolder, archiveFolder
-                            );
-                        }
-                    }
-                    if (!uiExecutorService.isShutdown()) {
-                        handler.post(() -> {
-                            if (!uiExecutorService.isShutdown()) {
-                                currentAdapter.onItemDismiss(
-                                    viewHolder.getAdapterPosition()
+                            if (model.getIsViewArchive()) {
+                                fileHandler.moveTo(
+                                    puzMeta, archiveFolder, crosswordsFolder
                                 );
-                                puzzleList.invalidate();
+                            } else {
+                                fileHandler.moveTo(
+                                    puzMeta, crosswordsFolder, archiveFolder
+                                );
                             }
-                        });
+                        }
+                    },
+                    () -> {
+                        currentAdapter.onItemDismiss(
+                            viewHolder.getAdapterPosition()
+                        );
+                        puzzleList.invalidate();
                     }
-                });
+                );
             }
         });
         helper.attachToRecyclerView(this.puzzleList);
@@ -476,6 +470,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (uiExecutorService.isShutdown())
             return;
 
+        // don't use runWithUIExecutor because it's more intricate
         uiExecutorService.execute(() -> {
             for (SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>.IndexedSectionAdapter indexedSectionAdapter : currentAdapter.getIndexedSectionAdapters()) {
                 int startPos = indexedSectionAdapter.getIndex();
@@ -584,55 +579,62 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         final FileHandler fileHandler = getFileHandler();
 
         showPleaseWait();
-        uiExecutorService.execute(() -> {
-            boolean deleteOnCleanup = prefs.getBoolean("deleteOnCleanup", false);
-            LocalDate maxAge = getMaxAge(prefs.getString("cleanupAge", "2"));
-            LocalDate archiveMaxAge = getMaxAge(prefs.getString("archiveCleanupAge", "-1"));
+        runWithUIExecutor(
+            () -> {
+                boolean deleteOnCleanup
+                    = prefs.getBoolean("deleteOnCleanup", false);
+                LocalDate maxAge
+                    = getMaxAge(prefs.getString("cleanupAge", "2"));
+                LocalDate archiveMaxAge
+                    = getMaxAge(prefs.getString("archiveCleanupAge", "-1"));
 
-            ArrayList<PuzMetaFile> toArchive = new ArrayList<PuzMetaFile>();
-            ArrayList<PuzMetaFile> toDelete = new ArrayList<PuzMetaFile>();
+                ArrayList<PuzMetaFile> toArchive
+                    = new ArrayList<PuzMetaFile>();
+                ArrayList<PuzMetaFile> toDelete
+                    = new ArrayList<PuzMetaFile>();
 
-            if (maxAge != null) {
-                PuzMetaFile[] puzFiles = fileHandler.getPuzFiles(crosswordsFolder);
-                Arrays.sort(puzFiles);
-                for (PuzMetaFile pm : puzFiles) {
-                    if ((pm.getComplete() == 100) || (pm.getDate().isBefore(maxAge))) {
-                        if (deleteOnCleanup) {
-                            toDelete.add(pm);
-                        } else {
-                            toArchive.add(pm);
+                if (maxAge != null) {
+                    PuzMetaFile[] puzFiles
+                        = fileHandler.getPuzFiles(crosswordsFolder);
+                    Arrays.sort(puzFiles);
+                    for (PuzMetaFile pm : puzFiles) {
+                        if ((pm.getComplete() == 100)
+                                || (pm.getDate().isBefore(maxAge))) {
+                            if (deleteOnCleanup) {
+                                toDelete.add(pm);
+                            } else {
+                                toArchive.add(pm);
+                            }
                         }
                     }
                 }
-            }
 
-            if (archiveMaxAge != null) {
-                PuzMetaFile[] puzFiles = fileHandler.getPuzFiles(archiveFolder);
-                Arrays.sort(puzFiles);
-                for (PuzMetaFile pm : puzFiles) {
-                    if (pm.getDate().isBefore(archiveMaxAge)) {
-                        toDelete.add(pm);
+                if (archiveMaxAge != null) {
+                    PuzMetaFile[] puzFiles
+                        = fileHandler.getPuzFiles(archiveFolder);
+                    Arrays.sort(puzFiles);
+                    for (PuzMetaFile pm : puzFiles) {
+                        if (pm.getDate().isBefore(archiveMaxAge)) {
+                            toDelete.add(pm);
+                        }
                     }
                 }
-            }
 
-            for (PuzMetaFile pm : toDelete) {
-                fileHandler.delete(pm);
-            }
+                for (PuzMetaFile pm : toDelete) {
+                    fileHandler.delete(pm);
+                }
 
-            for (PuzMetaFile pm : toArchive) {
-                fileHandler.moveTo(pm, this.crosswordsFolder, this.archiveFolder);
+                for (PuzMetaFile pm : toArchive) {
+                    fileHandler.moveTo(
+                        pm, this.crosswordsFolder, this.archiveFolder
+                    );
+                }
+            },
+            () -> {
+                hidePleaseWait();
+                startLoadPuzzleList();
             }
-
-            if (!uiExecutorService.isShutdown()) {
-                handler.post(() -> {
-                    if (!uiExecutorService.isShutdown()) {
-                        hidePleaseWait();
-                        startLoadPuzzleList();
-                    }
-                });
-            }
-        });
+        );
     }
 
     private void download(final LocalDate d, final List<Downloader> downloaders, final boolean scrape) {
@@ -710,6 +712,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (!flagPuzzleLoad())
             return;
 
+        // too intricate for runWithUIExecutor
         uiExecutorService.execute(() -> {
             FileHandler fileHandler = getFileHandler();
             try {
@@ -889,6 +892,20 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
     private void unflagPuzzleListLoad() {
         puzzleListLoadInProgress = false;
+    }
+
+    private void runWithUIExecutor(Runnable offUI, Runnable postOp) {
+        if (!uiExecutorService.isShutdown()) {
+            uiExecutorService.execute(() -> {
+                offUI.run();
+                if (!uiExecutorService.isShutdown()) {
+                    handler.post(() -> {
+                        if (!uiExecutorService.isShutdown())
+                            postOp.run();
+                    });
+                }
+            });
+        }
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
