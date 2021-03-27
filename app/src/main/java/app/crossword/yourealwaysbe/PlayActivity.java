@@ -32,7 +32,6 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
@@ -40,7 +39,6 @@ import androidx.fragment.app.DialogFragment;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
 import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
@@ -59,11 +57,8 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ScaleListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class PlayActivity extends PuzzleActivity
@@ -76,8 +71,6 @@ public class PlayActivity extends PuzzleActivity
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
-
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
@@ -151,11 +144,12 @@ public class PlayActivity extends PuzzleActivity
 
         setFullScreenMode();
 
-        PuzHandle puzHandle = null;
+        // board is loaded by BrowseActivity and put into the
+        // Application
+        Playboard board = getBoard();
+        Puzzle puz = getPuzzle();
 
-        puzHandle = ForkyzApplication.getInstance().getPuzHandle();
-
-        if (puzHandle == null) {
+        if (board == null || puz == null) {
             LOG.info("PlayActivity started but no Puzzle selected, finishing.");
             finish();
         }
@@ -186,78 +180,15 @@ public class PlayActivity extends PuzzleActivity
         keyboardManager
             = new KeyboardManager(this, keyboardView, null);
 
-        startLoadPuzzle(puzHandle);
-    }
-
-    /**
-     * Load the puzzle in a background thread
-     *
-     * Update/enable/create full UI once loaded
-     */
-    private void startLoadPuzzle(PuzHandle puzHandle) {
-        executorService.execute(() -> {
-            FileHandler fileHandler = getFileHandler();
-            try {
-                Puzzle puz = fileHandler.load(puzHandle);
-                if (puz == null || puz.getBoxes() == null) {
-                    throw new IOException(
-                        "Puzzle is null or contains no boxes."
-                    );
-                }
-                if (!executorService.isShutdown()) {
-                    handler.post(() -> {
-                        if (executorService.isShutdown())
-                            return;
-                        PlayActivity.this.postLoadPuzzle(puzHandle, puz);
-                    });
-                }
-            } catch (IOException e) {
-                if (executorService.isShutdown())
-                    return;
-
-                handler.post(() -> {
-                    if (executorService.isShutdown())
-                        return;
-
-                    String filename = null;
-
-                    try {
-                        filename = fileHandler.getName(
-                            puzHandle.getPuzFileHandle()
-                        );
-                    } catch (Exception ee) {
-                        e.printStackTrace();
-                    }
-
-                    Toast t = Toast.makeText(
-                        PlayActivity.this,
-                        PlayActivity.this.getString(
-                            R.string.unable_to_read_file,
-                            (filename != null ?  filename : "")
-                        ),
-                        Toast.LENGTH_SHORT
-                    );
-                    t.show();
-                    PlayActivity.this.finish();
-                });
-            }
-        });
-    }
-
-    private void postLoadPuzzle(PuzHandle puzHandle, Puzzle puz) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-
-        setBoard(
-            new Playboard(
-                puz,
-                movement,
-                prefs.getBoolean("preserveCorrectLettersInShowErrors", false),
-                prefs.getBoolean("dontDeleteCrossing", true)
-            ),
-            puzHandle
+        ForkyzApplication.getInstance().setRenderer(
+            new PlayboardRenderer(
+                board,
+                metrics.densityDpi,
+                metrics.widthPixels,
+                !prefs.getBoolean("supressHints", false),
+                this
+            )
         );
-        ForkyzApplication.getInstance().setRenderer(new PlayboardRenderer(getBoard(), metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this));
 
         float scale = prefs.getFloat(SCALE, 1.0F);
 
@@ -271,8 +202,9 @@ public class PlayActivity extends PuzzleActivity
         prefs.edit().putFloat(SCALE, scale).apply();
 
         getRenderer().setScale(scale);
-        getBoard().setSkipCompletedLetters(this.prefs.getBoolean("skipFilled",
-                false));
+        board.setSkipCompletedLetters(
+            this.prefs.getBoolean("skipFilled", false)
+        );
 
         if(this.clue != null) {
             this.clue.setClickable(true);
@@ -463,11 +395,11 @@ public class PlayActivity extends PuzzleActivity
             this.showErrors = false;
         }
 
-        if (getBoard().isShowErrors() != this.showErrors) {
-            getBoard().toggleShowErrors();
+        if (board.isShowErrors() != this.showErrors) {
+            board.toggleShowErrors();
         }
 
-        this.clueTabs.setBoard(getBoard());
+        this.clueTabs.setBoard(board);
         this.clueTabs.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             public void onLayoutChange(View v,
               int left, int top, int right, int bottom,
@@ -951,7 +883,6 @@ public class PlayActivity extends PuzzleActivity
         super.onDestroy();
         if (keyboardManager != null)
             keyboardManager.onDestroy();
-        executorService.shutdownNow();
     }
 
     private void setClueSize(int dps) {
@@ -968,28 +899,11 @@ public class PlayActivity extends PuzzleActivity
         }
     }
 
-    private MovementStrategy getMovementStrategy() {
+    protected MovementStrategy getMovementStrategy() {
         if (movement != null) {
             return movement;
         } else {
-            String stratName = this.prefs.getString("movementStrategy",
-                    "MOVE_NEXT_ON_AXIS");
-            switch (stratName) {
-                case "MOVE_NEXT_ON_AXIS":
-                    movement = MovementStrategy.MOVE_NEXT_ON_AXIS;
-                    break;
-                case "STOP_ON_END":
-                    movement = MovementStrategy.STOP_ON_END;
-                    break;
-                case "MOVE_NEXT_CLUE":
-                    movement = MovementStrategy.MOVE_NEXT_CLUE;
-                    break;
-                case "MOVE_PARALLEL_WORD":
-                    movement = MovementStrategy.MOVE_PARALLEL_WORD;
-                    break;
-            }
-
-            return movement;
+            return super.getMovementStrategy();
         }
     }
 

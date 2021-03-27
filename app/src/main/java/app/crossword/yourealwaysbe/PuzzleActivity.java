@@ -46,11 +46,6 @@ public abstract class PuzzleActivity
         startTimer();
     }
 
-    protected void setBoard(Playboard board, PuzHandle puzHandle) {
-        ForkyzApplication.getInstance().setBoard(board, puzHandle);
-        startTimer();
-    }
-
     private void startTimer() {
         Puzzle puz = getPuzzle();
 

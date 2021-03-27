@@ -18,10 +18,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.app.ActivityCompat;
@@ -35,10 +34,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import app.crossword.yourealwaysbe.forkyz.BuildConfig;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.net.Downloader;
 import app.crossword.yourealwaysbe.net.Downloaders;
 import app.crossword.yourealwaysbe.net.Scrapers;
+import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.files.Accessor;
@@ -60,7 +59,6 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -95,6 +93,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private int highlightColor;
     private int normalColor;
     private HashSet<PuzMetaFile> selected = new HashSet<>();
+    private int pleaseWaitDepth = 0;
+    private View pleaseWaitView;
+    private boolean puzzleLoadInProgress = false;
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -371,6 +372,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         } else {
             hasWritePermissions = true;
         }
+
+        pleaseWaitView = findViewById(R.id.please_wait_notice);
 
         startInitialActivityOrFinishLoading();
     }
@@ -683,10 +686,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         boolean dirExists = fileHandler.exists(directory);
 
         if (dirExists && !uiExecutorService.isShutdown()) {
-            final View progressBar
-                = BrowseActivity.this.findViewById(R.id.please_wait_notice);
-            progressBar.setVisibility(View.VISIBLE);
-
+            showPleaseWait();
             uiExecutorService.execute(() -> {
                 SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
                     adapter = BrowseActivity.this.buildList(
@@ -700,7 +700,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     if (uiExecutorService.isShutdown())
                         return;
                     BrowseActivity.this.setPuzzleListAdapter(adapter);
-                    progressBar.setVisibility(View.GONE);
+                    hidePleaseWait();
                 });
             });
         } else {
@@ -729,17 +729,79 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             if (selectedPuzMeta == null) {
                 return;
             }
+            loadPuzzleAndStartPlay(selectedPuzMeta.getPuzHandle());
 
-            Intent i = new Intent(
-                BrowseActivity.this, PlayActivity.class
-            );
-
-            ForkyzApplication.getInstance().setBoard(
-                null, selectedPuzMeta.getPuzHandle()
-            );
-
-            startActivity(i);
         }
+    }
+
+    private void loadPuzzleAndStartPlay(PuzHandle puzHandle) {
+        if (!startPuzzleLoad())
+            return;
+
+        uiExecutorService.execute(() -> {
+            FileHandler fileHandler = getFileHandler();
+            try {
+                Puzzle puz = fileHandler.load(puzHandle);
+                if (puz == null || puz.getBoxes() == null) {
+                    throw new IOException(
+                        "Puzzle is null or contains no boxes."
+                    );
+                }
+                if (uiExecutorService.isShutdown()) {
+                    endPuzzleLoad();
+                } else {
+                    handler.post(() -> {
+                        endPuzzleLoad();
+                        if (uiExecutorService.isShutdown())
+                            return;
+                        setBoardAndStartPlay(puzHandle, puz);
+                    });
+                }
+            } catch (IOException e) {
+                endPuzzleLoad();
+                if (uiExecutorService.isShutdown())
+                    return;
+                handler.post(() -> {
+                    if (uiExecutorService.isShutdown())
+                        return;
+
+                    String filename = null;
+                    try {
+                        filename = fileHandler.getName(
+                            puzHandle.getPuzFileHandle()
+                        );
+                    } catch (Exception ee) {
+                        e.printStackTrace();
+                    }
+
+                    Toast t = Toast.makeText(
+                        BrowseActivity.this,
+                        BrowseActivity.this.getString(
+                            R.string.unable_to_read_file,
+                            (filename != null ?  filename : "")
+                        ),
+                        Toast.LENGTH_SHORT
+                    );
+                    t.show();
+                });
+            }
+        });
+    }
+
+    private void setBoardAndStartPlay(PuzHandle puzHandle, Puzzle puz) {
+        ForkyzApplication.getInstance().setBoard(
+            new Playboard(
+                puz,
+                getMovementStrategy(),
+                prefs.getBoolean("preserveCorrectLettersInShowErrors", false),
+                prefs.getBoolean("dontDeleteCrossing", true)
+            ),
+            puzHandle
+        );
+        Intent i = new Intent(
+            BrowseActivity.this, PlayActivity.class
+        );
+        startActivity(i);
     }
 
     @Override
@@ -805,6 +867,35 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @SuppressWarnings("ClickableViewAccessibility")
     private void setPuzzleListOnTouchListener() {
         this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
+    }
+
+    private void showPleaseWait() {
+        if (pleaseWaitDepth == 0)
+            pleaseWaitView.setVisibility(View.VISIBLE);
+        pleaseWaitDepth += 1;
+    }
+
+    private void hidePleaseWait() {
+        pleaseWaitDepth -= 1;
+        if (pleaseWaitDepth == 0)
+            pleaseWaitView.setVisibility(View.GONE);
+    }
+
+    /**
+     * Returns true if there was not a load in progress
+     *
+     * Used to avoid multiple puzzle loads from the UI thread. Not
+     * thread safe.
+     */
+    private boolean startPuzzleLoad() {
+        if (puzzleLoadInProgress)
+            return false;
+        puzzleLoadInProgress = true;
+        return true;
+    }
+
+    private void endPuzzleLoad() {
+        puzzleLoadInProgress = false;
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
