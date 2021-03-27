@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="puzzle_select">Select a puzzle:</string>
-    <string name="please_wait">Please wait&#8230;</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="reveal_puzzle">Reveal Entire Puzzle</string>
@@ -9,22 +8,27 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="elapsed_time">Elapsed Time: %1$s</string>
-    <string name="allow_permissions">Allow Permissions</string>
-    <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
-    <string name="download_notification_channel_name">Downloads</string>
-    <string name="download_notification_channel_desc">Notifications about downloaded puzzles</string>
     <string name="preview">Preview</string>
-    <string name="unable_to_read_file">Unable to read file %1$s</string>
-    <string name="unable_to_download_from">Unable to download from\n%1$s</string>
-    <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
-    <string name="no_puzzles">No puzzles found.</string>
-    <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
+    <string name="general_clue_notes">Free-form notes about clue</string>
+
+    <!-- Browse -->
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
-    <string name="general_clue_notes">Free-form notes about clue</string>
+    <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
+    <string name="no_puzzles">No puzzles found.</string>
+    <string name="unable_to_read_file">Unable to read file %1$s</string>
+    <string name="unable_to_download_from">Unable to download from\n%1$s</string>
+    <string name="download_notification_channel_name">Downloads</string>
+    <string name="download_notification_channel_desc">Notifications about downloaded puzzles</string>
+    <string name="please_wait">Please wait&#8230;</string>
+    <string name="internal_storage_description">Currently using internal storage. Puzzles will be deleted when Forkyz is uninstalled.</string>
+    <string name="allow_permissions">Allow Permissions</string>
+    <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
+    <string name="title_view_archives">Archives</string>
+    <string name="title_view_crosswords">Crosswords</string>
 
     <!-- notes page -->
     <string name="anagram_source_lab">Anagram remaining letters</string>
