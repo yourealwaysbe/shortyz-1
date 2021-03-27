@@ -345,25 +345,23 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         });
         helper.attachToRecyclerView(this.puzzleList);
         upgradePreferences();
-        this.nm = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        this.nm = (NotificationManager)
+            this.getSystemService(Context.NOTIFICATION_SERVICE);
 
         switch (prefs.getInt("sort", 0)) {
         case 2:
             this.accessor = Accessor.SOURCE;
-
             break;
-
         case 1:
             this.accessor = Accessor.DATE_ASC;
-
             break;
-
         default:
             this.accessor = Accessor.DATE_DESC;
         }
 
+        download = (FloatingActionButton)
+            this.findViewById(R.id.button_floating_action);
 
-        download = (FloatingActionButton) this.findViewById(R.id.button_floating_action);
         if(download != null) {
             download.setOnClickListener(new View.OnClickListener() {
                 @Override
