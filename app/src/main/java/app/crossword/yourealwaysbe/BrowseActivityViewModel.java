@@ -40,7 +40,7 @@ public class BrowseActivityViewModel extends ViewModel {
         return isViewArchive;
     }
 
-    public void startLoadFiles(boolean archive, String sourceMatch) {
+    public void startLoadFiles(boolean archive) {
         executorService.execute(() -> {
             final FileHandler fileHandler
                 = ForkyzApplication.getInstance().getFileHandler();
@@ -51,7 +51,7 @@ public class BrowseActivityViewModel extends ViewModel {
                     : fileHandler.getCrosswordsDirectory();
 
             PuzMetaFile[] puzFiles
-                = fileHandler.getPuzFiles(directory, sourceMatch);
+                = fileHandler.getPuzFiles(directory);
 
             // use handler for this so viewArchive changes when
             // puzzleFiles does

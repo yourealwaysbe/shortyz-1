@@ -93,7 +93,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         currentAdapter = null;
     private Handler handler = new Handler(Looper.getMainLooper());
     private RecyclerView puzzleList;
-    private ListView sources;
     private NotificationManager nm;
     private boolean hasWritePermissions;
     private FloatingActionButton download;
@@ -494,20 +493,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         });
     }
 
-    private String getSourceMatch() {
-        String sourceMatch = null;
-
-        if (this.sources != null) {
-            sourceMatch = ((SourceListAdapter) sources.getAdapter()).current;
-
-            if (SourceListAdapter.ALL_SOURCES.equals(sourceMatch)) {
-                sourceMatch = null;
-            }
-        }
-
-        return sourceMatch;
-    }
-
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
     buildList(PuzMetaFile[] puzFiles, Accessor accessor) {
 
@@ -662,7 +647,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
         showPleaseWait();
 
-        model.startLoadFiles(archive, getSourceMatch());
+        model.startLoadFiles(archive);
     }
 
     private void loadPuzzleAdapter() {

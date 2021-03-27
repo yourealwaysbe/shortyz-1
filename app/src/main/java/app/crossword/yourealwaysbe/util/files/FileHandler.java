@@ -131,16 +131,10 @@ public abstract class FileHandler {
             moveTo(metaHandle, srcDirHandle, destDirHandle);
     }
 
-    public PuzMetaFile[] getPuzFiles(DirHandle dir) {
-        return getPuzFiles(dir, null);
-    }
-
     /**
-     * Get puz files in directory matching a source
-     *
-     * Matches any source if sourceMatch is null
+     * Get puz files in directory
      */
-    public PuzMetaFile[] getPuzFiles(DirHandle dirHandle, String sourceMatch) {
+    public PuzMetaFile[] getPuzFiles(DirHandle dirHandle) {
         ArrayList<PuzMetaFile> files = new ArrayList<>();
 
         // Use a caching approach to avoid repeated interaction with
@@ -173,9 +167,7 @@ public abstract class FileHandler {
                 new PuzHandle(dirHandle, puzFile, metaFile)
             );
 
-            if ((sourceMatch == null) || sourceMatch.equals(pm.getSource())) {
-                files.add(pm);
-            }
+            files.add(pm);
         }
 
         return files.toArray(new PuzMetaFile[files.size()]);
