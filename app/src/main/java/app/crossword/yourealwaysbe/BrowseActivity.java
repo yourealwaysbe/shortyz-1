@@ -90,8 +90,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private ListView sources;
     private NotificationManager nm;
     private boolean viewArchive;
-    private MenuItem gamesItem;
-    private boolean signedIn;
     private boolean hasWritePermissions;
     private FloatingActionButton download;
     private int highlightColor;
@@ -802,14 +800,11 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
     }
 
-    public static interface Provider<T> {
-        T get();
-    }
-
-    private static ArrayList<FileHandle> toArrayList(FileHandle[] o){
-        ArrayList<FileHandle> result = new ArrayList<>();
-        result.addAll(Arrays.asList(o));
-        return result;
+    // suppress this warning because ShowHideOnScroll does not implement click
+    // functionality
+    @SuppressWarnings("ClickableViewAccessibility")
+    private void setPuzzleListOnTouchListener() {
+        this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
@@ -932,12 +927,5 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
             return dpd.getInstance();
         }
-    }
-
-    // suppress this warning because ShowHideOnScroll does not implement click
-    // functionality
-    @SuppressWarnings("ClickableViewAccessibility")
-    private void setPuzzleListOnTouchListener() {
-        this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
     }
 }
