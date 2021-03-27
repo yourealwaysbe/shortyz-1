@@ -374,8 +374,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
 
         pleaseWaitView = findViewById(R.id.please_wait_notice);
-
-        startInitialActivityOrFinishLoading();
     }
 
     @Override
@@ -387,35 +385,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             case REQUEST_WRITE_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     hasWritePermissions = true;
-                    startInitialActivityOrFinishLoading();
                 }
         }
-    }
-
-    private void startInitialActivityOrFinishLoading() {
-        if (!getFileHandler().exists(crosswordsFolder)) {
-            this.downloadTen();
-
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/welcome.html"), this,
-                    HTMLActivity.class);
-            this.startActivity(i);
-
-            return;
-        } else if (prefs.getBoolean("release_" + BuildConfig.VERSION_NAME, true)) {
-            prefs.edit()
-                    .putBoolean("release_"+BuildConfig.VERSION_NAME, false)
-                    .apply();
-
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("file:///android_asset/release.html"), this,
-                    HTMLActivity.class);
-            this.startActivity(i);
-
-            return;
-        }
-
-        render();
-        this.checkDownload();
-        puzzleList.invalidate();
     }
 
     @Override
@@ -644,34 +615,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
                     return;
                 BrowseActivity.this.render();
             });
-        });
-    }
-
-    private void downloadTen() {
-        if (!hasWritePermissions) return;
-
-        downloadExecutorService.execute(() -> {
-            Downloaders dls = new Downloaders(prefs, nm, BrowseActivity.this);
-            dls.supressMessages(true);
-
-            Scrapers scrapes = new Scrapers(prefs, nm, BrowseActivity.this);
-            scrapes.supressMessages(true);
-            scrapes.scrape();
-
-            LocalDate d = LocalDate.now();
-
-            for (int i = 0; i < 5; i++) {
-                d = d.minus(Period.ofDays(1));
-                dls.download(d);
-
-                if (downloadExecutorService.isShutdown())
-                    return;
-                handler.post(() -> {
-                    if (downloadExecutorService.isShutdown())
-                        return;
-                    BrowseActivity.this.render();
-                });
-            }
         });
     }
 
