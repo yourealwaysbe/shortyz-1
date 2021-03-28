@@ -83,9 +83,9 @@ public class UclickDownloader extends AbstractDownloader {
             boolean converted = false;
 
             try (
-                InputStream is = fileHandler.getInputStream(plainText);
+                InputStream is = fileHandler.getBufferedInputStream(plainText);
                 DataOutputStream os = new DataOutputStream(
-                    fileHandler.getOutputStream(downloadTo)
+                    fileHandler.getBufferedOutputStream(downloadTo)
                 );
             ) {
                 converted = UclickXMLIO.convertUclickPuzzle(

@@ -50,9 +50,9 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         boolean success = false;
 
         try (
-            InputStream is = fileHandler.getInputStream(jpzFile);
+            InputStream is = fileHandler.getBufferedInputStream(jpzFile);
             DataOutputStream dos
-                = new DataOutputStream(fileHandler.getOutputStream(puzFile));
+                = new DataOutputStream(fileHandler.getBufferedOutputStream(puzFile));
         ) {
             JPZIO.convertJPZPuzzle(is, dos , date);
             fileHandler.delete(jpzFile);

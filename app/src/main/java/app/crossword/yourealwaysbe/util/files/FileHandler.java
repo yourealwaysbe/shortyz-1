@@ -1,6 +1,8 @@
 
 package app.crossword.yourealwaysbe.util.files;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -80,6 +82,16 @@ public abstract class FileHandler {
      * Assume in a synced class
      */
     protected abstract void deleteUnsync(FileHandle fileHandle);
+
+    public BufferedOutputStream getBufferedOutputStream(FileHandle fileHandle)
+        throws IOException {
+        return new BufferedOutputStream(getOutputStream(fileHandle));
+    }
+
+    public BufferedInputStream getBufferedInputStream(FileHandle fileHandle)
+        throws IOException {
+        return new BufferedInputStream(getInputStream(fileHandle));
+    }
 
     public synchronized void delete(FileHandle fileHandle) {
         deleteUnsync(fileHandle);
@@ -199,7 +211,7 @@ public abstract class FileHandler {
         if (metaHandle != null) {
             try (
                 DataInputStream is = new DataInputStream(
-                    getInputStream(metaHandle)
+                    getBufferedInputStream(metaHandle)
                 )
             ) {
                 meta = IO.readMeta(is);
@@ -236,11 +248,11 @@ public abstract class FileHandler {
         try (
             DataInputStream pis
                 = new DataInputStream(
-                    getInputStream(ph.getPuzFileHandle())
+                    getBufferedInputStream(ph.getPuzFileHandle())
                 );
             DataInputStream mis
                 = new DataInputStream(
-                    getInputStream(ph.getMetaFileHandle())
+                    getBufferedInputStream(ph.getMetaFileHandle())
                 )
         ) {
             return IO.load(pis, mis);
@@ -256,7 +268,7 @@ public abstract class FileHandler {
     public synchronized Puzzle load(FileHandle fileHandle) throws IOException {
         try (
             DataInputStream fis
-                = new DataInputStream(getInputStream(fileHandle))
+                = new DataInputStream(getBufferedInputStream(fileHandle))
         ) {
             return IO.loadNative(fis);
         }
@@ -298,9 +310,9 @@ public abstract class FileHandler {
 
         try (
             DataOutputStream puzzle
-                = new DataOutputStream(getOutputStream(puzFile));
+                = new DataOutputStream(getBufferedOutputStream(puzFile));
             DataOutputStream meta
-                = new DataOutputStream(getOutputStream(metaFile));
+                = new DataOutputStream(getBufferedOutputStream(metaFile));
         ) {
             IO.save(puz, puzzle, meta);
             success = true;

@@ -99,7 +99,7 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
 
             try (
                 DataOutputStream dos = new DataOutputStream(
-                    fileHandler.getOutputStream(f)
+                    fileHandler.getBufferedOutputStream(f)
                 )
             ) {
                 puz.setVersion(IO.VERSION_STRING);

@@ -86,7 +86,7 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
         try (
             InputStream is = url.openStream();
             DataOutputStream dos = new DataOutputStream(
-                 fileHandler.getOutputStream(f)
+                 fileHandler.getBufferedOutputStream(f)
             )
         ) {
             success =
