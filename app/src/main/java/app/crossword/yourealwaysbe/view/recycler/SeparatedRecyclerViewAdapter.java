@@ -56,40 +56,6 @@ public class SeparatedRecyclerViewAdapter<
         }
     }
 
-    /**
-     * Iterable over BodyHolder sub-adapters
-     *
-     * The item positions of the bodies in the list are relative to the
-     * index of the IndexedSectionAdapter. I.e. item i is at position
-     * index + i of the SeparatedRecyclerViewAdapter.
-     */
-    public Iterable<IndexedSectionAdapter> getIndexedSectionAdapters() {
-        final Iterator<SectionAdapter> sectionAdapters
-            = sections.values().iterator();
-
-        return new Iterable<IndexedSectionAdapter>() {
-            public Iterator<IndexedSectionAdapter> iterator() {
-                return new Iterator<IndexedSectionAdapter>() {
-                    private int startPos = 0;
-
-                    public boolean hasNext() {
-                        return sectionAdapters.hasNext();
-                    }
-
-                    public IndexedSectionAdapter next() {
-                        int pos = startPos + 1;
-                        SectionAdapter
-                            sectionAdapter = sectionAdapters.next();
-
-                        startPos += 1 + sectionAdapter.getItemCount();
-
-                        return new IndexedSectionAdapter(pos, sectionAdapter);
-                    }
-                };
-            }
-        };
-    }
-
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         int sectionPosition = 0;
@@ -178,21 +144,5 @@ public class SeparatedRecyclerViewAdapter<
         public SimpleTextViewHolder(TextView itemView) {
             super(itemView);
         }
-    }
-
-    /**
-     * Contains a BodyHolder and the item index of its first element
-     */
-    public class IndexedSectionAdapter {
-        private int index;
-        private SectionAdapter sectionAdapter;
-
-        public IndexedSectionAdapter(int index, SectionAdapter sectionAdapter) {
-            this.index = index;
-            this.sectionAdapter = sectionAdapter;
-        }
-
-        public int getIndex() { return index; }
-        public SectionAdapter getSectionAdapter() { return sectionAdapter; }
     }
 }
