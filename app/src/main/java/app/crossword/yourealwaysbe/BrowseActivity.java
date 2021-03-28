@@ -423,7 +423,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         // A background update will commonly happen when the user turns
         // on the preference for the first time, so check here to ensure
         // the UI is re-rendered when they exit the settings dialog.
-        if (currentAdapter == null
+        if (model.getPuzzleFiles().getValue() == null
                 || utils.checkBackgroundDownload(prefs, hasWritePermissions)) {
             startLoadPuzzleList();
         } else {
@@ -507,8 +507,16 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
     private void loadPuzzleAdapter() {
         PuzMetaFile[] puzList = model.getPuzzleFiles().getValue();
-        if (puzList != null)
-            setPuzzleListAdapter(buildList(puzList, accessor));
+        if (puzList != null) {
+            if (hasCurrentPuzzleListAdapter()) {
+                setPuzzleListAdapter(buildList(puzList, accessor));
+            } else {
+                // post to allow a preliminary UI draw before list built
+                handler.post(() -> {
+                    setPuzzleListAdapter(buildList(puzList, accessor));
+                });
+            }
+        }
     }
 
     @Override
@@ -563,6 +571,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (selected.isEmpty()) {
             actionMode.finish();
         }
+    }
+
+    private boolean hasCurrentPuzzleListAdapter() {
+        return currentAdapter != null;
     }
 
     private void setPuzzleListAdapter(
