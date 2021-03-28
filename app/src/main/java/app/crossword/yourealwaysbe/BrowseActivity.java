@@ -384,6 +384,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
          );
 
         setViewCrosswordsOrArchiveUI();
+        // populated properly inside onResume or with puzzle list
+        // observer
+        setPuzzleListAdapter(buildEmptyList());
     }
 
     private void setViewCrosswordsOrArchiveUI() {
@@ -441,6 +444,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         if (lastAccessed == null)
             return;
         model.refreshPuzzleMeta(lastAccessed);
+    }
+
+    private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
+    buildEmptyList() {
+        return new SeparatedRecyclerViewAdapter<>(
+            R.layout.puzzle_list_header,
+            FileViewHolder.class
+        );
     }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
@@ -510,14 +521,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private void loadPuzzleAdapter() {
         PuzMetaFile[] puzList = model.getPuzzleFiles().getValue();
         if (puzList != null) {
-            if (hasCurrentPuzzleListAdapter()) {
-                setPuzzleListAdapter(buildList(puzList, accessor));
-            } else {
-                // post to allow a preliminary UI draw before list built
-                handler.post(() -> {
-                    setPuzzleListAdapter(buildList(puzList, accessor));
-                });
-            }
+            setPuzzleListAdapter(buildList(puzList, accessor));
+        } else {
+            setPuzzleListAdapter(buildEmptyList());
         }
     }
 
