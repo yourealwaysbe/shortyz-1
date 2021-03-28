@@ -94,6 +94,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            actionMode = mode;
+
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.browse_action_bar_menu, menu);
 
@@ -568,7 +570,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             setListItemColor(v, true);
             selected.add(tag);
         }
-        if (selected.isEmpty()) {
+        if (selected.isEmpty() && actionMode != null) {
             actionMode.finish();
         }
     }
