@@ -36,12 +36,21 @@
             android:padding="30sp"
         />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/puzzleList"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-        />
+
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeContainer"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+        >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/puzzleList"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+            />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <LinearLayout
             android:id="@+id/please_wait_notice"

@@ -30,6 +30,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import app.crossword.yourealwaysbe.forkyz.BuildConfig;
@@ -353,11 +354,14 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             hasWritePermissions = true;
         }
 
+        SwipeRefreshLayout swipePuzzleReloadView
+            = findViewById(R.id.swipeContainer);
 
         model = new ViewModelProvider(this).get(BrowseActivityViewModel.class);
         model.getPuzzleFiles().observe(this, (v) -> {
             BrowseActivity.this.setViewCrosswordsOrArchiveUI();
             BrowseActivity.this.loadPuzzleAdapter();
+            swipePuzzleReloadView.setRefreshing(false);
         });
 
         final View pleaseWaitView = findViewById(R.id.please_wait_notice);
@@ -372,6 +376,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             Intent i = new Intent(BrowseActivity.this, PlayActivity.class);
             BrowseActivity.this.startActivity(i);
         });
+
+        swipePuzzleReloadView.setOnRefreshListener(
+             new SwipeRefreshLayout.OnRefreshListener() {
+                 @Override
+                 public void onRefresh() {
+                     startLoadPuzzleList();
+                 }
+             }
+         );
 
         setViewCrosswordsOrArchiveUI();
     }
