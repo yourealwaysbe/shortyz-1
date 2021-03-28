@@ -62,8 +62,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,9 +70,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private static final long DAY = 24L * 60L * 60L * 1000L;
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
-
-    private ExecutorService uiExecutorService
-        = Executors.newSingleThreadExecutor();
 
     private BrowseActivityViewModel model;
 
@@ -418,7 +413,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
 
     @Override
     protected void onDestroy() {
-        uiExecutorService.shutdownNow();
         super.onDestroy();
     }
 
@@ -440,63 +434,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private void refreshLastAccessedPuzzle() {
-        final FileHandler fileHandler = getFileHandler();
         final PuzHandle lastAccessed
             = ForkyzApplication.getInstance().getPuzHandle();
-
         if (lastAccessed == null)
             return;
-
-        if (uiExecutorService.isShutdown())
-            return;
-
-        // don't use runWithUIExecutor because it's more intricate
-        uiExecutorService.execute(() -> {
-            for (SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>.IndexedSectionAdapter indexedSectionAdapter : currentAdapter.getIndexedSectionAdapters()) {
-                int startPos = indexedSectionAdapter.getIndex();
-                FileAdapter adapter
-                    = indexedSectionAdapter.getSectionAdapter();
-
-                FileHandle lastAccessedPuzFile
-                    = lastAccessed.getPuzFileHandle();
-
-                for (int pos = 0; pos < adapter.getItemCount(); pos++) {
-                    PuzMetaFile posMeta = adapter.getPuzMetaFile(pos);
-
-                    FileHandle posPuzFile
-                        = posMeta.getPuzHandle().getPuzFileHandle();
-
-                    if (posPuzFile.equals(lastAccessedPuzFile)) {
-                        final int updateSectionPos = pos;
-                        final int updateListPos = startPos + pos;
-                        PuzMetaFile newPuzMeta
-                            = fileHandler.loadPuzMetaFile(
-                                lastAccessed
-                            );
-                        adapter.setPuzMetaFile(
-                            updateSectionPos, newPuzMeta
-                        );
-                        if (uiExecutorService.isShutdown())
-                            return;
-                        handler.post(() -> {
-                            if (uiExecutorService.isShutdown())
-                                return;
-                            currentAdapter.notifyItemChanged(
-                                updateListPos
-                            );
-                        });
-                        break;
-                    }
-                }
-            }
-        });
+        model.refreshPuzzleMeta(lastAccessed);
     }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
     buildList(PuzMetaFile[] puzFiles, Accessor accessor) {
-
-        long incept = System.currentTimeMillis();
-
         try {
             Arrays.sort(puzFiles, accessor);
         } catch (Exception e) {
@@ -653,20 +599,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @SuppressWarnings("ClickableViewAccessibility")
     private void setPuzzleListOnTouchListener() {
         this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
-    }
-
-    private void runWithUIExecutor(Runnable offUI, Runnable postOp) {
-        if (!uiExecutorService.isShutdown()) {
-            uiExecutorService.execute(() -> {
-                offUI.run();
-                if (!uiExecutorService.isShutdown()) {
-                    handler.post(() -> {
-                        if (!uiExecutorService.isShutdown())
-                            postOp.run();
-                    });
-                }
-            });
-        }
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {

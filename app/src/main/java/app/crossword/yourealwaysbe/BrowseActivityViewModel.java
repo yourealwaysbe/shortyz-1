@@ -21,7 +21,9 @@ import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.SingleLiveEvent;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
+import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
 
 import java.io.IOException;
@@ -314,6 +316,42 @@ public class BrowseActivityViewModel extends ViewModel {
                     t.show();
                 });
             }
+        });
+    }
+
+    public void refreshPuzzleMeta(PuzHandle refreshHandle) {
+        if (isUIBusy.getValue())
+            return;
+
+        isUIBusy.setValue(true);
+
+        executorService.execute(() -> {
+            FileHandler fileHandler = getFileHandler();
+            boolean changed = false;
+
+            FileHandle refreshedPuzFileHandle
+                = refreshHandle.getPuzFileHandle();
+            PuzMetaFile refreshedMeta
+                = fileHandler.loadPuzMetaFile(refreshHandle);
+
+            PuzMetaFile[] pmArray = puzzleFiles.getValue();
+
+            for (int i = 0; i < pmArray.length; i++) {
+                FileHandle pmPuzFileHandle
+                    = pmArray[i].getPuzHandle().getPuzFileHandle();
+                if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
+                    pmArray[i] = refreshedMeta;
+                    changed = true;
+                }
+            }
+
+            final boolean updateArray = changed;
+
+            handler.post(() -> {
+                isUIBusy.setValue(false);
+                if (updateArray)
+                    puzzleFiles.setValue(pmArray);
+            });
         });
     }
 
