@@ -43,6 +43,36 @@ public class Note implements Serializable {
         return anagramSolution;
     }
 
+    /**
+     * Return null if the string is full of blanks
+     */
+    public String getCompressedScratch() {
+        if (isBlankString(scratch))
+            return null;
+        else
+            return scratch;
+    }
+
+    /**
+     * Return null if the string is full of blanks
+     */
+    public String getCompressedAnagramSource() {
+        if (isBlankString(anagramSource))
+            return null;
+        else
+            return anagramSource;
+    }
+
+    /**
+     * Return null if the string is full of blanks
+     */
+    public String getCompressedAnagramSolution() {
+        if (isBlankString(anagramSolution))
+            return null;
+        else
+            return anagramSolution;
+    }
+
     public void setText(String text) {
         this.text = text;
     }
@@ -109,6 +139,16 @@ public class Note implements Serializable {
         char[] padding = new char[len];
         Arrays.fill(padding, Box.BLANK);
         return new String(padding);
+    }
+
+    private boolean isBlankString(String s) {
+        if (s == null)
+            return true;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != Box.BLANK)
+                return false;
+        }
+        return true;
     }
 
     public void setScratchLetter(int pos, char letter) {

@@ -6,6 +6,7 @@ import app.crossword.yourealwaysbe.io.versions.IOVersion2;
 import app.crossword.yourealwaysbe.io.versions.IOVersion3;
 import app.crossword.yourealwaysbe.io.versions.IOVersion4;
 import app.crossword.yourealwaysbe.io.versions.IOVersion5;
+import app.crossword.yourealwaysbe.io.versions.IOVersion6;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
@@ -31,9 +32,12 @@ public class IO {
 
     // Extra Section IDs and markers
     private static final String GEXT_MARKER = "GEXT";
+    private static final int GEXT = 0;
+
+    // LEGACY: used only for reading IOVersion5 and below that dubiously
+    // stored additional clue notes in the Across Lite file
     private static final String ANTS_MARKER = "ANTS";
     private static final String DNTS_MARKER = "DNTS";
-    private static final int GEXT = 0;
     private static final int ANTS = 1;
     private static final int DNTS = 2;
 
@@ -189,14 +193,14 @@ public class IO {
 
                         break;
 
+                    // For reading legacy files only
+                    // info now stored in meta
                     case ANTS:
                         loadNotesNative(acrossClues.size(), true, puz, input);
-
                         break;
 
                     case DNTS:
                         loadNotesNative(downClues.size(), false, puz, input);
-
                         break;
 
                     default:
@@ -230,6 +234,9 @@ public class IO {
                 break;
             case 5:
                 v = new IOVersion5();
+                break;
+            case 6:
+                v = new IOVersion6();
                 break;
             default:
                 throw new IOException("UnknownVersion " + version);
@@ -300,6 +307,9 @@ public class IO {
                 break;
             case 5:
                 v = new IOVersion5();
+                break;
+            case 6:
+                v = new IOVersion6();
                 break;
             default:
                 throw new IOException("UnknownVersion  " + version);
@@ -422,18 +432,6 @@ public class IO {
 
         writeNullTerminatedString(tmpDos, puz.getNotes());
 
-        Note[] acrossNotes = puz.getAcrossNotes();
-        if (acrossNotes != null) {
-            tmpDos.writeBytes(ANTS_MARKER);
-            saveNotesNative(tmpDos, acrossNotes);
-        }
-
-        Note[] downNotes = puz.getDownNotes();
-        if (downNotes != null) {
-            tmpDos.writeBytes(DNTS_MARKER);
-            saveNotesNative(tmpDos, downNotes);
-        }
-
         if (puz.getGEXT()) {
             tmpDos.writeBytes(GEXT_MARKER);
             tmpDos.writeShort(Short.reverseBytes((short) numberOfBoxes));
@@ -529,8 +527,8 @@ public class IO {
 
     public static void writeCustom(Puzzle puz, DataOutputStream os)
             throws IOException {
-        os.write(5);
-        IOVersion v = new IOVersion5();
+        os.write(6);
+        IOVersion v = new IOVersion6();
         v.write(puz, os);
     }
 
@@ -656,40 +654,15 @@ public class IO {
     }
 
     /**
+     * For reading IOVersion5 and below that dubiously stored clue notes by
+     * possibly abuse of the Across Lite format.
+     *
      * Format of a note:
      *     + 1st byte is number of fields in note
      *     + Each field is
      *         + byte identifying field
      *         + null terminated string which is field value
      */
-    private static void saveNotesNative(DataOutputStream dos,
-                                        Note[] notes) throws IOException {
-        for (Note note : notes) {
-            String scratch = null;
-            String text = null;
-            String anagramSrc = null;
-            String anagramSol = null;
-
-            if (note != null) {
-                scratch = note.getScratch();
-                text = note.getText();
-                anagramSrc = note.getAnagramSource();
-                anagramSol = note.getAnagramSolution();
-            }
-
-            dos.writeByte(4);
-            dos.writeByte(NOTE_SCRATCH);
-            writeNullTerminatedString(dos, scratch);
-            dos.writeByte(NOTE_TEXT);
-            writeNullTerminatedString(dos, text);
-            dos.writeByte(NOTE_ANAGRAM_SRC);
-            writeNullTerminatedString(dos, anagramSrc);
-            dos.writeByte(NOTE_ANAGRAM_SOL);
-            writeNullTerminatedString(dos, anagramSol);
-        }
-    }
-
-
     private static void loadNotesNative(int numNotes,
                                         boolean isAcross,
                                         Puzzle puz,

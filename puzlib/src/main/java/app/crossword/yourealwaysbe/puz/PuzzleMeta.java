@@ -5,6 +5,7 @@ import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 public class PuzzleMeta implements Serializable {
@@ -20,6 +21,8 @@ public class PuzzleMeta implements Serializable {
     public Position position;
     public boolean across;
     public List<HistoryItem> historyList;
+    public Note[] acrossNotes;
+    public Note[] downNotes;
 
     public String toString() {
         return new StringBuilder("author: ")
@@ -44,6 +47,10 @@ public class PuzzleMeta implements Serializable {
                 .append(across)
                 .append(" history: ")
                 .append(historyList)
+                .append(" across notes: ")
+                .append(Arrays.toString(acrossNotes))
+                .append(" down notes: ")
+                .append(Arrays.toString(downNotes))
                 .toString();
     }
 
@@ -67,6 +74,10 @@ public class PuzzleMeta implements Serializable {
         if (historyList != null ?
             !historyList.equals(that.historyList) : that.historyList != null)
             return false;
+        if (!Arrays.equals(acrossNotes, that.acrossNotes))
+            return false;
+        if (!Arrays.equals(downNotes, that.downNotes))
+            return false;
         return !(position != null ? !position.equals(that.position) : that.position != null);
     }
 
@@ -83,6 +94,8 @@ public class PuzzleMeta implements Serializable {
         result = 31 * result + (position != null ? position.hashCode() : 0);
         result = 31 * result + (across ? 1 : 0);
         result = 31 * result + (historyList != null ? historyList.hashCode() : 0);
+        result = 31 * result + (acrossNotes != null ? Arrays.hashCode(acrossNotes) : 0);
+        result = 31 * result + (downNotes != null ? Arrays.hashCode(downNotes) : 0);
         return result;
     }
 }

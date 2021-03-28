@@ -53,5 +53,4 @@ public class IOVersion5 extends IOVersion4 {
             dos.writeBoolean(item.getAcross());
         }
     }
-
 }
