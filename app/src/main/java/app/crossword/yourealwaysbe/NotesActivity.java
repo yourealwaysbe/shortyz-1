@@ -471,14 +471,16 @@ public class NotesActivity extends PuzzleActivity {
         EditText notesBox = (EditText) this.findViewById(R.id.notesBox);
         String notesText = notesBox.getText().toString();
 
-        String scratchText = scratchView.toString();
+        String scratchText = scratchView.toString().trim();
 
-        if (notesText.length() > 0)
-            notesText += "\n";
-        notesText += scratchText;
+        if (scratchText.length() > 0) {
+            if (notesText.length() > 0)
+                notesText += "\n";
+            notesText += scratchText;
 
-        scratchView.clear();
-        notesBox.setText(notesText);
+            scratchView.clear();
+            notesBox.setText(notesText);
+        }
 
         render();
     }
