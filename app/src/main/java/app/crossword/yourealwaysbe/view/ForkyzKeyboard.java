@@ -76,10 +76,12 @@ public class ForkyzKeyboard
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:
             onKeyDown(view.getId());
-            break;
+            view.setPressed(true);
+            return true;
         case MotionEvent.ACTION_UP:
+            view.setPressed(false);
             onKeyUp(view.getId());
-            break;
+            return true;
         }
 
         return false;
