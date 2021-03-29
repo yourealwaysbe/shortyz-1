@@ -15,25 +15,10 @@
         android:textColor="@color/textColorPrimary"
         android:background="@color/background_dark"
     />
-    <TextView
-        android:id="@+id/boardLab"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/board_lab"
-        android:textColor="@color/textColorPrimary"
-    />
-    <app.crossword.yourealwaysbe.view.ScrollingImageView
-        android:id="@+id/miniboard"
-        android:layout_width="fill_parent"
-        android:layout_height="48dp"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-    >
-        <requestFocus/>
-    </app.crossword.yourealwaysbe.view.ScrollingImageView>
     <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true"
     >
         <LinearLayout
@@ -41,6 +26,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
         >
+            <TextView
+                android:id="@+id/boardLab"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/board_lab"
+                android:textColor="@color/textColorPrimary"
+            />
+            <app.crossword.yourealwaysbe.view.ScrollingImageView
+                android:id="@+id/miniboard"
+                android:layout_width="fill_parent"
+                android:layout_height="48dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+            >
+                <requestFocus/>
+            </app.crossword.yourealwaysbe.view.ScrollingImageView>
             <TextView
                 android:id="@+id/scratchLab"
                 android:layout_width="fill_parent"
@@ -101,11 +102,11 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
             />
-            <app.crossword.yourealwaysbe.view.ForkyzKeyboard
-                android:id="@+id/keyboard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-            />
         </LinearLayout>
     </ScrollView>
+    <app.crossword.yourealwaysbe.view.ForkyzKeyboard
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+    />
 </LinearLayout>
