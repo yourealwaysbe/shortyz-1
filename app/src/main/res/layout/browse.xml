@@ -36,8 +36,6 @@
             android:padding="30sp"
         />
 
-
-
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/swipeContainer"
                 android:layout_width="fill_parent"

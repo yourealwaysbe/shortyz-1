@@ -67,7 +67,8 @@ import java.util.logging.Logger;
 
 public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
     private static final int REQUEST_WRITE_STORAGE = 1002;
-    private static final long DAY = 24L * 60L * 60L * 1000L;
+    private static final int PLEASE_WAIT_DELAY = 200; //ms
+
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
 
@@ -90,6 +91,8 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private int normalColor;
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
+    private boolean pleaseWaitPending = false;
+    private View pleaseWaitView;
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -361,12 +364,12 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             swipePuzzleReloadView.setRefreshing(false);
         });
 
-        final View pleaseWaitView = findViewById(R.id.please_wait_notice);
+        pleaseWaitView = findViewById(R.id.please_wait_notice);
         model.getIsUIBusy().observe(this, (isBusy) -> {
             if (isBusy)
-                pleaseWaitView.setVisibility(View.VISIBLE);
+                showPleaseWait();
             else
-                pleaseWaitView.setVisibility(View.GONE);
+                hidePleaseWait();
         });
 
         model.getPuzzleLoadEvents().observe(this, (v) -> {
@@ -619,6 +622,19 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     @SuppressWarnings("ClickableViewAccessibility")
     private void setPuzzleListOnTouchListener() {
         this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
+    }
+
+    private void showPleaseWait() {
+        pleaseWaitPending = true;
+        handler.postDelayed(() -> {
+            if (pleaseWaitPending)
+                pleaseWaitView.setVisibility(View.VISIBLE);
+        }, PLEASE_WAIT_DELAY);
+    }
+
+    private void hidePleaseWait() {
+        pleaseWaitPending = false;
+        pleaseWaitView.setVisibility(View.GONE);
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
