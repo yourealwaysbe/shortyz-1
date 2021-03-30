@@ -389,7 +389,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         setViewCrosswordsOrArchiveUI();
         // populated properly inside onResume or with puzzle list
         // observer
-        setPuzzleListAdapter(buildEmptyList());
+        setPuzzleListAdapter(buildEmptyList(), false);
     }
 
     private void setViewCrosswordsOrArchiveUI() {
@@ -524,9 +524,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private void loadPuzzleAdapter() {
         PuzMetaFile[] puzList = model.getPuzzleFiles().getValue();
         if (puzList != null) {
-            setPuzzleListAdapter(buildList(puzList, accessor));
+            setPuzzleListAdapter(buildList(puzList, accessor), true);
         } else {
-            setPuzzleListAdapter(buildEmptyList());
+            setPuzzleListAdapter(buildEmptyList(), true);
         }
     }
 
@@ -588,8 +588,15 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         return currentAdapter != null;
     }
 
+    /**
+     * Set the puzzle list adapter
+     * @param showEmptyMsgs give feedback to user when no files (used to
+     * avoid doing so during loading)
+     */
     private void setPuzzleListAdapter(
-        SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter> adapter
+        SeparatedRecyclerViewAdapter<FileViewHolder,
+        FileAdapter> adapter,
+        boolean showEmptyMsgs
     ) {
         currentAdapter = adapter;
         puzzleList.setAdapter(adapter);
@@ -597,7 +604,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         TextView emptyMsg = findViewById(R.id.empty_listing_msg);
         TextView storageMsg = findViewById(R.id.internal_storage_msg);
 
-        if (adapter.isEmpty()) {
+        if (adapter.isEmpty() && showEmptyMsgs) {
             if (model.getIsViewArchive()) {
                 emptyMsg.setText(R.string.no_puzzles);
             } else {
