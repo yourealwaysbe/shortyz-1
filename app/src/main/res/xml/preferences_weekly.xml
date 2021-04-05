@@ -9,45 +9,15 @@
         android:title="@string/regular_sized"
     >
         <androidx.preference.CheckBoxPreference
-            android:title="@string/ink_well"
-            android:defaultValue="true"
-            android:summary="@string/updates_fridays"
-            android:key="downloadInkwell"
-        />
-        <androidx.preference.CheckBoxPreference
             android:title="@string/jonesin_crosswords"
             android:defaultValue="true"
             android:summary="@string/updates_thursdays"
             android:key="downloadJonesin"
         />
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/washington_post_puzzler"
-            android:defaultValue="true"
-            android:summary="@string/updates_sundays"
-            android:key="downloadWaPoPuzzler"
-        />
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory
         android:title="@string/large_sized"
     >
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/chron_of_higher_ed"
-            android:defaultValue="true"
-            android:summary="@string/updates_fridays_biweekly"
-            android:key="downloadCHE"
-        />
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/lat_sunday_calendar"
-            android:defaultValue="true"
-            android:summary="@string/updates_sundays"
-            android:key="downloadLACal"
-        />
-        <androidx.preference.CheckBoxPreference
-            android:title="@string/premier_crosswords"
-            android:defaultValue="true"
-            android:summary="@string/updates_sundays"
-            android:key="downloadPremier"
-        />
         <androidx.preference.CheckBoxPreference
             android:title="@string/wall_street_journal"
             android:defaultValue="true"

@@ -20,11 +20,10 @@ import app.crossword.yourealwaysbe.versions.DefaultUtil;
 
 /**
  * Uclick XML Puzzles
- * URL: http://picayune.uclick.com/comics/[puzzle]/data/[puzzle]YYMMDD-data.xml
+ * URL: https://picayune.uclick.com/comics/[puzzle]/data/[puzzle]YYMMDD-data.xml
  * crnet (Newsday) = Daily
  * usaon (USA Today) = Monday-Saturday (not holidays)
  * fcx (Universal) = Daily
- * lacal (LA Times Sunday Calendar) = Sunday
  */
 public class UclickDownloader extends AbstractDownloader {
     DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
@@ -45,7 +44,7 @@ public class UclickDownloader extends AbstractDownloader {
     }
 
     public UclickDownloader(String shortName, String fullName, String copyright, DayOfWeek[] days) {
-        this("http://picayune.uclick.com/comics/",shortName, fullName, copyright, days);
+        this("https://picayune.uclick.com/comics/",shortName, fullName, copyright, days);
 
     }
 

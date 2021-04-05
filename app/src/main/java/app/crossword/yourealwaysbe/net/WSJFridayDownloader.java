@@ -8,7 +8,7 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Wall Street Journal
- * URL: http://mazerlm.home.comcast.net/~mazerlm/wsjYYMMDD.puz
+ * URL: https://mazerlm.home.comcast.net/~mazerlm/wsjYYMMDD.puz
  * Date = Fridays
  */
 public class WSJFridayDownloader extends AbstractDownloader {
@@ -16,7 +16,7 @@ public class WSJFridayDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
 
     public WSJFridayDownloader() {
-        super("http://herbach.dnsalias.com/wsj/", getStandardDownloadDir(), NAME);
+        super("https://herbach.dnsalias.com/wsj/", getStandardDownloadDir(), NAME);
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
     }

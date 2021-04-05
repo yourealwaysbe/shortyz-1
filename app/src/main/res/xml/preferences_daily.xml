@@ -22,21 +22,9 @@
         android:key="downloadNewsday"
     />
     <androidx.preference.CheckBoxPreference
-         android:title="@string/joseph_crosswords"
-         android:defaultValue="true"
-         android:summary="@string/updates_mon_sat"
-        android:key="downloadJoseph"
-    />
-    <androidx.preference.CheckBoxPreference
         android:title="@string/lat_crosswords"
         android:defaultValue="true"
         android:key="downloadLat"
-    />
-    <androidx.preference.CheckBoxPreference
-         android:title="@string/sheffer_crosswords"
-         android:defaultValue="true"
-         android:summary="@string/updates_mon_sat"
-        android:key="downloadSheffer"
     />
     <androidx.preference.CheckBoxPreference
         android:title="@string/thinks_com"

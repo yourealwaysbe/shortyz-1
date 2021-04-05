@@ -346,37 +346,19 @@ public class Downloaders {
             downloaders.add(new WSJSaturdayDownloader());
         }
 
-        if (prefs.getBoolean("downloadWaPoPuzzler", true)) {
-            downloaders.add(new WaPoPuzzlerDownloader());
-        }
-
         if (prefs.getBoolean("downloadJonesin", true)) {
             downloaders.add(new JonesinDownloader());
         }
 
         if (prefs.getBoolean("downloadLat", true)) {
-//           downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
-            downloaders.add(new LATimesDownloader());
-        }
-
-        if (prefs.getBoolean("downloadCHE", true)) {
-            downloaders.add(new CHEDownloader());
-        }
-
-        if (prefs.getBoolean("downloadJoseph", true)) {
-            downloaders.add(new KFSDownloader("joseph", "Joseph Crosswords",
-                    "Thomas Joseph", Downloader.DATE_NO_SUNDAY));
-        }
-
-        if (prefs.getBoolean("downloadSheffer", true)) {
-            downloaders.add(new KFSDownloader("sheffer", "Sheffer Crosswords",
-                    "Eugene Sheffer", Downloader.DATE_NO_SUNDAY));
+            downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
         }
 
         if (prefs.getBoolean("downloadNewsday", true)) {
             downloaders.add(new BrainsOnlyDownloader(
-                    "http://brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=",
-                    "Newsday"));
+                "https://brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=",
+                "Newsday"
+            ));
         }
 
         if (prefs.getBoolean("downloadUSAToday", true)) {
@@ -387,10 +369,6 @@ public class Downloaders {
         if (prefs.getBoolean("downloadUniversal", true)) {
             downloaders.add(new UclickDownloader("fcx", "Universal Crossword",
                     "uclick LLC", Downloader.DATE_DAILY));
-        }
-
-        if (prefs.getBoolean("downloadLACal", true)) {
-            downloaders.add(new LATSundayDownloader());
         }
 
         return downloaders;

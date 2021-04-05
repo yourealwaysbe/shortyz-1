@@ -21,7 +21,7 @@ import java.util.logging.Level;
 public class BrainsOnlyDownloader extends AbstractDownloader {
 
     private final DateTimeFormatter df
-        = DateTimeFormatter.ofPattern("yyMMdd");
+        = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final String fullName;
 
     public BrainsOnlyDownloader(String baseUrl, String fullName) {

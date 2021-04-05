@@ -37,10 +37,10 @@ public abstract class DefaultUtil implements AndroidVersionUtils {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        OkHttpClient httpclient = new OkHttpClient();
+        OkHttpClient httpclient = new OkHttpClient.Builder().build();
 
         Request.Builder requestBuilder = new Request.Builder()
-                .url(url.toString());
+            .url(url.toString());
 
         for (Entry<String, String> e : headers.entrySet()){
             requestBuilder = requestBuilder.header(e.getKey(), e.getValue());

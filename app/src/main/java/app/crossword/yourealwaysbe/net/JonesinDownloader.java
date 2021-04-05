@@ -8,7 +8,7 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
  * Jonesin' Crosswords Downloader
- * URL: http://herbach.dnsalias.com/Jonesin/jzYYMMDD.puz
+ * URL: https://herbach.dnsalias.com/Jonesin/jzYYMMDD.puz
  * Date = Thursdays
  */
 public class JonesinDownloader extends AbstractDownloader {
@@ -16,7 +16,7 @@ public class JonesinDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
 
     public JonesinDownloader() {
-        super("http://herbach.dnsalias.com/Jonesin/", getStandardDownloadDir(), NAME);
+        super("https://herbach.dnsalias.com/Jonesin/", getStandardDownloadDir(), NAME);
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
     }

@@ -151,26 +151,17 @@
     <string name="guardian_daily">Guardian Daily Cryptic</string>
     <string name="independent_daily">Independent Daily Cryptic</string>
     <string name="newsday">Newsday</string>
-    <string name="joseph_crosswords">Joseph Crosswords</string>
     <string name="lat_crosswords">Los Angeles Times</string>
-    <string name="sheffer_crosswords">Sheffer Crosswords</string>
     <string name="thinks_com">Thinks.com</string>
     <string name="universal_crossword">Universal Crossword</string>
     <string name="usa_today">USA Today</string>
 
     <!-- preferences weekly -->
     <string name="updates_fridays">Updates Fridays</string>
-    <string name="updates_fridays_biweekly">Updates Fridays (Currently Biweekly)</string>
     <string name="updates_thursdays">Updates Thursdays</string>
-    <string name="updates_sundays">Updates Sundays</string>
     <string name="regular_sized">Regular Sized</string>
     <string name="large_sized">Large Sized</string>
-    <string name="ink_well">Ink Well</string>
     <string name="jonesin_crosswords">Jonesin\' Crosswords</string>
-    <string name="washington_post_puzzler">Washington Post Puzzler</string>
-    <string name="chron_of_higher_ed">Chron. of Higher Ed.</string>
-    <string name="lat_sunday_calendar">LAT Sunday Calendar</string>
-    <string name="premier_crosswords">Premier Crosswords</string>
     <string name="wall_street_journal">The Wall Street Journal</string>
 
     <!--  preferences experimental -->
