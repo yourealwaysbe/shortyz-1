@@ -7,7 +7,9 @@ implementing my own customisations.
 
 Additions:
 
+* Updated file handling compatible with Android 11.
 * Download of daily Guardian and Independent Cryptics.
+* Weeding/updating of downloadable puzzles.
 * Less crazy night mode colors and night mode by system theme.
 * Clues view on board page for smaller screens.
 * Update to androidx libraries.
@@ -50,8 +52,7 @@ You will then need to handle signing/installing the apk. Hopefully this is stand
 
   * ./app The Android App.
   * ./puzzlib A platform independent Java library for dealing with Across Lite and other puzzle formats
-  * ./web A GWT/AppEngine web app for Shortyz that has fallen into disrepair.
-  * ./gfx Art assets related to the Play Store publishing
+  * ./gfx Misc art assets
 
 License
 -------
