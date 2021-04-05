@@ -43,16 +43,16 @@ public class SeparatedRecyclerViewAdapter<
             return new SimpleTextViewHolder(view);
         } else {
             RecyclerView.ViewHolder result = null;
-            while(result == null){
-                for(SectionAdapter sectionAdapter : sections.values()){
-                    try {
-                        result = sectionAdapter.onCreateViewHolder(viewGroup, viewType);
-                    } catch(Exception e){
-                        e.printStackTrace();
-                    }
+            for(SectionAdapter sectionAdapter : sections.values()){
+                try {
+                    result = sectionAdapter.onCreateViewHolder(viewGroup, viewType);
+                } catch(Exception e){
+                    e.printStackTrace();
                 }
+                if (result != null)
+                    return result;
             }
-            return result;
+            return null;
         }
     }
 
