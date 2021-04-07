@@ -17,7 +17,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
+import android.content.Context;
 import android.net.Uri;
 
 import app.crossword.yourealwaysbe.io.IO;
@@ -30,6 +34,9 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
  * Implementations provided for different file backends
  */
 public abstract class FileHandler {
+    private static final Logger LOGGER
+        = Logger.getLogger(FileHandler.class.getCanonicalName());
+
     public static final String MIME_TYPE_PUZ = "application/x-crossword";
     public static final String MIME_TYPE_META = "application/octet-stream";
     public static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
@@ -38,6 +45,20 @@ public abstract class FileHandler {
 
     public static final String FILE_EXT_PUZ = ".puz";
     public static final String FILE_EXT_FORKYZ = ".forkyz";
+
+    // used for saving meta cache to DB since we currently save puzzles
+    // on the main thread (can be removed if/when a better save solution
+    // is implemented)
+    private ExecutorService executorService
+        = Executors.newSingleThreadExecutor();
+
+    private Context applicationContext;
+    private MetaCache metaCache;
+
+    protected FileHandler(Context applicationContext) {
+        this.applicationContext = applicationContext;
+        this.metaCache = new MetaCache(applicationContext, this);
+    }
 
     public abstract DirHandle getCrosswordsDirectory();
     public abstract DirHandle getArchiveDirectory();
@@ -126,6 +147,7 @@ public abstract class FileHandler {
         FileHandle metaHandle = ph.getMetaFileHandle();
         if (metaHandle != null)
             delete(metaHandle);
+        metaCache.deleteRecord(ph);
     }
 
     public synchronized void moveTo(
@@ -141,46 +163,67 @@ public abstract class FileHandler {
         FileHandle metaHandle = ph.getMetaFileHandle();
         if (metaHandle != null)
             moveTo(metaHandle, srcDirHandle, destDirHandle);
+        // TODO: can we move record instead? What is new Uri?
+        metaCache.deleteRecord(ph);
     }
 
     /**
-     * Get puz files in directory
+     * Get puz files in directory, will create meta files when missing
      */
     public PuzMetaFile[] getPuzFiles(DirHandle dirHandle) {
+        long start = System.currentTimeMillis();
+
         ArrayList<PuzMetaFile> files = new ArrayList<>();
 
-        // Use a caching approach to avoid repeated interaction with
-        // filesystem (which is good for content resolver)
-        Map<String, FileHandle> puzFiles = new HashMap<>();
+        // Load files into data structures to avoid repeated interaction
+        // with filesystem (which is good for content resolver)
+        Set<FileHandle> puzFiles = new HashSet<>();
         Map<String, FileHandle> metaFiles = new HashMap<>();
 
         for (FileHandle f : listFiles(dirHandle)) {
             String fileName = getName(f);
             if (fileName.endsWith(FILE_EXT_PUZ)) {
-                puzFiles.put(fileName, f);
+                puzFiles.add(f);
             } else if (fileName.endsWith(FILE_EXT_FORKYZ)) {
                 metaFiles.put(fileName, f);
             } else {
+                // ignore
             }
         }
 
-        for (Map.Entry<String, FileHandle> entry : puzFiles.entrySet()) {
-            String fileName = entry.getKey();
-            FileHandle puzFile = entry.getValue();
-            FileHandle metaFile = null;
+        Map<Uri, MetaCache.MetaRecord> cachedMetas
+            = metaCache.getDirCache(dirHandle);
 
+        LOGGER.info("FORKYZ cache size: " + cachedMetas.size());
+
+        for (FileHandle puzFile : puzFiles) {
             String metaName = getMetaFileName(puzFile);
+            FileHandle metaFile = null;
 
             if (metaFiles.containsKey(metaName)) {
                 metaFile = metaFiles.get(metaName);
             }
 
-            PuzMetaFile pm = loadPuzMetaFile(
-                new PuzHandle(dirHandle, puzFile, metaFile)
-            );
+            PuzHandle ph = new PuzHandle(dirHandle, puzFile, metaFile);
+
+            Uri puzFileUri = getUri(puzFile);
+            MetaCache.MetaRecord metaRecord = cachedMetas.get(puzFileUri);
+
+            PuzMetaFile pm = null;
+            if (metaRecord != null) {
+                pm = new PuzMetaFile(ph, metaRecord);
+            } else {
+                pm = loadPuzMetaFile(ph);
+            }
 
             files.add(pm);
         }
+
+        metaCache.cleanupCache(dirHandle, files);
+
+        long end = System.currentTimeMillis();
+
+        LOGGER.info("FORKYZ Loading took " + (end-start));
 
         return files.toArray(new PuzMetaFile[files.size()]);
     }
@@ -204,7 +247,7 @@ public abstract class FileHandler {
      * Synchronized to avoid reading/writing from the same file at the same
      * time.
      */
-    public synchronized PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) {
+    public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) {
         FileHandle metaHandle = puzHandle.getMetaFileHandle();
         PuzzleMeta meta = null;
 
@@ -220,7 +263,11 @@ public abstract class FileHandler {
             }
         }
 
-        return new PuzMetaFile(puzHandle, meta);
+        MetaCache.MetaRecord metaRecord = null;
+        if (meta != null)
+            metaRecord = metaCache.addRecord(puzHandle, meta);
+
+        return new PuzMetaFile(puzHandle, metaRecord);
     }
 
     /**
@@ -245,6 +292,8 @@ public abstract class FileHandler {
         if (metaFile == null)
             return load(ph.getPuzFileHandle());
 
+        Puzzle puz = null;
+
         try (
             DataInputStream pis
                 = new DataInputStream(
@@ -255,8 +304,15 @@ public abstract class FileHandler {
                     getBufferedInputStream(ph.getMetaFileHandle())
                 )
         ) {
-            return IO.load(pis, mis);
+            puz = IO.load(pis, mis);
         }
+
+        // puz will only be null if there was an exception thrown, but
+        // check anyway
+        if (puz != null)
+            metaCache.addRecord(ph, puz);
+
+        return puz;
     }
 
     /**
@@ -266,6 +322,8 @@ public abstract class FileHandler {
      * time.
      */
     public synchronized Puzzle load(FileHandle fileHandle) throws IOException {
+        // don't update meta cache here as we don't know the dir handle
+        // or really have any meta to cache
         try (
             DataInputStream fis
                 = new DataInputStream(getBufferedInputStream(fileHandle))
@@ -289,8 +347,6 @@ public abstract class FileHandler {
      */
     public synchronized void save(Puzzle puz, PuzHandle puzHandle)
             throws IOException {
-        long incept = System.currentTimeMillis();
-
         FileHandle puzFile = puzHandle.getPuzFileHandle();
         FileHandle metaFile = puzHandle.getMetaFileHandle();
         DirHandle puzDir = puzHandle.getDirHandle();
@@ -322,6 +378,14 @@ public abstract class FileHandler {
             else
                 puzHandle.setMetaFileHandle(metaFile);
         }
+
+        // Cannot be done on main thread (and you save puzzles on
+        // the main thread).
+        if (success) {
+            executorService.execute(() -> {
+                metaCache.addRecord(puzHandle, puz);
+            });
+        }
     }
 
     /**
@@ -348,5 +412,9 @@ public abstract class FileHandler {
     protected String getMetaFileName(FileHandle puzFile) {
         String name = getName(puzFile);
         return name.substring(0, name.lastIndexOf(".")) + FileHandler.FILE_EXT_FORKYZ;
+    }
+
+    protected Context getApplicationContext() {
+        return applicationContext;
     }
 }

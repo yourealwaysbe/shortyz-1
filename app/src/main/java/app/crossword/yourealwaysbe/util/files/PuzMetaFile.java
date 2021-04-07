@@ -15,9 +15,9 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 public class PuzMetaFile
         implements Comparable<PuzMetaFile> {
     public PuzHandle handle;
-    public PuzzleMeta meta;
+    public MetaCache.MetaRecord meta;
 
-    PuzMetaFile(PuzHandle handle, PuzzleMeta meta) {
+    PuzMetaFile(PuzHandle handle, MetaCache.MetaRecord meta) {
         this.handle = handle;
         this.meta = meta;
     }
@@ -43,51 +43,53 @@ public class PuzMetaFile
     }
 
     public boolean isUpdatable() {
-        return (meta == null) ? false : meta.updatable;
+        return (meta == null) ? false : meta.isUpdatable();
     }
 
     public String getCaption() {
-        return (meta == null) ? "" : meta.title;
+        return (meta == null) ? "" : meta.getTitle();
     }
 
     public LocalDate getDate() {
         if (meta == null) {
             return getHandler().getModifiedDate(handle.getPuzFileHandle());
         } else {
-            return meta.date;
+            return meta.getDate();
         }
     }
 
     public int getComplete() {
-        return (meta == null) ? 0 : (meta.updatable ? (-1) : meta.percentComplete);
+        return (meta == null)
+            ? 0
+            : (meta.isUpdatable() ? (-1) : meta.getPercentComplete());
     }
 
     public int getFilled() {
-        return (meta == null) ? 0 : (meta.updatable ? (-1) : meta.percentFilled);
+        return (meta == null)
+            ? 0
+            : (meta.isUpdatable() ? (-1) : meta.getPercentFilled());
     }
 
     public String getSource() {
-        return ((meta == null) || (meta.source == null)) ? "Unknown" : meta.source;
+        return ((meta == null) || (meta.getSource() == null))
+            ? "Unknown"
+            : meta.getSource();
     }
 
     public String getTitle() {
         if ((meta == null)
-                || (meta.source == null)
-                || (meta.source.length() == 0)) {
+                || (meta.getSource() == null)
+                || (meta.getSource().length() == 0)) {
             String fileName = getHandler().getName(handle.getPuzFileHandle());
             return fileName.substring(0, fileName.lastIndexOf("."));
         } else {
-            return meta.source;
+            return meta.getSource();
         }
     }
 
     @Override
     public String toString(){
         return getHandler().getUri(handle.getPuzFileHandle()).toString();
-    }
-
-    void setMeta(PuzzleMeta meta) {
-        this.meta = meta;
     }
 
     private FileHandler getHandler() {

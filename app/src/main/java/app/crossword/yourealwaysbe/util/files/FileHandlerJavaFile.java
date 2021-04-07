@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import android.content.Context;
 import android.net.Uri;
 
 import app.crossword.yourealwaysbe.io.IO;
@@ -30,7 +31,10 @@ public abstract class FileHandlerJavaFile extends FileHandler {
 
     private File rootDirectory;
 
-    public FileHandlerJavaFile(File rootDirectory) {
+    public FileHandlerJavaFile(
+        Context applicationContext, File rootDirectory
+    ) {
+        super(applicationContext);
         this.rootDirectory = rootDirectory;
     }
 

@@ -246,7 +246,7 @@ public class ForkyzApplication extends Application {
             );
 
         if (locPref.equals(getString(R.string.external_storage_legacy))) {
-            fileHandler = new FileHandlerLegacy();
+            fileHandler = new FileHandlerLegacy(this);
         } else if (locPref.equals(getString(R.string.external_storage_saf))) {
             fileHandler = FileHandlerSAF.readHandlerFromPrefs(this);
         } else {
