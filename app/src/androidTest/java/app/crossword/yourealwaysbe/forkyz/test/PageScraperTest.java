@@ -31,7 +31,7 @@ public class PageScraperTest extends AndroidTestCase{
 	private static class TestScraper extends AbstractPageScraper {
 		
 		TestScraper(){
-			super("http://www.fleetwoodwack.typepad.com/", "BEQ");
+			super("https://www.fleetwoodwack.typepad.com/", "BEQ");
 		}
 	}
 
