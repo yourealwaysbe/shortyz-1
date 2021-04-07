@@ -18,15 +18,26 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="23"
         tools:ignore="ScopedStorage"
+        android:description="@string/perm_read_desc"
     />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="23"
         tools:ignore="ScopedStorage"
+        android:description="@string/perm_write_desc"
     />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.INTERNET" 
+        android:description="@string/perm_internet_desc"
+    />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        android:description="@string/perm_access_network_state_desc"
+    />
+    <uses-permission
+        android:name="android.permission.RECEIVE_BOOT_COMPLETED"
+        android:description="@string/perm_boot_desc"
+    />
 
     <uses-feature
         android:name="android.hardware.touchscreen"

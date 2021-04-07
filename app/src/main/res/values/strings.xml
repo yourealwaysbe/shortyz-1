@@ -11,6 +11,13 @@
     <string name="preview">Preview</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
 
+    <!-- permissions -->
+    <string name="perm_read_desc">Requested on older devices to read saved puzzles.</string>
+    <string name="perm_write_desc">Requested on older devices to store puzzles.</string>
+    <string name="perm_internet_desc">Required to download puzzles from the internet.</string>
+    <string name="perm_access_network_state_desc">Required to limit background download when on mobile data or wifi.</string>
+    <string name="perm_boot_desc">Required to (optionally) allow periodic background download of puzzles.</string>
+
     <!-- Browse -->
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
