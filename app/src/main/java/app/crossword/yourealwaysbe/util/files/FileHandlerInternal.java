@@ -18,11 +18,8 @@ public class FileHandlerInternal extends FileHandlerJavaFile {
     private static final Logger LOGGER
         = Logger.getLogger(FileHandlerInternal.class.getCanonicalName());
 
-    private Context context;
-
-    public FileHandlerInternal(Context context) {
-        super(context.getFilesDir());
-        this.context = context;
+    public FileHandlerInternal(Context applicationContext) {
+        super(applicationContext, applicationContext.getFilesDir());
     }
 
     @Override
@@ -33,11 +30,10 @@ public class FileHandlerInternal extends FileHandlerJavaFile {
     @Override
     public boolean isStorageFull() {
         try {
+            Context context = getApplicationContext();
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
                 StorageManager storageManager
-                    = context
-                        .getApplicationContext()
-                        .getSystemService(StorageManager.class);
+                    = context.getSystemService(StorageManager.class);
                 UUID appSpecificInternalDirUuid
                     = storageManager.getUuidForPath(context.getFilesDir());
                 long availableBytes =

@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -19,8 +20,8 @@ public class FileHandlerLegacy extends FileHandlerJavaFile {
     private static final Logger LOGGER
         = Logger.getLogger(FileHandlerLegacy.class.getCanonicalName());
 
-    public FileHandlerLegacy() {
-        super(Environment.getExternalStorageDirectory());
+    public FileHandlerLegacy(Context applicationContext) {
+        super(applicationContext, Environment.getExternalStorageDirectory());
     }
 
     @Override

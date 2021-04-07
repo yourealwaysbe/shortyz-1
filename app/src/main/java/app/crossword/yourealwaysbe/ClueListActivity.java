@@ -213,20 +213,16 @@ public class ClueListActivity extends PuzzleActivity
             return true;
 
         case KeyEvent.KEYCODE_DPAD_LEFT:
-
             if (!board.getHighlightLetter().equals(
                     board.getCurrentWord().start)) {
                 board.moveLeft();
             }
-
             return true;
 
         case KeyEvent.KEYCODE_DPAD_RIGHT:
-
             if (!board.getHighlightLetter().equals(last)) {
                 board.moveRight();
             }
-
             return true;
 
         case KeyEvent.KEYCODE_DEL:

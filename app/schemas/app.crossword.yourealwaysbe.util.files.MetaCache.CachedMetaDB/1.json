@@ -1,0 +1,82 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "26a8d8649272a264148ed68d05d08433",
+    "entities": [
+      {
+        "tableName": "cachedMeta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mainFileUri` TEXT NOT NULL, `metaFileUri` TEXT, `directoryUri` TEXT NOT NULL, `isUpdatable` INTEGER NOT NULL, `date` INTEGER, `percentComplete` INTEGER NOT NULL, `percentFilled` INTEGER NOT NULL, `source` TEXT, `title` TEXT, PRIMARY KEY(`mainFileUri`))",
+        "fields": [
+          {
+            "fieldPath": "mainFileUri",
+            "columnName": "mainFileUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metaFileUri",
+            "columnName": "metaFileUri",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "directoryUri",
+            "columnName": "directoryUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isUpdatable",
+            "columnName": "isUpdatable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "percentComplete",
+            "columnName": "percentComplete",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "percentFilled",
+            "columnName": "percentFilled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "mainFileUri"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '26a8d8649272a264148ed68d05d08433')"
+    ]
+  }
+}

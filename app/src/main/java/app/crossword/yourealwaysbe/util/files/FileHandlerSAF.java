@@ -42,7 +42,6 @@ public class FileHandlerSAF extends FileHandler {
     private static final String ARCHIVE_NAME = "archive";
     private static final String TEMP_NAME = "temp";
 
-    private Context context;
     private Uri rootUri;
     private Uri crosswordsFolderUri;
     private Uri archiveFolderUri;
@@ -84,7 +83,7 @@ public class FileHandlerSAF extends FileHandler {
         Uri archiveFolderUri,
         Uri tempFolderUri
     ) {
-        this.context = context;
+        super(context);
         this.rootUri = rootUri;
         this.crosswordsFolderUri = crosswordsFolderUri;
         this.archiveFolderUri = archiveFolderUri;
@@ -117,17 +116,17 @@ public class FileHandlerSAF extends FileHandler {
 
     @Override
     public boolean exists(DirHandle dir) {
-        return exists(context.getContentResolver(), dir.getUri());
+        return exists(getContentResolver(), dir.getUri());
     }
 
     @Override
     public boolean exists(FileHandle file) {
-        return exists(context.getContentResolver(), file.getUri());
+        return exists(getContentResolver(), file.getUri());
     }
 
     @Override
     public Iterable<FileHandle> listFiles(DirHandle dir) {
-        ContentResolver resolver = context.getContentResolver();
+        ContentResolver resolver = getContentResolver();
         Uri dirUri = dir.getUri();
         String dirTreeId = DocumentsContract.getDocumentId(dirUri);
         Uri dirTreeUri = DocumentsContract.buildDocumentUriUsingTree(
@@ -192,7 +191,7 @@ public class FileHandlerSAF extends FileHandler {
     protected void deleteUnsync(FileHandle fileHandle) {
         try {
             DocumentsContract.deleteDocument(
-                context.getContentResolver(),
+                getContentResolver(),
                 fileHandle.getUri()
             );
         } catch (FileNotFoundException e) {
@@ -214,7 +213,7 @@ public class FileHandlerSAF extends FileHandler {
     ) {
         try {
             DocumentsContract.moveDocument(
-                context.getContentResolver(),
+                getContentResolver(),
                 fileHandle.getUri(),
                 srcDirHandle.getUri(),
                 destDirHandle.getUri()
@@ -231,7 +230,7 @@ public class FileHandlerSAF extends FileHandler {
     @Override
     public OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException {
-        return context.getContentResolver().openOutputStream(
+        return getContentResolver().openOutputStream(
             fileHandle.getUri()
         );
     }
@@ -240,14 +239,14 @@ public class FileHandlerSAF extends FileHandler {
     @Override
     public InputStream getInputStream(FileHandle fileHandle)
         throws IOException {
-        return context.getContentResolver().openInputStream(
+        return getContentResolver().openInputStream(
             fileHandle.getUri()
         );
     }
 
     @Override
     public boolean isStorageMounted() {
-        ContentResolver resolver = context.getContentResolver();
+        ContentResolver resolver = getContentResolver();
         try {
             return exists(resolver, crosswordsFolderUri)
                 && exists(resolver, archiveFolderUri)
@@ -261,7 +260,9 @@ public class FileHandlerSAF extends FileHandler {
 
     @Override
     public boolean isStorageFull() {
-        return SAFStorageCalculator.isStorageFull(context, rootUri);
+        return SAFStorageCalculator.isStorageFull(
+            getApplicationContext(), rootUri
+        );
     }
 
     @Override
@@ -270,7 +271,7 @@ public class FileHandlerSAF extends FileHandler {
     ) {
         try {
             Uri uri = DocumentsContract.createDocument(
-                context.getContentResolver(), dir.getUri(), mimeType, fileName
+                getContentResolver(), dir.getUri(), mimeType, fileName
             );
             if (uri != null) {
                 return new FileHandle(
@@ -294,17 +295,19 @@ public class FileHandlerSAF extends FileHandler {
      * Once this has been called, then readHandlerFromPrefs can be used
      * to retrieve a handler using these directories.
      *
-     * @param context the application context
+     * @param applicationContext the application context
      * @param rootUri the root permitted folder for storage
      * @return an initiated file handler if successful, else null
      */
     public static FileHandlerSAF initialiseSAFPrefs(
-        Context context, Uri rootUri
+        Context applicationContext, Uri rootUri
     ) {
         try {
             SharedPreferences prefs
-                = PreferenceManager.getDefaultSharedPreferences(context);
-            ContentResolver resolver = context.getContentResolver();
+                = PreferenceManager.getDefaultSharedPreferences(
+                    applicationContext
+                );
+            ContentResolver resolver = applicationContext.getContentResolver();
             String dirId
                 = DocumentsContract.getTreeDocumentId(rootUri);
             Uri dirUri
@@ -399,7 +402,7 @@ public class FileHandlerSAF extends FileHandler {
                 editor.apply();
 
                 return new FileHandlerSAF(
-                    context,
+                    applicationContext,
                     rootUri,
                     crosswordsFolderUri, archiveFolderUri, tempFolderUri
                 );
@@ -419,9 +422,11 @@ public class FileHandlerSAF extends FileHandler {
      * configured directories.) Will reinitialise if the rootUri is
      * still available.
      */
-    public static FileHandlerSAF readHandlerFromPrefs(Context context) {
+    public static FileHandlerSAF readHandlerFromPrefs(
+        Context applicationContext
+    ) {
         SharedPreferences prefs
-            = PreferenceManager.getDefaultSharedPreferences(context);
+            = PreferenceManager.getDefaultSharedPreferences(applicationContext);
 
         FileHandlerSAF fileHandler = null;
 
@@ -442,14 +447,14 @@ public class FileHandlerSAF extends FileHandler {
             Uri archiveFolderUri = Uri.parse(archiveFolder);
             Uri tempFolderUri = Uri.parse(tempFolder);
 
-            ContentResolver resolver = context.getContentResolver();
+            ContentResolver resolver = applicationContext.getContentResolver();
 
             try {
                 if (exists(resolver, crosswordsFolderUri)
                         && exists(resolver, archiveFolderUri)
                         && exists(resolver, tempFolderUri)) {
                     fileHandler = new FileHandlerSAF(
-                        context,
+                        applicationContext,
                         rootFolderUri,
                         crosswordsFolderUri, archiveFolderUri, tempFolderUri
                     );
@@ -464,7 +469,7 @@ public class FileHandlerSAF extends FileHandler {
 
         if (fileHandler == null && rootFolder != null) {
             fileHandler = initialiseSAFPrefs(
-                context, Uri.parse(rootFolder)
+                applicationContext, Uri.parse(rootFolder)
             );
         }
 
@@ -487,7 +492,7 @@ public class FileHandlerSAF extends FileHandler {
 
     private Meta getMetaFromUri(Uri uri) {
         try (
-            Cursor c = context.getContentResolver().query(
+            Cursor c = getContentResolver().query(
                 uri,
                 new String[] {
                     Document.COLUMN_DISPLAY_NAME,
@@ -503,5 +508,9 @@ public class FileHandlerSAF extends FileHandler {
                 return null;
             }
         }
+    }
+
+    private ContentResolver getContentResolver() {
+        return getApplicationContext().getContentResolver();
     }
 }

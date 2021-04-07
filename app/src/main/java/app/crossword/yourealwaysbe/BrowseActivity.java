@@ -67,7 +67,6 @@ import java.util.logging.Logger;
 
 public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
     private static final int REQUEST_WRITE_STORAGE = 1002;
-    private static final int PLEASE_WAIT_DELAY = 200; //ms
 
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
@@ -91,7 +90,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     private int normalColor;
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
-    private boolean pleaseWaitPending = false;
     private View pleaseWaitView;
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
@@ -632,15 +630,10 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private void showPleaseWait() {
-        pleaseWaitPending = true;
-        handler.postDelayed(() -> {
-            if (pleaseWaitPending)
-                pleaseWaitView.setVisibility(View.VISIBLE);
-        }, PLEASE_WAIT_DELAY);
+        pleaseWaitView.setVisibility(View.VISIBLE);
     }
 
     private void hidePleaseWait() {
-        pleaseWaitPending = false;
         pleaseWaitView.setVisibility(View.GONE);
     }
 
