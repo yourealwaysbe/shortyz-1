@@ -31,9 +31,9 @@ import java.lang.Void;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,8 +53,8 @@ public class BrowseActivityViewModel extends ViewModel {
 
     private boolean isViewArchive = false;
 
-    private MutableLiveData<PuzMetaFile[]> puzzleFiles
-        = new MutableLiveData<PuzMetaFile[]>();
+    private MutableLiveData<List<PuzMetaFile>> puzzleFiles
+        = new MutableLiveData<>();
     // busy with something that isn't downloading
     private MutableLiveData<Boolean> isUIBusy
         = new MutableLiveData<Boolean>();
@@ -68,7 +68,7 @@ public class BrowseActivityViewModel extends ViewModel {
         );
     }
 
-    public MutableLiveData<PuzMetaFile[]> getPuzzleFiles() {
+    public MutableLiveData<List<PuzMetaFile>> getPuzzleFiles() {
         return puzzleFiles;
     }
 
@@ -102,7 +102,7 @@ public class BrowseActivityViewModel extends ViewModel {
                     ? fileHandler.getArchiveDirectory()
                     : fileHandler.getCrosswordsDirectory();
 
-            PuzMetaFile[] puzFiles
+            List<PuzMetaFile> puzFiles
                 = fileHandler.getPuzFiles(directory);
 
             // use handler for this so viewArchive changes when
@@ -190,9 +190,9 @@ public class BrowseActivityViewModel extends ViewModel {
             List<PuzMetaFile> toDelete = new ArrayList<>();
 
             if (maxAge != null) {
-                PuzMetaFile[] puzFiles
+                List<PuzMetaFile> puzFiles
                     = fileHandler.getPuzFiles(crosswords);
-                Arrays.sort(puzFiles);
+                Collections.sort(puzFiles);
                 for (PuzMetaFile pm : puzFiles) {
                     if ((pm.getComplete() == 100)
                             || (pm.getDate().isBefore(maxAge))) {
@@ -206,9 +206,9 @@ public class BrowseActivityViewModel extends ViewModel {
             }
 
             if (archiveMaxAge != null) {
-                PuzMetaFile[] puzFiles
+                List<PuzMetaFile> puzFiles
                     = fileHandler.getPuzFiles(archive);
-                Arrays.sort(puzFiles);
+                Collections.sort(puzFiles);
                 for (PuzMetaFile pm : puzFiles) {
                     if (pm.getDate().isBefore(archiveMaxAge)) {
                         toDelete.add(pm);
@@ -334,13 +334,15 @@ public class BrowseActivityViewModel extends ViewModel {
             PuzMetaFile refreshedMeta
                 = fileHandler.loadPuzMetaFile(refreshHandle);
 
-            PuzMetaFile[] pmArray = puzzleFiles.getValue();
+            List<PuzMetaFile> pmList = puzzleFiles.getValue();
 
-            for (int i = 0; i < pmArray.length; i++) {
+            int index = -1;
+            for (PuzMetaFile pm : pmList) {
+                index += 1;
                 FileHandle pmPuzFileHandle
-                    = pmArray[i].getPuzHandle().getPuzFileHandle();
+                    = pm.getPuzHandle().getPuzFileHandle();
                 if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
-                    pmArray[i] = refreshedMeta;
+                    pmList.set(index, refreshedMeta);
                     changed = true;
                 }
             }
@@ -350,7 +352,7 @@ public class BrowseActivityViewModel extends ViewModel {
             handler.post(() -> {
                 isUIBusy.setValue(false);
                 if (updateArray)
-                    puzzleFiles.setValue(pmArray);
+                    puzzleFiles.setValue(pmList);
             });
         });
     }
