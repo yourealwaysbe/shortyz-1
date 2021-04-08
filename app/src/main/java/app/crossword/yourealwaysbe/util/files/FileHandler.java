@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -170,7 +171,7 @@ public abstract class FileHandler {
     /**
      * Get puz files in directory, will create meta files when missing
      */
-    public PuzMetaFile[] getPuzFiles(DirHandle dirHandle) {
+    public List<PuzMetaFile> getPuzFiles(DirHandle dirHandle) {
         long start = System.currentTimeMillis();
 
         ArrayList<PuzMetaFile> files = new ArrayList<>();
@@ -225,7 +226,7 @@ public abstract class FileHandler {
 
         LOGGER.info("FORKYZ Loading took " + (end-start));
 
-        return files.toArray(new PuzMetaFile[files.size()]);
+        return files;
     }
 
     /**

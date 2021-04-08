@@ -57,7 +57,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -456,9 +456,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
-    buildList(PuzMetaFile[] puzFiles, Accessor accessor) {
+    buildList(List<PuzMetaFile> puzFiles, Accessor accessor) {
         try {
-            Arrays.sort(puzFiles, accessor);
+            Collections.sort(puzFiles, accessor);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -520,7 +520,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
     }
 
     private void loadPuzzleAdapter() {
-        PuzMetaFile[] puzList = model.getPuzzleFiles().getValue();
+        List<PuzMetaFile> puzList = model.getPuzzleFiles().getValue();
         if (puzList != null) {
             setPuzzleListAdapter(buildList(puzList, accessor), true);
         } else {
