@@ -196,6 +196,7 @@ public abstract class FileHandler {
             = metaCache.getDirCache(dirHandle);
 
         LOGGER.info("FORKYZ cache size: " + cachedMetas.size());
+        LOGGER.info("FORKYZ num files: " + puzFiles.size());
 
         for (FileHandle puzFile : puzFiles) {
             String metaName = getMetaFileName(puzFile);
@@ -214,7 +215,12 @@ public abstract class FileHandler {
             if (metaRecord != null) {
                 pm = new PuzMetaFile(ph, metaRecord);
             } else {
-                pm = loadPuzMetaFile(ph);
+                try {
+                    pm = loadPuzMetaFile(ph);
+                } catch (IOException e) {
+                    LOGGER.warning("Could not load puz meta for " + ph +": " + e);
+                    pm = new PuzMetaFile(ph, null);
+                }
             }
 
             files.add(pm);
@@ -248,7 +254,7 @@ public abstract class FileHandler {
      * Synchronized to avoid reading/writing from the same file at the same
      * time.
      */
-    public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) {
+    public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) throws IOException {
         FileHandle metaHandle = puzHandle.getMetaFileHandle();
         PuzzleMeta meta = null;
 
@@ -259,8 +265,6 @@ public abstract class FileHandler {
                 )
             ) {
                 meta = IO.readMeta(is);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 

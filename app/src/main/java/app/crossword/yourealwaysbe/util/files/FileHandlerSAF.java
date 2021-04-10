@@ -218,7 +218,7 @@ public class FileHandlerSAF extends FileHandler {
                 srcDirHandle.getUri(),
                 destDirHandle.getUri()
             );
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | IllegalArgumentException e) {
             LOGGER.severe(
                 "Attempt to move " + fileHandle + " to " +
                 destDirHandle + " failed."
@@ -230,18 +230,29 @@ public class FileHandlerSAF extends FileHandler {
     @Override
     public OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException {
-        return getContentResolver().openOutputStream(
-            fileHandle.getUri()
-        );
+        try {
+            return getContentResolver().openOutputStream(
+                fileHandle.getUri()
+            );
+        } catch (IllegalArgumentException e) {
+            throwAsFileNotFoundIfAppropriate(e);
+        }
+        // never reached
+        return null;
     }
 
-    // TODO
     @Override
     public InputStream getInputStream(FileHandle fileHandle)
         throws IOException {
-        return getContentResolver().openInputStream(
-            fileHandle.getUri()
-        );
+        try {
+            return getContentResolver().openInputStream(
+                fileHandle.getUri()
+            );
+        } catch (IllegalArgumentException e) {
+            throwAsFileNotFoundIfAppropriate(e);
+        }
+        // never reached
+        return null;
     }
 
     @Override
@@ -512,5 +523,24 @@ public class FileHandlerSAF extends FileHandler {
 
     private ContentResolver getContentResolver() {
         return getApplicationContext().getContentResolver();
+    }
+
+    /**
+     * Rethrow exception as FileNotFoundException if appropriate
+     *
+     * The SAF seems to throw IllegalArgumentException when a file does
+     * not exist as its permission check fails first when it detects the
+     * missing file.
+     */
+    private void throwAsFileNotFoundIfAppropriate(
+        IllegalArgumentException e
+    ) throws IllegalArgumentException, FileNotFoundException {
+        // if the file does not exist, this might be thrown since
+        // Android cannot determine access permissions
+        if (e.getCause() instanceof FileNotFoundException) {
+            throw (FileNotFoundException) e.getCause();
+        } else {
+            throw e;
+        }
     }
 }

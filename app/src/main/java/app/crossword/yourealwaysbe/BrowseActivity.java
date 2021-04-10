@@ -436,6 +436,9 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             refreshLastAccessedPuzzle();
         }
 
+        // previous game ended for now
+        ForkyzApplication.getInstance().clearBoard();
+
         checkDownload();
     }
 

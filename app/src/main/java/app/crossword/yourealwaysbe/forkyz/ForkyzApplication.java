@@ -81,6 +81,11 @@ public class ForkyzApplication extends Application {
         this.puzHandle = puzHandle;
     }
 
+    public void clearBoard() {
+        this.board = null;
+        this.puzHandle = null;
+    }
+
     public Playboard getBoard() {
          return board;
     }
