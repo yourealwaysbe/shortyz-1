@@ -36,6 +36,7 @@
     <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
     <string name="title_view_archives">Archives</string>
     <string name="title_view_crosswords">Crosswords</string>
+    <string name="unknown_source">Unknown</string>
 
     <!-- notes page -->
     <string name="anagram_source_lab">Anagram remaining letters</string>

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 import android.net.Uri;
+import androidx.annotation.NonNull;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
@@ -17,7 +18,9 @@ public class PuzMetaFile
     public PuzHandle handle;
     public MetaCache.MetaRecord meta;
 
-    PuzMetaFile(PuzHandle handle, MetaCache.MetaRecord meta) {
+    PuzMetaFile(
+        @NonNull PuzHandle handle, @NonNull MetaCache.MetaRecord meta
+    ) {
         this.handle = handle;
         this.meta = meta;
     }
@@ -43,47 +46,38 @@ public class PuzMetaFile
     }
 
     public boolean isUpdatable() {
-        return (meta == null) ? false : meta.isUpdatable();
+        return meta.isUpdatable();
     }
 
     public String getCaption() {
-        return (meta == null) ? "" : meta.getTitle();
+        return meta.getTitle();
     }
 
     public LocalDate getDate() {
-        if (meta == null) {
-            return getHandler().getModifiedDate(handle.getPuzFileHandle());
-        } else {
-            return meta.getDate();
-        }
+        return meta.getDate();
     }
 
     public int getComplete() {
-        return (meta == null)
-            ? 0
-            : (meta.isUpdatable() ? (-1) : meta.getPercentComplete());
+        return (meta.isUpdatable() ? (-1) : meta.getPercentComplete());
     }
 
     public int getFilled() {
-        return (meta == null)
-            ? 0
-            : (meta.isUpdatable() ? (-1) : meta.getPercentFilled());
+        return (meta.isUpdatable() ? (-1) : meta.getPercentFilled());
     }
 
     public String getSource() {
-        return ((meta == null) || (meta.getSource() == null))
-            ? "Unknown"
+        return (meta.getSource() == null)
+            ? ""
             : meta.getSource();
     }
 
     public String getTitle() {
-        if ((meta == null)
-                || (meta.getSource() == null)
-                || (meta.getSource().length() == 0)) {
+        String title = meta.getTitle();
+        if (title == null || title.length() == 0) {
             String fileName = getHandler().getName(handle.getPuzFileHandle());
             return fileName.substring(0, fileName.lastIndexOf("."));
         } else {
-            return meta.getSource();
+            return title;
         }
     }
 

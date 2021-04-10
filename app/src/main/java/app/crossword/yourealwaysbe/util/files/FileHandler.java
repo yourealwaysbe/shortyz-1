@@ -15,11 +15,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 import android.content.Context;
@@ -71,7 +73,6 @@ public abstract class FileHandler {
     public abstract Uri getUri(DirHandle f);
     public abstract Uri getUri(FileHandle f);
     public abstract String getName(FileHandle f);
-    public abstract long getLastModified(FileHandle file);
     public abstract OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException;
     public abstract InputStream getInputStream(FileHandle fileHandle)
@@ -104,6 +105,19 @@ public abstract class FileHandler {
      * Assume in a synced class
      */
     protected abstract void deleteUnsync(FileHandle fileHandle);
+
+    /**
+     * Calls f on all files, with the modification time
+     *
+     * @param dirHandle the directory under which all files are stored
+     * @param files list of files to get modification times for
+     * @param f callback for file and modification times found
+     */
+    protected abstract void iterLastModified(
+        DirHandle dirHandle,
+        Iterable<PuzHandle> puzHandles,
+        BiConsumer<PuzHandle, Long> f
+    );
 
     public BufferedOutputStream getBufferedOutputStream(FileHandle fileHandle)
         throws IOException {
@@ -172,6 +186,17 @@ public abstract class FileHandler {
      * Get puz files in directory, will create meta files when missing
      */
     public List<PuzMetaFile> getPuzFiles(DirHandle dirHandle) {
+        // gets file listing and uses meta cache
+        // uses cache if it exists
+        // else tries to read meta file
+        // if there is no meta file, look up the file modification time
+        // of the puzzles and create a "dummy" meta cache from it
+        // try to keep cache up to date by deleting cache entries for
+        // files that do not exist, and trying to refresh dummy entries
+        // where a meta file now exists
+        // look up of file modification is done in a batch to avoid
+        // multiple SAF queries
+
         long start = System.currentTimeMillis();
 
         ArrayList<PuzMetaFile> files = new ArrayList<>();
@@ -198,6 +223,10 @@ public abstract class FileHandler {
         LOGGER.info("FORKYZ cache size: " + cachedMetas.size());
         LOGGER.info("FORKYZ num files: " + puzFiles.size());
 
+        // batch up files that need a dummy file (and therefore a
+        // modification time)
+        List<PuzHandle> needsCreateDummy = new LinkedList<>();
+
         for (FileHandle puzFile : puzFiles) {
             String metaName = getMetaFileName(puzFile);
             FileHandle metaFile = null;
@@ -211,19 +240,46 @@ public abstract class FileHandler {
             Uri puzFileUri = getUri(puzFile);
             MetaCache.MetaRecord metaRecord = cachedMetas.get(puzFileUri);
 
+            // cases:
+            //  1. has cache, not a dummy - use cache
+            //  2. has meta file - load meta (either dummy or no cache)
+            //  3. no meta file - use dummy if exists, else create
+
             PuzMetaFile pm = null;
-            if (metaRecord != null) {
+            if (metaRecord != null && !metaRecord.isDummy()) {
                 pm = new PuzMetaFile(ph, metaRecord);
-            } else {
+            } else if (ph.getMetaFileHandle() != null) {
                 try {
+                    // *could* return null
                     pm = loadPuzMetaFile(ph);
                 } catch (IOException e) {
-                    LOGGER.warning("Could not load puz meta for " + ph +": " + e);
-                    pm = new PuzMetaFile(ph, null);
+                    LOGGER.warning(
+                        "Could not load puz meta for " + ph +": " + e
+                    );
                 }
+            } else if (metaRecord != null) {
+                LOGGER.info("FORKYZ using dummy for " + ph.getPuzFileHandle());
+                pm = new PuzMetaFile(ph, metaRecord);
             }
 
-            files.add(pm);
+            if (pm == null)
+                needsCreateDummy.add(ph);
+            else
+                files.add(pm);
+        }
+
+        if (needsCreateDummy.size() > 0) {
+            iterLastModified(
+                dirHandle,
+                needsCreateDummy,
+                (PuzHandle ph, Long lastModified) -> {
+                    MetaCache.MetaRecord metaRecord
+                        = metaCache.addDummyRecord(
+                            ph, epochToDate(lastModified)
+                        );
+                    files.add(new PuzMetaFile(ph, metaRecord));
+                }
+            );
         }
 
         metaCache.cleanupCache(dirHandle, files);
@@ -253,24 +309,26 @@ public abstract class FileHandler {
     /**
      * Synchronized to avoid reading/writing from the same file at the same
      * time.
+     *
+     * @return null if there is no meta file attached to the handle
      */
     public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) throws IOException {
         FileHandle metaHandle = puzHandle.getMetaFileHandle();
+
+        if (metaHandle == null)
+            return null;
+
         PuzzleMeta meta = null;
 
-        if (metaHandle != null) {
-            try (
-                DataInputStream is = new DataInputStream(
-                    getBufferedInputStream(metaHandle)
-                )
-            ) {
-                meta = IO.readMeta(is);
-            }
+        try (
+            DataInputStream is = new DataInputStream(
+                getBufferedInputStream(metaHandle)
+            )
+        ) {
+            meta = IO.readMeta(is);
         }
 
-        MetaCache.MetaRecord metaRecord = null;
-        if (meta != null)
-            metaRecord = metaCache.addRecord(puzHandle, meta);
+        MetaCache.MetaRecord metaRecord = metaCache.addRecord(puzHandle, meta);
 
         return new PuzMetaFile(puzHandle, metaRecord);
     }
@@ -408,12 +466,6 @@ public abstract class FileHandler {
         save(puz, new PuzHandle(puzDir, puzFile, null));
     }
 
-    public LocalDate getModifiedDate(FileHandle file) {
-        return Instant.ofEpochMilli(getLastModified(file))
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-    }
-
     protected String getMetaFileName(FileHandle puzFile) {
         String name = getName(puzFile);
         return name.substring(0, name.lastIndexOf(".")) + FileHandler.FILE_EXT_FORKYZ;
@@ -421,5 +473,11 @@ public abstract class FileHandler {
 
     protected Context getApplicationContext() {
         return applicationContext;
+    }
+
+    private LocalDate epochToDate(long epochTimestamp) {
+        return Instant.ofEpochMilli(epochTimestamp)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
     }
 }

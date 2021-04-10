@@ -11,6 +11,7 @@ import java.lang.Iterable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,11 +112,6 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     }
 
     @Override
-    public long getLastModified(FileHandle file) {
-        return file.getFile().lastModified();
-    }
-
-    @Override
     public FileHandle createFileHandle(
         DirHandle dir, String fileName, String mimeType
     ) {
@@ -150,6 +146,18 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     public InputStream getInputStream(FileHandle fileHandle)
             throws IOException {
         return new FileInputStream(fileHandle.getFile());
+    }
+
+    @Override
+    protected void iterLastModified(
+        DirHandle dirHandle,
+        Iterable<PuzHandle> puzHandles,
+        BiConsumer<PuzHandle, Long> f
+    ) {
+        for (PuzHandle ph : puzHandles) {
+            long lastModified = ph.getPuzFileHandle().getFile().lastModified();
+            f.accept(ph, lastModified);
+        }
     }
 
     private File getRootDirectory() {

@@ -23,7 +23,10 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
@@ -84,6 +87,9 @@ public class MetaCache {
 
         @ColumnInfo
         public String title;
+
+        @ColumnInfo(defaultValue = "0")
+        public boolean isDummy;
     }
 
     @Dao
@@ -106,9 +112,22 @@ public class MetaCache {
 
         @Query("DELETE FROM cachedMeta WHERE mainFileUri IN (:mainFileUris)")
         public void delete(Uri... mainFileUris);
+
+        @Query("DELETE FROM cachedMeta")
+        public void deleteAll();
     }
 
-    @Database(entities = {CachedMeta.class}, version = 1)
+    private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL(
+                "ALTER TABLE cachedMeta" +
+                " ADD COLUMN isDummy INTEGER NOT NULL" +
+                " DEFAULT 0"
+            );
+        }
+    };
+
+    @Database(entities = {CachedMeta.class}, version = 2)
     public static abstract class CachedMetaDB extends RoomDatabase {
         private static CachedMetaDB instance = null;
 
@@ -118,7 +137,8 @@ public class MetaCache {
                     applicationContext,
                     CachedMetaDB.class,
                     "meta-cache-db"
-                ).build();
+                ).addMigrations(MIGRATION_1_2)
+                    .build();
             }
             return instance;
         }
@@ -140,6 +160,7 @@ public class MetaCache {
         public int getPercentFilled() { return dbRow.percentFilled; }
         public String getSource() { return dbRow.source; }
         public String getTitle() { return dbRow.title; }
+        public boolean isDummy() { return dbRow.isDummy; }
     }
 
     private Context applicationContext;
@@ -167,7 +188,8 @@ public class MetaCache {
      *
      * @return null if no entry in cache
      */
-    public MetaRecord getCache(Uri puzFileUri) {
+    public MetaRecord getCache(PuzHandle puzHandle) {
+        Uri puzFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
         CachedMeta cm = getDao().getCache(puzFileUri);
         return (cm == null) ? null : new MetaRecord(cm);
     }
@@ -178,7 +200,9 @@ public class MetaCache {
     public MetaRecord addRecord(PuzHandle puzHandle, PuzzleMeta meta) {
         CachedMeta cm = new CachedMeta();
         cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
-        cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
+        FileHandle mfh = puzHandle.getMetaFileHandle();
+        if (mfh != null)
+            cm.metaFileUri = fileHandler.getUri(mfh);
         cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
         cm.isUpdatable = meta.updatable;
         cm.date = meta.date;
@@ -186,6 +210,7 @@ public class MetaCache {
         cm.percentFilled = meta.percentFilled;
         cm.source = meta.source;
         cm.title = meta.title;
+        cm.isDummy = false;
         getDao().insertAll(cm);
         return new MetaRecord(cm);
     }
@@ -196,7 +221,9 @@ public class MetaCache {
     public MetaRecord addRecord(PuzHandle puzHandle, Puzzle puz) {
         CachedMeta cm = new CachedMeta();
         cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
-        cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
+        FileHandle mfh = puzHandle.getMetaFileHandle();
+        if (mfh != null)
+            cm.metaFileUri = fileHandler.getUri(mfh);
         cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
         cm.isUpdatable = puz.isUpdatable();
         cm.date = puz.getDate();
@@ -204,6 +231,33 @@ public class MetaCache {
         cm.percentFilled = puz.getPercentFilled();
         cm.source = puz.getSource();
         cm.title = puz.getTitle();
+        cm.isDummy = false;
+        getDao().insertAll(cm);
+        return new MetaRecord(cm);
+    }
+
+     /**
+     * Create a dummy cache for a file without meta
+     *
+     * @param lastModified a good estimate of the last modified time,
+     * usually the last modified time of the main puz file
+     */
+    public MetaRecord addDummyRecord(
+        PuzHandle puzHandle, LocalDate lastModified
+    ) {
+        CachedMeta cm = new CachedMeta();
+        cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
+        FileHandle mfh = puzHandle.getMetaFileHandle();
+        if (mfh != null)
+            cm.metaFileUri = fileHandler.getUri(mfh);
+        cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
+        cm.isUpdatable = false;
+        cm.date = lastModified;
+        cm.percentComplete = 0;
+        cm.percentFilled = 0;
+        cm.source = applicationContext.getString(R.string.unknown_source);
+        cm.title = null;
+        cm.isDummy = true;
         getDao().insertAll(cm);
         return new MetaRecord(cm);
     }

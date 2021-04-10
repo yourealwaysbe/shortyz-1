@@ -7,9 +7,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.Iterable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,15 +52,8 @@ public class FileHandlerSAF extends FileHandler {
 
     public static class Meta {
         private String name;
-        private long lastModified;
-
-        public Meta(String name, long lastModified) {
-            this.name = name;
-            this.lastModified = lastModified;
-        }
-
+        public Meta(String name) { this.name = name; }
         public String getName() { return name; }
-        public long getLastModified() { return lastModified; }
     }
 
     public static boolean isSAFSupported() {
@@ -109,10 +105,7 @@ public class FileHandlerSAF extends FileHandler {
     @Override
     public FileHandle getFileHandle(Uri uri) {
         Meta meta = getMetaFromUri(uri);
-        if (meta != null)
-            return new FileHandle(uri, meta);
-        else
-            return null;
+        return meta == null ? null : new FileHandle(uri, meta);
     }
 
     @Override
@@ -127,19 +120,11 @@ public class FileHandlerSAF extends FileHandler {
 
     @Override
     public Iterable<FileHandle> listFiles(DirHandle dir) {
-        ContentResolver resolver = getContentResolver();
-        Uri dirUri = dir.getUri();
-        String dirTreeId = DocumentsContract.getDocumentId(dirUri);
-        Uri dirTreeUri = DocumentsContract.buildDocumentUriUsingTree(
-            rootUri, dirTreeId
-        );
-
-        Uri childrenUri
-            = DocumentsContract.buildChildDocumentsUriUsingTree(
-                dirTreeUri, dirTreeId
-            );
+        Uri dirUri = getUri(dir);
+        Uri childrenUri = getDirChildrenUri(dir);
 
         ArrayList<FileHandle> files = new ArrayList<>();
+        ContentResolver resolver = getContentResolver();
 
         try (
             Cursor cursor = resolver.query(
@@ -147,7 +132,6 @@ public class FileHandlerSAF extends FileHandler {
                 new String[] {
                     Document.COLUMN_DOCUMENT_ID,
                     Document.COLUMN_DISPLAY_NAME,
-                    Document.COLUMN_LAST_MODIFIED,
                     Document.COLUMN_MIME_TYPE
                 },
                 null, null, null
@@ -156,15 +140,13 @@ public class FileHandlerSAF extends FileHandler {
             while (cursor.moveToNext()) {
                 String id = cursor.getString(0);
                 String name = cursor.getString(1);
-                long modified = cursor.getLong(2);
-                String mimeType = cursor.getString(3);
+                String mimeType = cursor.getString(2);
 
                 if (!Document.MIME_TYPE_DIR.equals(mimeType)) {
                     Uri uri = DocumentsContract.buildDocumentUriUsingTree(
                         dirUri, id
                     );
-
-                    files.add(new FileHandle(uri, new Meta(name, modified)));
+                    files.add(new FileHandle(uri, new Meta(name)));
                 }
             }
         }
@@ -181,11 +163,6 @@ public class FileHandlerSAF extends FileHandler {
     @Override
     public String getName(FileHandle f) {
         return f.getSAFMeta().getName();
-    }
-
-    @Override
-    public long getLastModified(FileHandle file) {
-        return file.getSAFMeta().getLastModified();
     }
 
     @Override
@@ -286,9 +263,7 @@ public class FileHandlerSAF extends FileHandler {
                 getContentResolver(), dir.getUri(), mimeType, fileName
             );
             if (uri != null) {
-                return new FileHandle(
-                    uri, new Meta(fileName, System.currentTimeMillis())
-                );
+                return new FileHandle(uri, new Meta(fileName));
             }
         } catch (FileNotFoundException e) {
             // fall through
@@ -488,6 +463,71 @@ public class FileHandlerSAF extends FileHandler {
         return fileHandler;
     }
 
+    @Override
+    protected void iterLastModified(
+        DirHandle dirHandle,
+        Iterable<PuzHandle> puzHandles,
+        BiConsumer<PuzHandle, Long> f
+    ) {
+        Uri childrenUri = getDirChildrenUri(dirHandle);
+
+        Map<String, PuzHandle> mapIDHandle = new HashMap<>();
+        for (PuzHandle ph : puzHandles) {
+            FileHandle pfh = ph.getPuzFileHandle();
+            String id = DocumentsContract.getDocumentId(getUri(pfh));
+            mapIDHandle.put(id, ph);
+        }
+
+        String[] ids = new String[mapIDHandle.size()];
+        int index = 0;
+        for (String id : mapIDHandle.keySet()) {
+            ids[index++] = id;
+        }
+
+        LOGGER.info("FORKYZ about to query last mod");
+        ContentResolver resolver = getContentResolver();
+        LOGGER.info("FORKYZ you got a " + resolver);
+        try (
+            Cursor cursor = resolver.query(
+                childrenUri,
+                new String[] {
+                    Document.COLUMN_DOCUMENT_ID,
+                    Document.COLUMN_LAST_MODIFIED,
+                },
+                Document.COLUMN_DOCUMENT_ID + " = ?", ids,
+                null
+            )
+        ) {
+            LOGGER.info("FORKYZ done query last mod");
+            while (cursor.moveToNext()) {
+                String id = cursor.getString(0);
+                long modified = cursor.getLong(1);
+
+                LOGGER.info("FORKYZ mod for " + id + " is " + modified);
+
+                if (mapIDHandle.get(id) == null)
+                    LOGGER.info("FORKYZ why null for " + id);
+                else
+                    f.accept(mapIDHandle.get(id), modified);
+            }
+            LOGGER.info("FORKYZ thems the results");
+        }
+    }
+
+    /**
+     * For ContentResolver queries, need a child-of Uri
+     */
+    private Uri getDirChildrenUri(DirHandle dirHandle) {
+        Uri dirUri = dirHandle.getUri();
+        String dirTreeId = DocumentsContract.getDocumentId(dirUri);
+        Uri dirTreeUri = DocumentsContract.buildDocumentUriUsingTree(
+            rootUri, dirTreeId
+        );
+        return DocumentsContract.buildChildDocumentsUriUsingTree(
+            dirTreeUri, dirTreeId
+        );
+    }
+
     private static boolean exists(ContentResolver resolver, Uri uri) {
         try (
             Cursor c = resolver.query(
@@ -507,15 +547,14 @@ public class FileHandlerSAF extends FileHandler {
             Cursor c = getContentResolver().query(
                 uri,
                 new String[] {
-                    Document.COLUMN_DISPLAY_NAME,
-                    Document.COLUMN_LAST_MODIFIED
+                    Document.COLUMN_DISPLAY_NAME
                 },
                 null, null, null
             )
         ) {
             if (c.getCount() > 0) {
                 c.moveToNext();
-                return new Meta(c.getString(0), c.getLong(1));
+                return new Meta(c.getString(0));
             } else {
                 return null;
             }

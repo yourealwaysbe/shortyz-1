@@ -336,26 +336,28 @@ public class BrowseActivityViewModel extends ViewModel {
                 PuzMetaFile refreshedMeta
                     = fileHandler.loadPuzMetaFile(refreshHandle);
 
-                List<PuzMetaFile> pmList = puzzleFiles.getValue();
+                if (refreshedMeta != null) {
+                    List<PuzMetaFile> pmList = puzzleFiles.getValue();
 
-                int index = -1;
-                for (PuzMetaFile pm : pmList) {
-                    index += 1;
-                    FileHandle pmPuzFileHandle
-                        = pm.getPuzHandle().getPuzFileHandle();
-                    if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
-                        pmList.set(index, refreshedMeta);
-                        changed = true;
+                    int index = -1;
+                    for (PuzMetaFile pm : pmList) {
+                        index += 1;
+                        FileHandle pmPuzFileHandle
+                            = pm.getPuzHandle().getPuzFileHandle();
+                        if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
+                            pmList.set(index, refreshedMeta);
+                            changed = true;
+                        }
                     }
+
+                    final boolean updateArray = changed;
+
+                    handler.post(() -> {
+                        isUIBusy.setValue(false);
+                        if (updateArray)
+                            puzzleFiles.setValue(pmList);
+                    });
                 }
-
-                final boolean updateArray = changed;
-
-                handler.post(() -> {
-                    isUIBusy.setValue(false);
-                    if (updateArray)
-                        puzzleFiles.setValue(pmList);
-                });
             } catch (IOException e) {
                 LOGGER.warning("Could not refresh puz meta " + e);
             }
