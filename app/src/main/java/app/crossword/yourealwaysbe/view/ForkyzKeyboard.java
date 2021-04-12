@@ -195,6 +195,7 @@ public class ForkyzKeyboard
         private void setupButton(
             View view, Context context, AttributeSet attrs
         ) {
+            view.setFocusable(false);
             TypedArray ta = context.obtainStyledAttributes(
                 attrs, R.styleable.ForkyzKey, 0, 0
             );
