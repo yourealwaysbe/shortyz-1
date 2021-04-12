@@ -54,6 +54,7 @@ public class ForkyzKeyboard
         Context context, AttributeSet attrs, int defStyleAttr
     ) {
         super(context, attrs, defStyleAttr);
+        setFocusable(false);
         init(context, attrs);
     }
 

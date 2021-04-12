@@ -110,21 +110,6 @@ public class ClueListActivity extends PuzzleActivity
             }
         });
 
-        // i know this is not needed because of onKeyUp / onKeyDown,
-        // but it seems cleaner to me that we don't rely on the
-        // keypress finding its way from the board to the activity
-        this.imageView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_UP)
-                    return ClueListActivity.this.onKeyUp(keyCode, event);
-                if (event.getAction() == KeyEvent.ACTION_DOWN)
-                    return ClueListActivity.this.onKeyDown(keyCode, event);
-                else
-                    return false;
-            }
-        });
-
         this.clueTabs = this.findViewById(R.id.clueListClueTabs);
         this.clueTabs.setBoard(getBoard());
 
@@ -197,13 +182,6 @@ public class ClueListActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Playboard board = getBoard();
-        Word w = board.getCurrentWord();
-        boolean across = w.across;
-        Position last = new Position(w.start.across
-                + (across ? (w.length - 1) : 0), w.start.down
-                + ((!across) ? (w.length - 1) : 0));
-
         switch (keyCode) {
         case KeyEvent.KEYCODE_MENU:
             return false;
@@ -212,67 +190,78 @@ public class ClueListActivity extends PuzzleActivity
             if (!keyboardManager.handleBackKey())
                 this.finish();
             return true;
+        }
 
-        case KeyEvent.KEYCODE_DPAD_LEFT:
-            if (!board.getHighlightLetter().equals(
-                    board.getCurrentWord().start)) {
-                if (across)
-                    board.moveLeft();
-                else
-                    board.moveUp();
+        if (getCurrentFocus() == imageView) {
+            Playboard board = getBoard();
+            Word w = board.getCurrentWord();
+            boolean across = w.across;
+            Position last = new Position(w.start.across
+                    + (across ? (w.length - 1) : 0), w.start.down
+                    + ((!across) ? (w.length - 1) : 0));
+
+            switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                if (!board.getHighlightLetter().equals(
+                        board.getCurrentWord().start)) {
+                    if (across)
+                        board.moveLeft();
+                    else
+                        board.moveUp();
+                }
+                return true;
+
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                if (!board.getHighlightLetter().equals(last)) {
+                    if (across)
+                        board.moveRight();
+                    else
+                        board.moveDown();
+                }
+                return true;
+
+            case KeyEvent.KEYCODE_DEL:
+                w = board.getCurrentWord();
+                board.deleteLetter();
+
+                Position p = board.getHighlightLetter();
+
+                if (!w.checkInWord(p.across, p.down)) {
+                    board.setHighlightLetter(w.start);
+                }
+
+                return true;
+
+            case KeyEvent.KEYCODE_SPACE:
+
+                if (!prefs.getBoolean("spaceChangesDirection", true)) {
+                    board.playLetter(' ');
+
+                    Position curr = board.getHighlightLetter();
+
+                    if (!board.getCurrentWord().equals(w)
+                            || (board.getBoxes()[curr.across][curr.down] == null)) {
+                        board.setHighlightLetter(last);
+                    }
+
+                    return true;
+                }
             }
-            return true;
 
-        case KeyEvent.KEYCODE_DPAD_RIGHT:
-            if (!board.getHighlightLetter().equals(last)) {
-                if (across)
-                    board.moveRight();
-                else
-                    board.moveDown();
-            }
-            return true;
+            char c = Character.toUpperCase(event.getDisplayLabel());
 
-        case KeyEvent.KEYCODE_DEL:
-            w = board.getCurrentWord();
-            board.deleteLetter();
+            if (PlayActivity.ALPHA.indexOf(c) != -1) {
+                board.playLetter(c);
 
-            Position p = board.getHighlightLetter();
-
-            if (!w.checkInWord(p.across, p.down)) {
-                board.setHighlightLetter(w.start);
-            }
-
-            return true;
-
-        case KeyEvent.KEYCODE_SPACE:
-
-            if (!prefs.getBoolean("spaceChangesDirection", true)) {
-                board.playLetter(' ');
-
-                Position curr = board.getHighlightLetter();
+                Position p = board.getHighlightLetter();
 
                 if (!board.getCurrentWord().equals(w)
-                        || (board.getBoxes()[curr.across][curr.down] == null)) {
+                        || (board.getBoxes()[p.across][p.down] == null)) {
                     board.setHighlightLetter(last);
                 }
 
                 return true;
             }
-        }
-
-        char c = Character.toUpperCase(event.getDisplayLabel());
-
-        if (PlayActivity.ALPHA.indexOf(c) != -1) {
-            board.playLetter(c);
-
-            Position p = board.getHighlightLetter();
-
-            if (!board.getCurrentWord().equals(w)
-                    || (board.getBoxes()[p.across][p.down] == null)) {
-                board.setHighlightLetter(last);
-            }
-
-            return true;
         }
 
         return super.onKeyUp(keyCode, event);
