@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class BrowseActivity extends ForkyzActivity {
     private static final int REQUEST_WRITE_STORAGE = 1002;
@@ -144,7 +145,7 @@ public class BrowseActivity extends ForkyzActivity {
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            selected.clear();
+            clearSelection();
             download.setVisibility(View.VISIBLE);
             actionMode = null;
         }
@@ -190,8 +191,7 @@ public class BrowseActivity extends ForkyzActivity {
         }
     }
 
-
-	@Override
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
@@ -248,52 +248,65 @@ public class BrowseActivity extends ForkyzActivity {
         this.setContentView(R.layout.browse);
         this.puzzleList = (RecyclerView) this.findViewById(R.id.puzzleList);
         this.puzzleList.setLayoutManager(new LinearLayoutManager(this));
-        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
-                ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END,
-                ItemTouchHelper.START | ItemTouchHelper.END) {
-
-            @Override
-            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                if (!(viewHolder instanceof FileViewHolder) || prefs.getBoolean("disableSwipe", false)) {
-                    return 0; // Don't swipe the headers.
+        ItemTouchHelper helper = new ItemTouchHelper(
+            new ItemTouchHelper.SimpleCallback(
+                0,
+                ItemTouchHelper.START | ItemTouchHelper.END
+            ) {
+                @Override
+                public int getSwipeDirs(
+                    RecyclerView recyclerView,
+                    RecyclerView.ViewHolder viewHolder
+                ) {
+                    if (!(viewHolder instanceof FileViewHolder)
+                            || prefs.getBoolean("disableSwipe", false)
+                            || !selected.isEmpty()) {
+                        return 0; // Don't swipe the headers.
+                    }
+                    return super.getSwipeDirs(recyclerView, viewHolder);
                 }
-                return super.getSwipeDirs(recyclerView, viewHolder);
-            }
 
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder viewHolder1) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                if(!selected.isEmpty()){
-                    return;
+                @Override
+                public boolean onMove(
+                    RecyclerView recyclerView,
+                    RecyclerView.ViewHolder viewHolder,
+                    RecyclerView.ViewHolder viewHolder1
+                ) {
+                    return false;
                 }
-                if(!(viewHolder instanceof FileViewHolder)){
-                    return;
-                }
-                PuzMetaFile puzMeta =
-                    (PuzMetaFile) ((FileViewHolder) viewHolder).itemView.getTag();
 
-                boolean delete = "DELETE".equals(
-                    prefs.getString("swipeAction", "DELETE")
-                );
-                if (delete) {
-                    model.deletePuzzle(puzMeta);
-                } else {
-                    if (model.getIsViewArchive()) {
-                        model.movePuzzle(
-                            puzMeta, archiveFolder, crosswordsFolder
-                        );
+                @Override
+                public void onSwiped(
+                    RecyclerView.ViewHolder viewHolder, int direction
+                ) {
+                    if(!selected.isEmpty()){
+                        return;
+                    }
+                    if(!(viewHolder instanceof FileViewHolder)){
+                        return;
+                    }
+                    PuzMetaFile puzMeta =
+                        (PuzMetaFile) ((FileViewHolder) viewHolder)
+                            .itemView.getTag();
+
+                    boolean delete = "DELETE".equals(
+                        prefs.getString("swipeAction", "DELETE")
+                    );
+                    if (delete) {
+                        model.deletePuzzle(puzMeta);
                     } else {
-                        model.movePuzzle(
-                            puzMeta, crosswordsFolder, archiveFolder
-                        );
+                        if (model.getIsViewArchive()) {
+                            model.movePuzzle(
+                                puzMeta, archiveFolder, crosswordsFolder
+                            );
+                        } else {
+                            model.movePuzzle(
+                                puzMeta, crosswordsFolder, archiveFolder
+                            );
+                        }
                     }
                 }
-            }
-        });
+            });
         helper.attachToRecyclerView(this.puzzleList);
         upgradePreferences();
         this.nm = (NotificationManager)
@@ -565,20 +578,25 @@ public class BrowseActivity extends ForkyzActivity {
 
     private void updateSelection(View v) {
         Object oTag = v.getTag();
-        if(oTag == null || !(oTag instanceof PuzMetaFile)){
+        if(!(oTag instanceof PuzMetaFile)) {
             return;
         }
-        PuzMetaFile tag = (PuzMetaFile) oTag;
-        if (selected.contains(tag)) {
+        PuzMetaFile pm = (PuzMetaFile) oTag;
+        if (selected.contains(pm)) {
             setListItemColor(v, false);
-            selected.remove(tag);
+            selected.remove(pm);
         } else {
             setListItemColor(v, true);
-            selected.add(tag);
+            selected.add(pm);
         }
         if (selected.isEmpty() && actionMode != null) {
             actionMode.finish();
         }
+    }
+
+    private void clearSelection() {
+        selected.clear();
+        currentAdapter.notifyDataSetChanged();
     }
 
     private boolean hasCurrentPuzzleListAdapter() {
@@ -591,8 +609,7 @@ public class BrowseActivity extends ForkyzActivity {
      * avoid doing so during loading)
      */
     private void setPuzzleListAdapter(
-        SeparatedRecyclerViewAdapter<FileViewHolder,
-        FileAdapter> adapter,
+        SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter> adapter,
         boolean showEmptyMsgs
     ) {
         currentAdapter = adapter;
@@ -674,7 +691,7 @@ public class BrowseActivity extends ForkyzActivity {
 
             view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public boolean onLongClick(View view) {
+                public boolean onLongClick(View view) {notifyDataSetChanged();
                     BrowseActivity.this.onItemLongClick(view);
                     return true;
                 }

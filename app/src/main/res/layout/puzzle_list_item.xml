@@ -6,8 +6,6 @@
     android:layout_height="72dp"
     android:background="@color/background_light"
     android:foreground="?attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"
 >
 <RelativeLayout
     android:layout_width="fill_parent"
