@@ -181,7 +181,29 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // handle on up, prevent focus changes here
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_DPAD_UP:
+        case KeyEvent.KEYCODE_DPAD_DOWN:
+        case KeyEvent.KEYCODE_DPAD_LEFT:
+        case KeyEvent.KEYCODE_DPAD_RIGHT:
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Playboard board = getBoard();
+        Word w = board.getCurrentWord();
+        boolean across = w.across;
+        Position last = new Position(w.start.across
+                + (across ? (w.length - 1) : 0), w.start.down
+                + ((!across) ? (w.length - 1) : 0));
+        int clueIdx = board.getCurrentClueIndex();
+        int cluesLen = board.getAcrossClues().length;
+
         switch (keyCode) {
         case KeyEvent.KEYCODE_MENU:
             return false;
@@ -191,78 +213,86 @@ public class ClueListActivity extends PuzzleActivity
             if (!keyboardManager.handleBackKey())
                 this.finish();
             return true;
-        }
 
-        if (getCurrentFocus() == imageView) {
-            Playboard board = getBoard();
-            Word w = board.getCurrentWord();
-            boolean across = w.across;
-            Position last = new Position(w.start.across
-                    + (across ? (w.length - 1) : 0), w.start.down
-                    + ((!across) ? (w.length - 1) : 0));
+        case KeyEvent.KEYCODE_DPAD_LEFT:
+            if (!board.getHighlightLetter().equals(
+                    board.getCurrentWord().start)) {
+                if (across)
+                    board.moveLeft();
+                else
+                    board.moveUp();
+            } else {
+                clueTabs.prevPage();
+                selectFirstClue();
+            }
+            return true;
 
-            switch (keyCode) {
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-                if (!board.getHighlightLetter().equals(
-                        board.getCurrentWord().start)) {
-                    if (across)
-                        board.moveLeft();
-                    else
-                        board.moveUp();
-                }
-                return true;
+        case KeyEvent.KEYCODE_DPAD_RIGHT:
+            if (!board.getHighlightLetter().equals(last)) {
+                if (across)
+                    board.moveRight();
+                else
+                    board.moveDown();
+            } else {
+                clueTabs.nextPage();
+                selectFirstClue();
+            }
+            return true;
 
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-                if (!board.getHighlightLetter().equals(last)) {
-                    if (across)
-                        board.moveRight();
-                    else
-                        board.moveDown();
-                }
-                return true;
+        case KeyEvent.KEYCODE_DPAD_UP:
+            int next = clueIdx == 0 ? cluesLen - 1 : clueIdx - 1;
+            clueTabs.setForceSnap(true);
+            board.jumpTo(next, across);
+            clueTabs.setForceSnap(false);
+            break;
 
-            case KeyEvent.KEYCODE_DEL:
-                w = board.getCurrentWord();
-                board.deleteLetter();
+        case KeyEvent.KEYCODE_DPAD_DOWN:
+            next = (clueIdx + 1) % cluesLen;
+            clueTabs.setForceSnap(true);
+            board.jumpTo(next, across);
+            clueTabs.setForceSnap(false);
+            break;
 
-                Position p = board.getHighlightLetter();
+        case KeyEvent.KEYCODE_DEL:
+            w = board.getCurrentWord();
+            board.deleteLetter();
 
-                if (!w.checkInWord(p.across, p.down)) {
-                    board.setHighlightLetter(w.start);
-                }
+            Position p = board.getHighlightLetter();
 
-                return true;
-
-            case KeyEvent.KEYCODE_SPACE:
-
-                if (!prefs.getBoolean("spaceChangesDirection", true)) {
-                    board.playLetter(' ');
-
-                    Position curr = board.getHighlightLetter();
-
-                    if (!board.getCurrentWord().equals(w)
-                            || (board.getBoxes()[curr.across][curr.down] == null)) {
-                        board.setHighlightLetter(last);
-                    }
-
-                    return true;
-                }
+            if (!w.checkInWord(p.across, p.down)) {
+                board.setHighlightLetter(w.start);
             }
 
-            char c = Character.toUpperCase(event.getDisplayLabel());
+            return true;
 
-            if (PlayActivity.ALPHA.indexOf(c) != -1) {
-                board.playLetter(c);
+        case KeyEvent.KEYCODE_SPACE:
+            if (!prefs.getBoolean("spaceChangesDirection", true)) {
+                board.playLetter(' ');
 
-                Position p = board.getHighlightLetter();
+                Position curr = board.getHighlightLetter();
 
                 if (!board.getCurrentWord().equals(w)
-                        || (board.getBoxes()[p.across][p.down] == null)) {
+                        || (board.getBoxes()[curr.across][curr.down] == null)) {
                     board.setHighlightLetter(last);
                 }
 
                 return true;
             }
+        }
+
+        char c = Character.toUpperCase(event.getDisplayLabel());
+
+        if (PlayActivity.ALPHA.indexOf(c) != -1) {
+            board.playLetter(c);
+
+            Position p = board.getHighlightLetter();
+
+            if (!board.getCurrentWord().equals(w)
+                    || (board.getBoxes()[p.across][p.down] == null)) {
+                board.setHighlightLetter(last);
+            }
+
+            return true;
         }
 
         return super.onKeyUp(keyCode, event);
@@ -332,5 +362,19 @@ public class ClueListActivity extends PuzzleActivity
     private void launchNotes() {
         Intent i = new Intent(this, NotesActivity.class);
         ClueListActivity.this.startActivity(i);
+    }
+
+    private void selectFirstClue() {
+        switch (clueTabs.getCurrentPageType()) {
+        case ACROSS:
+            getBoard().jumpTo(0, true);
+            break;
+        case DOWN:
+            getBoard().jumpTo(0, false);
+            break;
+        case HISTORY:
+            // nothing to do
+            break;
+        }
     }
 }

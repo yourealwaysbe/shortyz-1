@@ -47,7 +47,7 @@ public class ClueTabs extends LinearLayout
     private static final int DOWN_PAGE_INDEX = 1;
     private static final int HISTORY_PAGE_INDEX = 2;
 
-    private static enum PageType {
+    public static enum PageType {
         ACROSS, DOWN, HISTORY;
     }
 
@@ -55,6 +55,7 @@ public class ClueTabs extends LinearLayout
     private Playboard board;
     private boolean listening = false;
     private Set<ClueTabsListener> listeners = WeakSet.buildSet();
+    private boolean forceSnap = false;
 
     public static interface ClueTabsListener {
         /**
@@ -170,6 +171,40 @@ public class ClueTabs extends LinearLayout
         }
     }
 
+    public PageType getCurrentPageType() {
+        if (viewPager != null) {
+            int curPage = viewPager.getCurrentItem();
+            ClueTabsPagerAdapter adapter
+                = (ClueTabsPagerAdapter) viewPager.getAdapter();
+            return adapter.getPageType(curPage);
+        }
+        return null;
+    }
+
+    public void nextPage() {
+        if (viewPager != null) {
+            int curPage = viewPager.getCurrentItem();
+            int numPages = viewPager.getAdapter().getItemCount();
+            viewPager.setCurrentItem((curPage + 1) % numPages, false);
+        }
+    }
+
+    public void prevPage() {
+        if (viewPager != null) {
+            int curPage = viewPager.getCurrentItem();
+            int numPages = viewPager.getAdapter().getItemCount();
+            int nextPage = curPage == 0 ? numPages - 1 : curPage - 1;
+            viewPager.setCurrentItem(nextPage, false);
+        }
+    }
+
+    /**
+     * Always snap to clue if true, else follow prefs
+     */
+    public void setForceSnap(boolean forceSnap) {
+        this.forceSnap = forceSnap;
+    }
+
     /**
      * Refresh view to match current board state
      */
@@ -215,18 +250,22 @@ public class ClueTabs extends LinearLayout
         if (viewPager != null) {
             viewPager.getAdapter().notifyDataSetChanged();
 
-            SharedPreferences prefs
-                = PreferenceManager.getDefaultSharedPreferences(
-                    ClueTabs.this.getContext()
-                );
-
-            if (prefs.getBoolean("snapClue", false)) {
+            if (isSnapToClue()) {
                 if (board.isAcross())
                     viewPager.setCurrentItem(ACROSS_PAGE_INDEX);
                 else
                     viewPager.setCurrentItem(DOWN_PAGE_INDEX);
             }
         }
+    }
+
+    private boolean isSnapToClue() {
+        SharedPreferences prefs
+            = PreferenceManager.getDefaultSharedPreferences(
+                getContext()
+            );
+
+        return forceSnap || prefs.getBoolean("snapClue", false);
     }
 
     private void notifyListenersClueClick(Clue clue,
@@ -276,16 +315,19 @@ public class ClueTabs extends LinearLayout
         @Override
         public void onBindViewHolder(ClueListHolder holder, int position) {
             Playboard board = ClueTabs.this.board;
+            holder.setContents(getPageType(position));
+        }
+
+        public PageType getPageType(int position) {
             switch (position) {
             case ACROSS_PAGE_INDEX:
-                holder.setContents(PageType.ACROSS);
-                break;
+                return PageType.ACROSS;
             case DOWN_PAGE_INDEX:
-                holder.setContents(PageType.DOWN);
-                break;
+                return PageType.DOWN;
             case HISTORY_PAGE_INDEX:
-                holder.setContents(PageType.HISTORY);
-                break;
+                return PageType.HISTORY;
+            default:
+                return null;
             }
         }
 
@@ -351,13 +393,7 @@ public class ClueTabs extends LinearLayout
             clueListAdapter.notifyDataSetChanged();
 
             if (board != null) {
-                SharedPreferences prefs
-                    = PreferenceManager.getDefaultSharedPreferences(
-                        ClueTabs.this.getContext()
-                    );
-
-                if (prefs.getBoolean("snapClue", false)) {
-
+                if (isSnapToClue()) {
                     switch (pageType) {
                     case ACROSS:
                     case DOWN:
