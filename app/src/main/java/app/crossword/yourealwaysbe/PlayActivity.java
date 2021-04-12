@@ -512,7 +512,8 @@ public class PlayActivity extends PuzzleActivity
 
         // handle back separately as it we shouldn't block a keyboard
         // hide because of it
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        if (keyCode == KeyEvent.KEYCODE_BACK
+                || keyCode == KeyEvent.KEYCODE_ESCAPE) {
             if (!keyboardManager.handleBackKey()) {
                 this.finish();
             }

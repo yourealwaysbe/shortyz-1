@@ -187,6 +187,7 @@ public class ClueListActivity extends PuzzleActivity
             return false;
 
         case KeyEvent.KEYCODE_BACK:
+        case KeyEvent.KEYCODE_ESCAPE:
             if (!keyboardManager.handleBackKey())
                 this.finish();
             return true;

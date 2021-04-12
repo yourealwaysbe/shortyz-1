@@ -331,6 +331,7 @@ public class NotesActivity extends PuzzleActivity {
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
+        case KeyEvent.KEYCODE_ESCAPE:
             if (!keyboardManager.handleBackKey())
                 this.finish();
             return true;

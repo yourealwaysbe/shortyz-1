@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -151,6 +152,26 @@ public class BrowseActivity extends ForkyzActivity {
         }
     };
     private int primaryTextColor;
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // for parity with onKeyUp
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_ESCAPE:
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_ESCAPE:
+            finish();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
