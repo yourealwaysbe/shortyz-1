@@ -47,7 +47,6 @@ import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
 import app.crossword.yourealwaysbe.view.CircleProgressBar;
 import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
-import app.crossword.yourealwaysbe.view.recycler.RecyclerItemClickListener;
 import app.crossword.yourealwaysbe.view.recycler.RemovableRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.SeparatedRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.ShowHideOnScroll;
@@ -65,7 +64,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickListener.OnItemClickListener{
+public class BrowseActivity extends ForkyzActivity {
     private static final int REQUEST_WRITE_STORAGE = 1002;
 
     private static final Logger LOGGER
@@ -249,7 +248,6 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         this.setContentView(R.layout.browse);
         this.puzzleList = (RecyclerView) this.findViewById(R.id.puzzleList);
         this.puzzleList.setLayoutManager(new LinearLayoutManager(this));
-        this.puzzleList.addOnItemTouchListener(new RecyclerItemClickListener(this, this.puzzleList, this));
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END,
                 ItemTouchHelper.START | ItemTouchHelper.END) {
@@ -540,8 +538,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         // do nothing now no keyboard
     }
 
-    @Override
-    public void onItemClick(final View v, int position) {
+    public void onItemClick(final View v) {
         if (!(v.getTag() instanceof PuzMetaFile)) {
             return;
         }
@@ -556,8 +553,7 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
         }
     }
 
-    @Override
-    public void onItemLongClick(View v, int position) {
+    public void onItemLongClick(View v) {
         if (!(v.getTag() instanceof PuzMetaFile)) {
             return;
         }
@@ -669,6 +665,20 @@ public class BrowseActivity extends ForkyzActivity implements RecyclerItemClickL
             View view = holder.itemView;
             PuzMetaFile pm = objects.get(position);
             view.setTag(pm);
+
+            view.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    BrowseActivity.this.onItemClick(view);
+                }
+            });
+
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    BrowseActivity.this.onItemLongClick(view);
+                    return true;
+                }
+            });
 
             TextView date = (TextView) view.findViewById(R.id.puzzle_date);
 
