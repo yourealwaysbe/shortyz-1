@@ -39,6 +39,9 @@
                 android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:nextFocusForward="@+id/scratchMiniboard"
+                android:nextFocusDown="@+id/scratchMiniboard"
+                android:nextFocusUp="@+id/anagramSolution"
             >
                 <requestFocus/>
             </app.crossword.yourealwaysbe.view.ScrollingImageView>
@@ -55,6 +58,8 @@
                 android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:nextFocusForward="@+id/notesBox"
+                android:nextFocusDown="@+id/notesBox"
             />
             <TextView
                 android:id="@+id/notesLab"
@@ -73,6 +78,8 @@
                 android:inputType="text|textMultiLine"
                 android:autofillHints=".AUTOFILL_HINT_NOT_APPLICABLE"
                 android:hint="@string/general_clue_notes"
+                android:nextFocusForward="@+id/anagramSource"
+                android:nextFocusDown="@+id/anagramSource"
             />
             <TextView
                 android:id="@+id/anagramSourceLab"
@@ -87,6 +94,8 @@
                 android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:nextFocusForward="@+id/anagramSolution"
+                android:nextFocusDown="@+id/anagramSolution"
             />
             <TextView
                 android:id="@+id/anagramSolutionLab"
@@ -101,6 +110,8 @@
                 android:layout_height="48dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:nextFocusForward="@+id/miniboard"
+                android:nextFocusDown="@+id/miniboard"
             />
         </LinearLayout>
     </ScrollView>
