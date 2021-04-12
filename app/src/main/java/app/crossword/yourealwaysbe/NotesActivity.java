@@ -375,6 +375,7 @@ public class NotesActivity extends PuzzleActivity {
 
     private boolean onMiniboardKeyUp(int keyCode, KeyEvent event) {
         Word w = getBoard().getCurrentWord();
+        boolean across = w.across;
         Position last = new Position(w.start.across
                 + (w.across ? (w.length - 1) : 0), w.start.down
                 + ((!w.across) ? (w.length - 1) : 0));
@@ -387,7 +388,10 @@ public class NotesActivity extends PuzzleActivity {
 
             if (!getBoard().getHighlightLetter().equals(
                     getBoard().getCurrentWord().start)) {
-                getBoard().moveLeft();
+                if (across)
+                    getBoard().moveLeft();
+                else
+                    getBoard().moveUp();
             }
 
             return true;
@@ -395,7 +399,10 @@ public class NotesActivity extends PuzzleActivity {
         case KeyEvent.KEYCODE_DPAD_RIGHT:
 
             if (!getBoard().getHighlightLetter().equals(last)) {
-                getBoard().moveRight();
+                if (across)
+                    getBoard().moveRight();
+                else
+                    getBoard().moveDown();
             }
 
             return true;

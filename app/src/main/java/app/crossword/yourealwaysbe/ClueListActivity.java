@@ -199,9 +199,10 @@ public class ClueListActivity extends PuzzleActivity
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Playboard board = getBoard();
         Word w = board.getCurrentWord();
+        boolean across = w.across;
         Position last = new Position(w.start.across
-                + (w.across ? (w.length - 1) : 0), w.start.down
-                + ((!w.across) ? (w.length - 1) : 0));
+                + (across ? (w.length - 1) : 0), w.start.down
+                + ((!across) ? (w.length - 1) : 0));
 
         switch (keyCode) {
         case KeyEvent.KEYCODE_MENU:
@@ -215,13 +216,19 @@ public class ClueListActivity extends PuzzleActivity
         case KeyEvent.KEYCODE_DPAD_LEFT:
             if (!board.getHighlightLetter().equals(
                     board.getCurrentWord().start)) {
-                board.moveLeft();
+                if (across)
+                    board.moveLeft();
+                else
+                    board.moveUp();
             }
             return true;
 
         case KeyEvent.KEYCODE_DPAD_RIGHT:
             if (!board.getHighlightLetter().equals(last)) {
-                board.moveRight();
+                if (across)
+                    board.moveRight();
+                else
+                    board.moveDown();
             }
             return true;
 
