@@ -132,6 +132,7 @@ public class ForkyzKeyboard
 
     private void onKeyDown(final int keyId) {
         countKeyDown();
+        sendKeyDown(keyId);
 
         final Timer timer = new Timer();
         timer.schedule(new TimerTask() {
