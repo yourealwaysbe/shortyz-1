@@ -3,6 +3,10 @@
 Forkyz is an unofficial fork of [Shortyz](https://github.com/kebernet/shortyz/)
 implementing my own customisations.
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/app.crossword.yourealwaysbe.forkyz/)
+
 ## Main Changes
 
 Additions:
