@@ -328,6 +328,16 @@ public class NotesActivity extends PuzzleActivity {
         this.render();
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // for parity with onKeyUp
+        switch (keyCode) {
+        case KeyEvent.KEYCODE_BACK:
+        case KeyEvent.KEYCODE_ESCAPE:
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
@@ -335,9 +345,8 @@ public class NotesActivity extends PuzzleActivity {
             if (!keyboardManager.handleBackKey())
                 this.finish();
             return true;
-        default:
-            return super.onKeyUp(keyCode, event);
         }
+        return super.onKeyUp(keyCode, event);
     }
 
     public void onPause() {

@@ -182,15 +182,24 @@ public class ClueListActivity extends PuzzleActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // handle on up, prevent focus changes here
+        // for parity with onKeyUp
         switch (keyCode) {
+        case KeyEvent.KEYCODE_BACK:
+        case KeyEvent.KEYCODE_ESCAPE:
         case KeyEvent.KEYCODE_DPAD_UP:
         case KeyEvent.KEYCODE_DPAD_DOWN:
         case KeyEvent.KEYCODE_DPAD_LEFT:
         case KeyEvent.KEYCODE_DPAD_RIGHT:
+        case KeyEvent.KEYCODE_DEL:
+        case KeyEvent.KEYCODE_SPACE:
             return true;
         }
-        return false;
+
+        char c = Character.toUpperCase(event.getDisplayLabel());
+        if (PlayActivity.ALPHA.indexOf(c) != -1)
+            return true;
+
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -205,9 +214,6 @@ public class ClueListActivity extends PuzzleActivity
         int cluesLen = board.getAcrossClues().length;
 
         switch (keyCode) {
-        case KeyEvent.KEYCODE_MENU:
-            return false;
-
         case KeyEvent.KEYCODE_BACK:
         case KeyEvent.KEYCODE_ESCAPE:
             if (!keyboardManager.handleBackKey())
