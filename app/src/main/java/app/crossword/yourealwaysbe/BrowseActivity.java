@@ -300,15 +300,13 @@ public class BrowseActivity extends ForkyzActivity {
                 public void onSwiped(
                     RecyclerView.ViewHolder viewHolder, int direction
                 ) {
-                    if(!selected.isEmpty()){
+                    if(!selected.isEmpty())
                         return;
-                    }
-                    if(!(viewHolder instanceof FileViewHolder)){
+                    if(!(viewHolder instanceof FileViewHolder))
                         return;
-                    }
-                    PuzMetaFile puzMeta =
-                        (PuzMetaFile) ((FileViewHolder) viewHolder)
-                            .itemView.getTag();
+
+                    PuzMetaFile puzMeta
+                        = ((FileViewHolder) viewHolder).getPuzMetaFile();
 
                     boolean delete = "DELETE".equals(
                         prefs.getString("swipeAction", "DELETE")
@@ -572,43 +570,30 @@ public class BrowseActivity extends ForkyzActivity {
         // do nothing now no keyboard
     }
 
-    public void onItemClick(final View v) {
-        if (!(v.getTag() instanceof PuzMetaFile)) {
-            return;
-        }
+    public void onItemClick(final View v, final PuzMetaFile puzMeta) {
         if (!selected.isEmpty()) {
-            updateSelection(v);
+            updateSelection(v, puzMeta);
         } else {
-            PuzMetaFile selectedPuzMeta = ((PuzMetaFile) v.getTag());
-            if (selectedPuzMeta == null) {
+            if (puzMeta == null)
                 return;
-            }
-            model.loadPuzzle(selectedPuzMeta);
+            model.loadPuzzle(puzMeta);
         }
     }
 
-    public void onItemLongClick(View v) {
-        if (!(v.getTag() instanceof PuzMetaFile)) {
-            return;
-        }
+    public void onItemLongClick(View v, PuzMetaFile puzMeta) {
         if (actionMode == null) {
             startSupportActionMode(actionModeCallback);
         }
-        updateSelection(v);
+        updateSelection(v, puzMeta);
     }
 
-    private void updateSelection(View v) {
-        Object oTag = v.getTag();
-        if(!(oTag instanceof PuzMetaFile)) {
-            return;
-        }
-        PuzMetaFile pm = (PuzMetaFile) oTag;
-        if (selected.contains(pm)) {
+    private void updateSelection(View v, PuzMetaFile puzMeta) {
+        if (selected.contains(puzMeta)) {
             setListItemColor(v, false);
-            selected.remove(pm);
+            selected.remove(puzMeta);
         } else {
             setListItemColor(v, true);
-            selected.add(pm);
+            selected.add(puzMeta);
         }
         if (selected.isEmpty() && actionMode != null) {
             actionMode.finish();
@@ -702,18 +687,19 @@ public class BrowseActivity extends ForkyzActivity {
         public void onBindViewHolder(FileViewHolder holder, int position) {
             View view = holder.itemView;
             PuzMetaFile pm = objects.get(position);
-            view.setTag(pm);
+
+            holder.setPuzMetaFile(pm);
 
             view.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View view) {
-                    BrowseActivity.this.onItemClick(view);
+                    BrowseActivity.this.onItemClick(view, pm);
                 }
             });
 
             view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {notifyDataSetChanged();
-                    BrowseActivity.this.onItemLongClick(view);
+                    BrowseActivity.this.onItemLongClick(view, pm);
                     return true;
                 }
             });
@@ -756,8 +742,18 @@ public class BrowseActivity extends ForkyzActivity {
     }
 
     private class FileViewHolder extends RecyclerView.ViewHolder {
+        private PuzMetaFile puzMetaFile;
+
         public FileViewHolder(View itemView) {
             super(itemView);
+        }
+
+        public void setPuzMetaFile(PuzMetaFile puzMetaFile) {
+            this.puzMetaFile = puzMetaFile;
+        }
+
+        public PuzMetaFile getPuzMetaFile() {
+            return puzMetaFile;
         }
     }
 
