@@ -87,8 +87,6 @@ public class BrowseActivity extends ForkyzActivity {
     private NotificationManager nm;
     private boolean hasWritePermissions;
     private FloatingActionButton download;
-    private int highlightColor;
-    private int normalColor;
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
     private View pleaseWaitView;
@@ -151,7 +149,6 @@ public class BrowseActivity extends ForkyzActivity {
             actionMode = null;
         }
     };
-    private int primaryTextColor;
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -204,11 +201,9 @@ public class BrowseActivity extends ForkyzActivity {
 
     private void setListItemColor(View v, boolean selected){
         if(selected) {
-            v.setBackgroundColor(highlightColor);
-            ((TextView) v.findViewById(R.id.puzzle_name)).setTextColor(Color.WHITE);
+            v.setSelected(true);
         } else {
-            v.setBackgroundColor(normalColor);
-            ((TextView) v.findViewById(R.id.puzzle_name)).setTextColor(primaryTextColor);
+            v.setSelected(false);
         }
     }
 
@@ -356,10 +351,6 @@ public class BrowseActivity extends ForkyzActivity {
             download.setImageBitmap(createBitmap("icons1.ttf", ","));
             setPuzzleListOnTouchListener();
         }
-
-        highlightColor = ContextCompat.getColor(this, R.color.accent);
-        normalColor = ContextCompat.getColor(this, R.color.background_light);
-        primaryTextColor = ContextCompat.getColor(this, R.color.textColorPrimary);
 
         if (ForkyzApplication.getInstance().isMissingWritePermission()) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
