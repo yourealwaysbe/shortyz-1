@@ -79,7 +79,6 @@ public class PlayActivity extends PuzzleActivity
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
     private TextView clue;
-    private boolean fitToScreen;
 
     private boolean showErrors = false;
     private boolean scratchMode = false;
@@ -252,20 +251,7 @@ public class PlayActivity extends PuzzleActivity
                 try {
                     if (prefs.getBoolean("doubleTap", false)
                             && ((System.currentTimeMillis() - lastTap) < 300)) {
-                        if (fitToScreen) {
-                            getRenderer().setScale(prefs.getFloat(SCALE, 1F));
-                            boardView.setCurrentScale(1F);
-                            getBoard().setHighlightLetter(getRenderer().findBox(e));
-                        } else {
-                            int w = boardView.getWidth();
-                            int h = boardView.getHeight();
-                            float scale = getRenderer().fitTo((w < h) ? w : h);
-                            boardView.setCurrentScale(scale);
-                            render(true);
-                            boardView.scrollTo(0, 0);
-                        }
-
-                        fitToScreen = !fitToScreen;
+                        fitToScreen();
                     } else {
                         Position p = getRenderer().findBox(e);
                         if (getBoard().isInWord(p)) {
@@ -346,33 +332,11 @@ public class PlayActivity extends PuzzleActivity
 
         this.boardView.setFocusable(true);
         this.boardView.setScaleListener(new ScaleListener() {
-            TimerTask t;
-            Timer renderTimer = new Timer();
-
             public void onScale(float newScale, final Point center) {
-                //fitToScreen = false;
-
-                if (t != null) {
-                    t.cancel();
-                }
-
-                renderTimer.purge();
-                t = new TimerTask() {
-                    @Override
-                    public void run() {
-                        handler.post(() -> {
-                            int w = boardView.getImageView().getWidth();
-                            int h = boardView.getImageView().getHeight();
-                            float scale = getRenderer().fitTo((w < h) ? w : h);
-                            prefs.edit()
-                                    .putFloat(SCALE,
-                                            scale)
-                                    .apply();
-                            getBoard().setHighlightLetter(getRenderer().findBox(center));
-                        });
-                    }
-                };
-                renderTimer.schedule(t, 500);
+                int w = boardView.getImageView().getWidth();
+                int h = boardView.getImageView().getHeight();
+                float scale = getRenderer().fitTo((w < h) ? w : h);
+                prefs.edit().putFloat(SCALE, scale).apply();
                 lastTap = System.currentTimeMillis();
             }
         });
@@ -660,7 +624,6 @@ public class PlayActivity extends PuzzleActivity
                 {
                     float newScale = getRenderer().zoomIn();
                     this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    this.fitToScreen = false;
                     boardView.setCurrentScale(newScale);
                 }
                 this.render(true);
@@ -671,7 +634,6 @@ public class PlayActivity extends PuzzleActivity
                 {
                     float newScale = getRenderer().zoomInMax();
                     this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    this.fitToScreen = false;
                     boardView.setCurrentScale(newScale);
                 }
                 this.render(true);
@@ -682,7 +644,6 @@ public class PlayActivity extends PuzzleActivity
                 {
                     float newScale = getRenderer().zoomOut();
                     this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    this.fitToScreen = false;
                     boardView.setCurrentScale(newScale);
                 }
                 this.render(true);

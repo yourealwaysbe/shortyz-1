@@ -121,8 +121,8 @@
     <string name="space_change_dir_desc">Spacebar changed direction rather than blanking the box.</string>
     <string name="enter_changes_direction">Enter Changes Direction</string>
     <string name="enter_changes_direction_desc">Enter changes direction rather than moving to the next clue.</string>
-    <string name="double_tap_zoom">Double Tap Zoom</string>
-    <string name="double_tap_zoom_desc">Double tap toggles between fit to screen, and your default zoom.</string>
+    <string name="double_tap_zoom">Double Tap Fit to Screen</string>
+    <string name="double_tap_zoom_desc">Double tap changes zoom to fit to screen.</string>
     <string name="show_timer">Show Timer</string>
     <string name="show_timer_desc">Shows your puzzle time.\nYou must leave and re-enter a puzzle to apply.</string>
     <string name="full_screen">Full Screen</string>
