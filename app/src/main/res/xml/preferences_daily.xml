@@ -27,11 +27,6 @@
         android:key="downloadLat"
     />
     <androidx.preference.CheckBoxPreference
-        android:title="@string/thinks_com"
-        android:defaultValue="true"
-        android:key="downloadThinks"
-    />
-    <androidx.preference.CheckBoxPreference
         android:title="@string/universal_crossword"
         android:defaultValue="true"
         android:key="downloadUniversal"
