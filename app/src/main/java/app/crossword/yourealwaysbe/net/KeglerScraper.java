@@ -6,7 +6,8 @@ public class KeglerScraper extends AbstractPageScraper {
     public KeglerScraper() {
         super(
             "https://kegler.gitlab.io/Block_style/index.html",
-            "Kegler's Kryptics"
+            "Kegler's Kryptics",
+            "https://kegler.gitlab.io/"
         );
     }
 }

@@ -415,30 +415,15 @@ public class PlayActivity extends PuzzleActivity
             }
         }
 
+        if (puz == null || puz.getSupportUrl() == null) {
+            MenuItem support = menu.findItem(R.id.play_menu_support_source);
+            support.setVisible(false);
+            support.setEnabled(false);
+        }
+
         menu.findItem(R.id.play_menu_scratch_mode).setChecked(this.scratchMode);
 
-        if (getBoard() == null) {
-            setMenuVisibility(menu, false);
-        }
-
         return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        setMenuVisibility(menu, getBoard() != null);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    private void setMenuVisibility(Menu menu, boolean visible) {
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            int id = item.getItemId();
-
-            // don't mess with back button
-            if (id != android.R.id.home)
-                menu.getItem(i).setVisible(visible);
-        }
     }
 
     private SpannableString createSpannableForMenu(String value){
@@ -692,6 +677,9 @@ public class PlayActivity extends PuzzleActivity
                 this.setClueSize(
                     getResources().getInteger(R.integer.large_clue_text_size)
                 );
+                return true;
+            } else if (id == R.id.play_menu_support_source) {
+                actionSupportSource();
                 return true;
             }
         }
@@ -1191,6 +1179,18 @@ public class PlayActivity extends PuzzleActivity
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                         WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
+        }
+    }
+
+    private void actionSupportSource() {
+        Puzzle puz = getPuzzle();
+        if (puz != null) {
+            String supportUrl = puz.getSupportUrl();
+            if (supportUrl != null) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(supportUrl));
+                startActivity(i);
             }
         }
     }

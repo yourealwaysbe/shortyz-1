@@ -33,6 +33,8 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
  */
 public class IndependentDailyCrypticDownloader extends AbstractDownloader {
     private static final String NAME = "The Independent's Cryptic Crossword";
+    private static final String SUPPORT_URL
+        = "https://www.independent.co.uk/donations";
 
     public IndependentDailyCrypticDownloader() {
         super(
@@ -48,6 +50,11 @@ public class IndependentDailyCrypticDownloader extends AbstractDownloader {
 
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return SUPPORT_URL;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

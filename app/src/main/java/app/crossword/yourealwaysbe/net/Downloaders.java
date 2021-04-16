@@ -232,6 +232,7 @@ public class Downloaders {
                 meta.date = date;
                 meta.source = d.getName();
                 meta.sourceUrl = d.sourceUrl(date);
+                meta.supportUrl = d.getSupportUrl();
                 meta.updatable = updatable;
 
                 boolean processed = processDownloadedPuzzle(
@@ -266,6 +267,7 @@ public class Downloaders {
             puz.setDate(meta.date);
             puz.setSource(meta.source);
             puz.setSourceUrl(meta.sourceUrl);
+            puz.setSupportUrl(meta.supportUrl);
             puz.setUpdatable(meta.updatable);
 
             fileHandler.saveCreateMeta(puz, downloadDir, downloaded);
@@ -351,24 +353,43 @@ public class Downloaders {
         }
 
         if (prefs.getBoolean("downloadLat", true)) {
-            downloaders.add(new UclickDownloader("tmcal", "Los Angeles Times", "Rich Norris", Downloader.DATE_NO_SUNDAY));
+            downloaders.add(new UclickDownloader(
+                "tmcal",
+                "Los Angeles Times",
+                "Rich Norris",
+                "https://www.latimes.com/subscriptions/digital.html",
+                Downloader.DATE_NO_SUNDAY
+            ));
         }
 
         if (prefs.getBoolean("downloadNewsday", true)) {
             downloaders.add(new BrainsOnlyDownloader(
                 "https://brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=",
-                "Newsday"
+                "Newsday",
+                // i can't browse this site for a more specific URL
+                // (GDPR)
+                "https://www.newsday.com"
             ));
         }
 
         if (prefs.getBoolean("downloadUSAToday", true)) {
-            downloaders.add(new UclickDownloader("usaon", "USA Today",
-                    "USA Today", Downloader.DATE_NO_SUNDAY));
+            downloaders.add(new UclickDownloader(
+                "usaon",
+                "USA Today",
+                "USA Today",
+                "https://subscribe.usatoday.com",
+                Downloader.DATE_NO_SUNDAY
+            ));
         }
 
         if (prefs.getBoolean("downloadUniversal", true)) {
-            downloaders.add(new UclickDownloader("fcx", "Universal Crossword",
-                    "uclick LLC", Downloader.DATE_DAILY));
+            downloaders.add(new UclickDownloader(
+                "fcx",
+                "Universal Crossword",
+                "uclick LLC",
+                "http://www.uclick.com/client/spi/fcx/",
+                Downloader.DATE_DAILY
+            ));
         }
 
         return downloaders;

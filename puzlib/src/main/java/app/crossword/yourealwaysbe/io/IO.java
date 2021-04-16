@@ -7,6 +7,7 @@ import app.crossword.yourealwaysbe.io.versions.IOVersion3;
 import app.crossword.yourealwaysbe.io.versions.IOVersion4;
 import app.crossword.yourealwaysbe.io.versions.IOVersion5;
 import app.crossword.yourealwaysbe.io.versions.IOVersion6;
+import app.crossword.yourealwaysbe.io.versions.IOVersion7;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
@@ -217,31 +218,7 @@ public class IO {
     public static void readCustom(Puzzle puz, DataInputStream is)
             throws IOException {
         int version = is.read();
-        IOVersion v;
-
-        switch (version) {
-            case 1:
-                v = new IOVersion1();
-                break;
-            case 2:
-                v = new IOVersion2();
-                break;
-            case 3:
-                v = new IOVersion3();
-                break;
-            case 4:
-                v = new IOVersion4();
-                break;
-            case 5:
-                v = new IOVersion5();
-                break;
-            case 6:
-                v = new IOVersion6();
-                break;
-            default:
-                throw new IOException("UnknownVersion " + version);
-        }
-
+        IOVersion v = getIOVersion(version);
         v.read(puz, is);
     }
 
@@ -290,33 +267,8 @@ public class IO {
 
     public static PuzzleMeta readMeta(DataInputStream is) throws IOException {
         int version = is.read();
-        IOVersion v;
-
-        switch (version) {
-            case 1:
-                v = new IOVersion1();
-                break;
-            case 2:
-                v = new IOVersion2();
-                break;
-            case 3:
-                v = new IOVersion3();
-                break;
-            case 4:
-                v = new IOVersion4();
-                break;
-            case 5:
-                v = new IOVersion5();
-                break;
-            case 6:
-                v = new IOVersion6();
-                break;
-            default:
-                throw new IOException("UnknownVersion  " + version);
-        }
-
+        IOVersion v = getIOVersion(version);
         PuzzleMeta m = v.readMeta(is);
-
         return m;
     }
 
@@ -527,8 +479,8 @@ public class IO {
 
     public static void writeCustom(Puzzle puz, DataOutputStream os)
             throws IOException {
-        os.write(6);
-        IOVersion v = new IOVersion6();
+        os.write(7);
+        IOVersion v = new IOVersion7();
         v.write(puz, os);
     }
 
@@ -701,6 +653,27 @@ public class IO {
                 Note n = new Note(scratch, text, anagramSrc, anagramSol);
                 puz.setNoteRaw(n, x, isAcross);
             }
+        }
+    }
+
+    private static IOVersion getIOVersion(int version) throws IOException {
+        switch (version) {
+        case 1:
+            return new IOVersion1();
+        case 2:
+            return new IOVersion2();
+        case 3:
+            return new IOVersion3();
+        case 4:
+            return new IOVersion4();
+        case 5:
+            return new IOVersion5();
+        case 6:
+            return new IOVersion6();
+        case 7:
+            return new IOVersion7();
+        default:
+            throw new IOException("UnknownVersion " + version);
         }
     }
 }

@@ -13,6 +13,7 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
  */
 public class WSJFridayDownloader extends AbstractDownloader {
     private static final String NAME = "Wall Street Journal";
+    private static final String SUPPORT_URL = "https://subscribe.wsj.com";
     NumberFormat nf = NumberFormat.getInstance();
 
     public WSJFridayDownloader() {
@@ -27,6 +28,11 @@ public class WSJFridayDownloader extends AbstractDownloader {
 
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return SUPPORT_URL;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

@@ -69,6 +69,13 @@ public interface Downloader {
 
     String getName();
 
+    /**
+     * Returns a URL where the user may support the crossword source
+     *
+     * @return null if no reasonable support/source URL (discouraged)
+     */
+    String getSupportUrl();
+
     String createFileName(LocalDate date);
 
     DownloadResult download(LocalDate date);

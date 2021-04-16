@@ -28,11 +28,15 @@ public class AbstractPageScraper {
     private static final Pattern REL_PAT = Pattern.compile(REL_REGEX);
     private String sourceName;
     private String url;
+    private String supportUrl;
     protected boolean updateable = false;
 
-    protected AbstractPageScraper(String url, String sourceName) {
+    protected AbstractPageScraper(
+        String url, String sourceName, String supportUrl
+    ) {
         this.url = url;
         this.sourceName = sourceName;
+        this.supportUrl = supportUrl;
     }
 
     public String getContent() throws IOException {
@@ -113,6 +117,10 @@ public class AbstractPageScraper {
         return this.sourceName;
     }
 
+    public String getSupportUrl() {
+        return this.supportUrl;
+    }
+
     private boolean processFile(FileHandle file, String sourceUrl) {
         final FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
@@ -124,6 +132,7 @@ public class AbstractPageScraper {
             puz.setUpdatable(false);
             puz.setSource(this.sourceName);
             puz.setSourceUrl(sourceUrl);
+            puz.setSupportUrl(this.supportUrl);
             puz.setDate(LocalDate.now());
 
             DirHandle dir = AbstractDownloader.getStandardDownloadDir();

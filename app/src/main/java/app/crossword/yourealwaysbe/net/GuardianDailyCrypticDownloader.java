@@ -40,6 +40,7 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
  */
 public class GuardianDailyCrypticDownloader extends AbstractDownloader {
     private static final String NAME = "Guardian Daily Cryptic";
+    private static final String SUPPORT_URL = "https://support.theguardian.com";
 
     private static final int BASE_CW_NUMBER = 28112;
     private static final LocalDate BASE_CW_DATE = LocalDate.of(2020, 4, 20);
@@ -61,6 +62,11 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
 
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return SUPPORT_URL;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

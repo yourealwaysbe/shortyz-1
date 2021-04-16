@@ -26,6 +26,7 @@ public class Puzzle implements Serializable{
     private LocalDate pubdate = LocalDate.now();
     private String source;
     private String sourceUrl = "";
+    private String supportUrl;
     private Box[][] boxes;
     private Box[] boxesList;
     private String[] rawClues;
@@ -366,6 +367,14 @@ public class Puzzle implements Serializable{
 
     public String getSourceUrl() {
         return sourceUrl;
+    }
+
+    public void setSupportUrl(String supportUrl) {
+        this.supportUrl = supportUrl;
+    }
+
+    public String getSupportUrl() {
+        return supportUrl;
     }
 
     public void setTime(long time) {

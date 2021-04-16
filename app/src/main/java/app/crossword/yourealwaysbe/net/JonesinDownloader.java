@@ -13,6 +13,7 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
  */
 public class JonesinDownloader extends AbstractDownloader {
     private static final String NAME = "Jonesin' Crosswords";
+    private static final String SUPPORT_URL = "https://crosswordnexus.com/jonesin/";
     NumberFormat nf = NumberFormat.getInstance();
 
     public JonesinDownloader() {
@@ -27,6 +28,11 @@ public class JonesinDownloader extends AbstractDownloader {
 
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return SUPPORT_URL;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

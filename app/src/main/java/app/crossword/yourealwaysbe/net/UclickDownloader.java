@@ -31,21 +31,33 @@ public class UclickDownloader extends AbstractDownloader {
     private String copyright;
     private String fullName;
     private String shortName;
+    private String supportUrl;
     private DayOfWeek[] days;
 
-    public UclickDownloader(String prefix, String shortName, String fullName, String copyright, DayOfWeek[] days){
+    public UclickDownloader(
+        String prefix,
+        String shortName, String fullName, String copyright, String supportUrl,
+        DayOfWeek[] days
+    ){
         super(prefix+shortName+"/data/", getStandardDownloadDir(), fullName);
         this.shortName = shortName;
         this.fullName = fullName;
         this.copyright = copyright;
+        this.supportUrl = supportUrl;
         this.days = days;
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
     }
 
-    public UclickDownloader(String shortName, String fullName, String copyright, DayOfWeek[] days) {
-        this("https://picayune.uclick.com/comics/",shortName, fullName, copyright, days);
-
+    public UclickDownloader(
+        String shortName, String fullName, String copyright, String supportUrl,
+        DayOfWeek[] days
+    ) {
+        this(
+            "https://picayune.uclick.com/comics/",
+            shortName, fullName, copyright, supportUrl,
+            days
+        );
     }
 
     public DayOfWeek[] getDownloadDates() {
@@ -54,6 +66,11 @@ public class UclickDownloader extends AbstractDownloader {
 
     public String getName() {
         return fullName;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return supportUrl;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

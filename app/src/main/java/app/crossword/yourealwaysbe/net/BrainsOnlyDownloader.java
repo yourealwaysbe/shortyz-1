@@ -23,10 +23,14 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
     private final DateTimeFormatter df
         = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final String fullName;
+    private final String supportUrl;
 
-    public BrainsOnlyDownloader(String baseUrl, String fullName) {
+    public BrainsOnlyDownloader(
+        String baseUrl, String fullName, String supportUrl
+    ) {
         super(baseUrl, getStandardDownloadDir(), fullName);
         this.fullName = fullName;
+        this.supportUrl = supportUrl;
     }
 
     @Override
@@ -40,6 +44,11 @@ public class BrainsOnlyDownloader extends AbstractDownloader {
 
     public String getName() {
         return this.fullName;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return this.supportUrl;
     }
 
     public Downloader.DownloadResult download(LocalDate date) {

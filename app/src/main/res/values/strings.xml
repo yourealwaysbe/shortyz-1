@@ -202,6 +202,7 @@
     <string name="errors">Errors</string>
     <string name="puzzle">Puzzle</string>
     <string name="info">Info</string>
+    <string name="support_puzzle_source">Support Puzzle Source</string>
 
     <!-- browse menu -->
     <string name="app_theme">App Theme</string>

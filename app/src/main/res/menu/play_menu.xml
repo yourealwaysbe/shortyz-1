@@ -101,6 +101,10 @@
         android:title="@string/info"
     />
     <item
+        android:id="@+id/play_menu_support_source"
+        android:title="@string/support_puzzle_source"
+    />
+    <item
         android:id="@+id/play_menu_help"
         android:icon="@android:drawable/ic_menu_help"
         android:title="@string/help"

@@ -25,6 +25,11 @@ public class DummyDownloader implements Downloader {
     }
 
     @Override
+    public String getSupportUrl() {
+        return null;
+    }
+
+    @Override
     public DirHandle getDownloadDir() {
         return null;
     }
