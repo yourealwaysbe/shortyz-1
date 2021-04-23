@@ -23,8 +23,14 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 /**
- * Converts a puzzle from the XML format used by The Independent
- * to the Across Lite .puz format.  The format is:
+ * Converts a puzzle from the Crossword Compiler XML format.
+ *
+ * This is not necessarily a complete implementation, but works for the
+ * sources tests.
+ *
+ * Converts to the Across Lite .puz format.
+ *
+ * The (supported) XML format is:
  *
  * <crossword-compiler>
  *   <rectangular-puzzle>
@@ -51,7 +57,7 @@ import javax.xml.parsers.SAXParserFactory;
  *   </rectangular-puzzle>
  * </crossword-compiler>
  */
-public class IndependentXMLIO {
+public class CrosswordCompilerXMLIO {
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
     private static final String UNDEFINED_CLUE = "-";
