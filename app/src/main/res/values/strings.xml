@@ -22,6 +22,7 @@
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
+    <string name="import_puzzle">Import Puzzle</string>
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>

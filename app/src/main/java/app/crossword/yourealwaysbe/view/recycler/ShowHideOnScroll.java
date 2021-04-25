@@ -57,9 +57,4 @@ public class ShowHideOnScroll extends ScrollDetector implements Animation.Animat
 
     public void onAnimationRepeat(Animation animation) {
     }
-
-    public boolean performClick() {
-        // do nothing
-        return false;
-    }
 }

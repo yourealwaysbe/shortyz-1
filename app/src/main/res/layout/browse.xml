@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
@@ -47,6 +47,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
             />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -75,17 +76,25 @@
         </LinearLayout>
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/button_floating_action"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:fabSize="normal"
-        app:backgroundTint="#ff669900"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:contentDescription="@string/download_puzzles"
+    <com.leinardi.android.speeddial.SpeedDialOverlayLayout
+        android:id="@+id/speed_dial_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:theme="@style/speedDialOverlayStyle"
     />
 
-</RelativeLayout>
+    <com.leinardi.android.speeddial.SpeedDialView
+        android:id="@+id/speed_dial_add"
+        android:layout_gravity="end|bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="16dp"
+        app:sdMainFabClosedSrc="@drawable/ic_add"
+        app:sdMainFabOpenedSrc="@drawable/ic_add"
+        app:sdOverlayLayout="@id/speed_dial_overlay"
+        app:layout_behavior="@string/speeddial_scrolling_view_snackbar_behavior"
+        android:theme="@style/speedDialStyle"
+    />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

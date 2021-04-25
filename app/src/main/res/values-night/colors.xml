@@ -23,4 +23,6 @@
     <color name="progressDone">#31915a</color>
     <color name="progressError">#ff4a4d</color>
     <color name="keyboardDivider">#333</color>
+    <color name="speedDialTint">@color/accent</color>
+    <color name="screenFade">#77333333</color>
 </resources>

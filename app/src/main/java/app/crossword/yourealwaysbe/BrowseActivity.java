@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe;
 
-
 import android.Manifest;
 import android.app.Dialog;
 import android.app.NotificationManager;
@@ -10,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -32,7 +32,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import app.crossword.yourealwaysbe.forkyz.BuildConfig;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
@@ -50,7 +52,6 @@ import app.crossword.yourealwaysbe.view.CircleProgressBar;
 import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
 import app.crossword.yourealwaysbe.view.recycler.RemovableRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.SeparatedRecyclerViewAdapter;
-import app.crossword.yourealwaysbe.view.recycler.ShowHideOnScroll;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -86,7 +87,7 @@ public class BrowseActivity extends ForkyzActivity {
     private RecyclerView puzzleList;
     private NotificationManager nm;
     private boolean hasWritePermissions;
-    private FloatingActionButton download;
+    private SpeedDialView buttonAdd;
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
     private View pleaseWaitView;
@@ -111,7 +112,7 @@ public class BrowseActivity extends ForkyzActivity {
                 utils.onActionBarWithText(menu.getItem(i));
             }
 
-            download.setVisibility(View.GONE);
+            setSpeedDialVisibility(View.GONE);
 
             return true;
         }
@@ -145,7 +146,7 @@ public class BrowseActivity extends ForkyzActivity {
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             clearSelection();
-            download.setVisibility(View.VISIBLE);
+            setSpeedDialVisibility(View.VISIBLE);
             actionMode = null;
         }
     };
@@ -337,20 +338,8 @@ public class BrowseActivity extends ForkyzActivity {
             this.accessor = Accessor.DATE_DESC;
         }
 
-        download = (FloatingActionButton)
-            this.findViewById(R.id.button_floating_action);
-
-        if(download != null) {
-            download.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DialogFragment dialog = new DownloadDialog();
-                    dialog.show(getSupportFragmentManager(), "DownloadDialog");
-                }
-            });
-            download.setImageBitmap(createBitmap("icons1.ttf", ","));
-            setPuzzleListOnTouchListener();
-        }
+        buttonAdd = findViewById(R.id.speed_dial_add);
+        setupSpeedDial();
 
         if (ForkyzApplication.getInstance().isMissingWritePermission()) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -635,19 +624,51 @@ public class BrowseActivity extends ForkyzActivity {
         }
     }
 
-    // suppress this warning because ShowHideOnScroll does not implement click
-    // functionality
-    @SuppressWarnings("ClickableViewAccessibility")
-    private void setPuzzleListOnTouchListener() {
-        this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
-    }
-
     private void showPleaseWait() {
         pleaseWaitView.setVisibility(View.VISIBLE);
     }
 
     private void hidePleaseWait() {
         pleaseWaitView.setVisibility(View.GONE);
+    }
+
+    private void setSpeedDialVisibility(int visibility) {
+        buttonAdd.setVisibility(visibility);
+    }
+
+    private boolean isFileImportSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+    }
+
+    private void setupSpeedDial() {
+        buttonAdd.inflate(R.menu.speed_dial_browse_menu);
+
+        if (!isFileImportSupported()) {
+            buttonAdd.removeActionItemById(R.id.speed_dial_import);
+        }
+
+        buttonAdd.setOnActionSelectedListener(
+            new SpeedDialView.OnActionSelectedListener() {
+                @Override
+                public boolean onActionSelected(
+                    SpeedDialActionItem actionItem
+                ) {
+                    int id = actionItem.getId();
+                    if (id == R.id.speed_dial_download) {
+                        buttonAdd.close();
+                        DialogFragment dialog = new DownloadDialog();
+                        dialog.show(
+                            getSupportFragmentManager(),
+                            "DownloadDialog"
+                        );
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        );
+
+        setSpeedDialVisibility(View.VISIBLE);
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
