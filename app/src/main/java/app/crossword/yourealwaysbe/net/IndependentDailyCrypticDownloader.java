@@ -21,8 +21,7 @@ public class IndependentDailyCrypticDownloader
         super(
             "https://ams.cdn.arkadiumhosted.com/assets/gamesfeed/independent/daily-crossword/",
             getStandardDownloadDir(),
-            NAME,
-            "The Independent"
+            NAME
         );
     }
 

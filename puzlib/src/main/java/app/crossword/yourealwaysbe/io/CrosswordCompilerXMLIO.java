@@ -36,7 +36,8 @@ import javax.xml.parsers.SAXParserFactory;
  *   <rectangular-puzzle>
  *     <metadata>
  *       <title>[Title]</title>
- *       ...
+ *       <creator>[Author]</creator>
+ *       <copyright>[Copyright]</copyright>
  *     </metadata>
  *     <crossword>
  *       <grid width="[width]" height="[height]">
@@ -64,6 +65,8 @@ public class CrosswordCompilerXMLIO {
 
     private static class IndependentXMLParser extends DefaultHandler {
         private String title;
+        private String creator;
+        private String copyright;
         private int width;
         private int height;
         private Box[][] boxes;
@@ -74,6 +77,8 @@ public class CrosswordCompilerXMLIO {
         private int maxClueNum = -1;
 
         public String getTitle() { return title; }
+        public String getCreator() { return creator; }
+        public String getCopyright() { return copyright; }
         public int getWidth() { return width; }
         public int getHeight() { return height; }
         public Box[][] getBoxes() { return boxes; }
@@ -96,6 +101,8 @@ public class CrosswordCompilerXMLIO {
 
         private DefaultHandler outerXML = new DefaultHandler() {
             private boolean inTitle = false;
+            private boolean inCreator = false;
+            private boolean inCopyright = false;
 
             @Override
             public void startElement(String nsURI,
@@ -107,14 +114,25 @@ public class CrosswordCompilerXMLIO {
 
                 if (name.equalsIgnoreCase("title")) {
                     inTitle = true;
+                } else if (name.equalsIgnoreCase("creator")) {
+                    inCreator = true;
+                } else if (name.equalsIgnoreCase("copyright")) {
+                    inCopyright = true;
                 }
             }
 
             public void characters(char[] ch, int start, int length) throws SAXException {
-                if (inTitle) {
-                    IndependentXMLParser.this.title =
-                        new String(ch, start, length);
-                }
+                String data = "";
+
+                if (inTitle || inCreator || inCopyright)
+                    data = new String(ch, start, length);
+
+                if (inTitle)
+                    IndependentXMLParser.this.title = data;
+                else if (inCreator)
+                    IndependentXMLParser.this.creator = data;
+                else if (inCopyright)
+                    IndependentXMLParser.this.copyright = data;
             }
 
             @Override
@@ -126,6 +144,10 @@ public class CrosswordCompilerXMLIO {
 
                 if (name.equalsIgnoreCase("title")) {
                     inTitle = false;
+                } else if (name.equalsIgnoreCase("creator")) {
+                    inCreator = false;
+                } else if (name.equalsIgnoreCase("copyright")) {
+                    inCopyright = false;
                 }
             }
         };
@@ -389,12 +411,9 @@ public class CrosswordCompilerXMLIO {
 
     public static boolean convertPuzzle(InputStream is,
                                         DataOutputStream os,
-                                        String copyright,
                                         LocalDate d) {
         Puzzle puz = new Puzzle();
         puz.setDate(d);
-        puz.setCopyright(copyright);
-        puz.setAuthor("The Independent");
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
             SAXParser parser = factory.newSAXParser();
@@ -405,6 +424,8 @@ public class CrosswordCompilerXMLIO {
 
             puz.setVersion(IO.VERSION_STRING);
             puz.setTitle(handler.getTitle());
+            puz.setAuthor(handler.getCreator());
+            puz.setCopyright(handler.getCopyright());
             puz.setWidth(handler.getWidth());
             puz.setHeight(handler.getHeight());
             puz.setBoxes(handler.getBoxes());
