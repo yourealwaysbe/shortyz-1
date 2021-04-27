@@ -512,12 +512,26 @@ public class FileHandlerSAF extends FileHandler {
                 null, null, null
             )
         ) {
-            if (c.getCount() > 0) {
-                c.moveToNext();
-                return new Meta(c.getString(0), c.getLong(1));
+            if (c.getCount() > 0 && c.moveToFirst()) {
+                return new Meta(
+                    c.getString(0),
+                    // avoid exception crash if last modified is not known
+                    // e.g. when opening firefox download urls
+                    getLongColumnWithDefault(c, 1, System.currentTimeMillis())
+                );
             } else {
                 return null;
             }
+        }
+    }
+
+    private long getLongColumnWithDefault(
+        Cursor c, int columnIndex, long defaultValue
+    ) {
+        try {
+            return c.getLong(1);
+        } catch (Throwable e) {
+            return defaultValue;
         }
     }
 

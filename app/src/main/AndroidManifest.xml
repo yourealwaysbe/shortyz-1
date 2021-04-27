@@ -54,21 +54,19 @@
         android:fullBackupContent="true"
         android:supportsRtl="true"
     >
-
         <activity
             android:name="app.crossword.yourealwaysbe.HttpDownloadActivity"
             android:label="@string/download_label"
             android:configChanges="orientation">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data
                     android:host="*"
                     android:pathPattern="/.*\\.puz"
-                    android:scheme="http" />
+                    android:scheme="http"
+                />
             </intent-filter>
         </activity>
         <activity
@@ -79,20 +77,6 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.Forkyz"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data
-                    android:host="*"
-                    android:pathPattern="/.*\\.puz"
-                    android:scheme="file" />
-                <data
-                    android:mimeType="application/x-crossword"
-                    android:scheme="file" />
-            </intent-filter>
         </activity>
         <activity
             android:name="app.crossword.yourealwaysbe.PreferencesActivity"
@@ -122,8 +106,16 @@
             android:theme="@style/Theme.Forkyz">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/x-crossword" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/zip" />
             </intent-filter>
         </activity>
         <activity

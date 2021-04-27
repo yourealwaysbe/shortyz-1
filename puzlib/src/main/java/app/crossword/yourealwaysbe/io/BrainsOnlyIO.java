@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * Time: 5:57 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BrainsOnlyIO {
+public class BrainsOnlyIO implements PuzzleParser {
 
 
     public static boolean convertBrainsOnly(InputStream is, DataOutputStream os, LocalDate date){
@@ -35,6 +35,11 @@ public class BrainsOnlyIO {
         }
 
         return true;
+    }
+
+    @Override
+    public Puzzle parseInput(InputStream is) throws IOException {
+        return parse(is);
     }
 
     public static Puzzle parse(InputStream is) throws IOException {

@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,6 +21,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.GetContent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.app.ActivityCompat;
@@ -70,6 +72,10 @@ import java.util.stream.Collectors;
 public class BrowseActivity extends ForkyzActivity {
     private static final int REQUEST_WRITE_STORAGE = 1002;
 
+    // allow import of all docs (parser will take care of detecting if it's a
+    // puzzle that's recognised)
+    private static final String IMPORT_MIME_TYPE =  "*/*";
+
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
 
@@ -91,6 +97,18 @@ public class BrowseActivity extends ForkyzActivity {
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
     private View pleaseWaitView;
+    private Uri pendingImport;
+
+    ActivityResultLauncher<String> getImportURI = registerForActivityResult(
+        new GetContent(),
+        new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri uri) {
+                onImportURI(uri);
+            }
+        }
+    );
+
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -398,6 +416,14 @@ public class BrowseActivity extends ForkyzActivity {
         // populated properly inside onResume or with puzzle list
         // observer
         setPuzzleListAdapter(buildEmptyList(), false);
+
+        // If this was started by a file open
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        if (Intent.ACTION_VIEW.equals(action)) {
+            // loaded by onResume
+            setPendingImport(intent.getData());
+        }
     }
 
     private void setViewCrosswordsOrArchiveUI() {
@@ -441,7 +467,18 @@ public class BrowseActivity extends ForkyzActivity {
         // the UI is re-rendered when they exit the settings dialog.
         if (model.getPuzzleFiles().getValue() == null
                 || utils.checkBackgroundDownload(prefs, hasWritePermissions)) {
-            startLoadPuzzleList();
+
+            if (hasPendingImport()) {
+                Uri importUri = getPendingImport();
+                clearPendingImport();
+                onImportURI(importUri);
+
+                // won't be triggered by import if archive is shown
+                if (model.getIsViewArchive())
+                    startLoadPuzzleList();
+            } else {
+                startLoadPuzzleList();
+            }
         } else {
             refreshLastAccessedPuzzle();
         }
@@ -636,16 +673,8 @@ public class BrowseActivity extends ForkyzActivity {
         buttonAdd.setVisibility(visibility);
     }
 
-    private boolean isFileImportSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-    }
-
     private void setupSpeedDial() {
         buttonAdd.inflate(R.menu.speed_dial_browse_menu);
-
-        if (!isFileImportSupported()) {
-            buttonAdd.removeActionItemById(R.id.speed_dial_import);
-        }
 
         buttonAdd.setOnActionSelectedListener(
             new SpeedDialView.OnActionSelectedListener() {
@@ -662,6 +691,8 @@ public class BrowseActivity extends ForkyzActivity {
                             "DownloadDialog"
                         );
                         return true;
+                    } else if (id == R.id.speed_dial_import) {
+                        getImportURI.launch(IMPORT_MIME_TYPE);
                     }
                     return false;
                 }
@@ -669,6 +700,27 @@ public class BrowseActivity extends ForkyzActivity {
         );
 
         setSpeedDialVisibility(View.VISIBLE);
+    }
+
+    private void onImportURI(Uri uri) {
+        if (uri != null)
+            model.importURI(uri);
+    }
+
+    private boolean hasPendingImport() {
+        return pendingImport != null;
+    }
+
+    private Uri getPendingImport() {
+        return pendingImport;
+    }
+
+    private void clearPendingImport() {
+        pendingImport = null;
+    }
+
+    private void setPendingImport(Uri uri) {
+        pendingImport = uri;
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
