@@ -838,7 +838,7 @@ public class PlayActivity extends PuzzleActivity
     }
 
     private void setClueSize(int dps) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.clue.setAutoSizeTextTypeUniformWithConfiguration(
                 5, dps, 1, TypedValue.COMPLEX_UNIT_SP
             );
