@@ -82,6 +82,10 @@ public class IO implements PuzzleParser {
         return loadNative(new DataInputStream(is));
     }
 
+    public static Puzzle loadNative(InputStream input) throws IOException {
+        return loadNative(new DataInputStream(input));
+    }
+
     public static Puzzle loadNative(DataInputStream input) throws IOException {
         Puzzle puz = new Puzzle();
 
@@ -283,6 +287,10 @@ public class IO implements PuzzleParser {
         input.skipBytes(1);
     }
 
+    public static PuzzleMeta readMeta(InputStream is) throws IOException {
+        return readMeta(new DataInputStream(is));
+    }
+
     public static PuzzleMeta readMeta(DataInputStream is) throws IOException {
         int version = is.read();
         IOVersion v = getIOVersion(version);
@@ -309,12 +317,32 @@ public class IO implements PuzzleParser {
                 CHARSET.name());
     }
 
-    public static void save(Puzzle puz, DataOutputStream puzzleOutputStream,
-                            DataOutputStream metaOutputStream) throws IOException {
+    public static void save(
+        Puzzle puz,
+        OutputStream puzzleOutputStream,
+        OutputStream metaOutputStream
+    ) throws IOException {
+        save(
+            puz,
+            new DataOutputStream(puzzleOutputStream),
+            new DataOutputStream(metaOutputStream)
+        );
+    }
+
+    public static void save(
+        Puzzle puz,
+        DataOutputStream puzzleOutputStream,
+        DataOutputStream metaOutputStream
+    ) throws IOException {
         IO.saveNative(puz, puzzleOutputStream);
         puzzleOutputStream.close();
         IO.writeCustom(puz, metaOutputStream);
         metaOutputStream.close();
+    }
+
+    public static void saveNative(Puzzle puz, OutputStream dos)
+            throws IOException {
+        saveNative(puz, new DataOutputStream(dos));
     }
 
     public static void saveNative(Puzzle puz, DataOutputStream dos)

@@ -18,13 +18,6 @@ import java.net.URLClassLoader;
 public class BrainsOnlyIOTest  extends TestCase {
     public void testParse() throws Exception {
 
-        ClassLoader cl =BrainsOnlyIOTest.class.getClassLoader();
-
-        URL[] urls = ((URLClassLoader)cl).getURLs();
-
-        for(URL url: urls){
-            System.out.println(url.getFile());
-        }
         Puzzle puz = BrainsOnlyIO.parse(BrainsOnlyIOTest.class.getResourceAsStream("/brainsonly.txt"));
         assertEquals("SODA SPEAK", puz.getTitle());
         assertEquals("S.N. & Robert Francis, edited by Stanley Newman", puz.getAuthor());

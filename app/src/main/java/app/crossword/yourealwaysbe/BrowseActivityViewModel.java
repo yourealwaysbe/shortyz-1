@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 import android.app.NotificationManager;
@@ -47,14 +45,14 @@ public class BrowseActivityViewModel extends ViewModel {
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivityViewModel.class.getCanonicalName());
 
+    // important that it is single thread to avoid multiple
+    // simultaneous operations
     private ExecutorService executorService
         = Executors.newSingleThreadExecutor();
     // not fixed num in case user creates loads of downloads
     private ExecutorService downloadExecutorService
         = Executors.newCachedThreadPool();
     private Handler handler = new Handler(Looper.getMainLooper());
-    private final Lock uiLock = new ReentrantLock();
-
 
     private SharedPreferences prefs;
 
@@ -380,14 +378,14 @@ public class BrowseActivityViewModel extends ViewModel {
     }
 
     private void threadWithUILock(Runnable r) {
+        // no lock actually needed because executorService is single
+        // threaded guaranteed
         executorService.execute(() -> {
-            uiLock.lock();
-            isUIBusy.postValue(true);
             try {
+                isUIBusy.postValue(true);
                 r.run();
-                isUIBusy.postValue(false);
             } finally {
-                uiLock.unlock();
+                isUIBusy.postValue(false);
             }
         });
     }
