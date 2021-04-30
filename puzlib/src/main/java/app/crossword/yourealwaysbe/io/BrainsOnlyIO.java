@@ -65,6 +65,15 @@ public class BrainsOnlyIO implements PuzzleParser {
         for(int down = 0; down < height; down++){
             String line = readLineAtOffset(reader, 0);
             //System.out.println("line: "+line);
+            if (line.length() != width)
+                throw new IOException(
+                    String.format(
+                        "Unexpected line length for width %d grid: %s",
+                        width,
+                        line
+                    )
+                );
+
             for(int across = 0; across < width; across++){
                 char c = line.charAt(across);
                 if(c == '#'){

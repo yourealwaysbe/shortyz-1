@@ -7,7 +7,7 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public class PuzzleStreamReader {
     private static final PuzzleParser[] PARSERS = {
-        new IO(), new JPZIO()
+        new IO(), new JPZIO(), new BrainsOnlyIO()
     };
 
     public interface InputStreamSupplier {
