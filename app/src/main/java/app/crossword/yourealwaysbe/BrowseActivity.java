@@ -104,7 +104,7 @@ public class BrowseActivity extends ForkyzActivity {
         new ActivityResultCallback<Uri>() {
             @Override
             public void onActivityResult(Uri uri) {
-                onImportURI(uri);
+                onImportURI(uri, false);
             }
         }
     );
@@ -471,7 +471,7 @@ public class BrowseActivity extends ForkyzActivity {
             if (hasPendingImport()) {
                 Uri importUri = getPendingImport();
                 clearPendingImport();
-                onImportURI(importUri);
+                onImportURI(importUri, true);
 
                 // won't be triggered by import if archive is shown
                 if (model.getIsViewArchive())
@@ -702,9 +702,12 @@ public class BrowseActivity extends ForkyzActivity {
         setSpeedDialVisibility(View.VISIBLE);
     }
 
-    private void onImportURI(Uri uri) {
+    /**
+     * Import from URI, force reload of puz list if asked
+     */
+    private void onImportURI(Uri uri, boolean forceReload) {
         if (uri != null)
-            model.importURI(uri);
+            model.importURI(uri, forceReload);
     }
 
     private boolean hasPendingImport() {

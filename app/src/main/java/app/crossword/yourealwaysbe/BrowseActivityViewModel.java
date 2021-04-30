@@ -330,9 +330,9 @@ public class BrowseActivityViewModel extends ViewModel {
      * Import file from uri to crosswords folder
      *
      * Triggers refresh of puzzle list if crosswords folder is currently
-     * shown.
+     * shown in the case that the import succeeds or forceReload is true.
      */
-    public void importURI(Uri uri) {
+    public void importURI(Uri uri, boolean forceReload) {
         threadWithUILock(() -> {
             ForkyzApplication application = ForkyzApplication.getInstance();
             ContentResolver resolver = application.getContentResolver();
@@ -341,7 +341,7 @@ public class BrowseActivityViewModel extends ViewModel {
             boolean success = PuzzleImporter.importUri(resolver, uri);
             LOGGER.info("FORKYZ import success? " + success);
 
-            if (success && !getIsViewArchive())
+            if ((success || forceReload) && !getIsViewArchive())
                 startLoadFiles();
 
             handler.post(() -> {
