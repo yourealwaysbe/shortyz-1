@@ -22,7 +22,14 @@ public class JPZIOTest extends TestCase{
     public void assertIsTestPuzzle1(Puzzle puz) {
         assertEquals("LA Times, Mon, Nov 28, 2011", puz.getTitle());
         assertEquals("Jeff Chen / Ed. Rich Norris", puz.getAuthor());
-        assertEquals("© 2011 Tribune Media Services, Inc.", puz.getCopyright());
+        assertEquals("(c) 2011 Tribune Media Services, Inc.", puz.getCopyright());
+        assertEquals(
+            "Test\n\n\n"
+                + "Down:\n\n"
+                + "22: Shower Heads v7\n"
+                + "61: I'm NOT going to ATTEND it / I'm going to SKIP it\n",
+            puz.getNotes()
+        );
 
         Box[][] boxes = puz.getBoxes();
         assertEquals(boxes[0][0].getSolution(), 'C');
@@ -33,17 +40,17 @@ public class JPZIOTest extends TestCase{
 
         // clue number lookup not set by import, test only raw clues
         String[] rawClues = puz.getRawClues();
-        // 1 across
-        assertEquals(rawClues[0], "Baby bovine");
-        assertEquals(rawClues[5], "At the drop of __");
-        assertEquals(rawClues[8], "Work like __");
-        assertEquals(rawClues[15], "Ice cream-and-cookies brand");
+        assertEquals(rawClues[0], "Baby bovine (4)");
+        assertEquals(rawClues[5], "At the drop of __ (4)");
+        assertEquals(rawClues[7], "Schmooze, as with the A-list (6)");
+        assertEquals(rawClues[8], "Work like __ (4)");
+        assertEquals(rawClues[15], "Ice cream-and-cookies brand (4)");
         assertEquals(rawClues[25], "Stat start");
     }
 
     public void testJPZ() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        JPZIO.copyStream(getTestPuzzle1InputStream(), baos);
+        IO.copyStream(getTestPuzzle1InputStream(), baos);
         System.out.println(new String(baos.toByteArray()));
         Puzzle puz = JPZIO.readPuzzle(
             new ByteArrayInputStream(baos.toByteArray())

@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.io;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import app.crossword.yourealwaysbe.puz.Puzzle;
@@ -16,5 +15,5 @@ public interface PuzzleParser {
      *
      * @return parse puzzle or null if failed or not in right format
      */
-    public Puzzle parseInput(InputStream is) throws IOException;
+    public Puzzle parseInput(InputStream is) throws Exception;
 }

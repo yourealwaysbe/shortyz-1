@@ -12,7 +12,7 @@ import android.net.Uri;
  * Date = Daily
  */
 public class IndependentDailyCrypticDownloader
-        extends AbstractCrosswordCompilerDownloader {
+        extends AbstractJPZDownloader {
     private static final String NAME = "The Independent's Cryptic Crossword";
     private static final String SUPPORT_URL
         = "https://www.independent.co.uk/donations";

@@ -7,7 +7,7 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public class PuzzleStreamReader {
     private static final PuzzleParser[] PARSERS = {
-        new IO()
+        new IO(), new JPZIO()
     };
 
     public interface InputStreamSupplier {
@@ -33,6 +33,8 @@ public class PuzzleStreamReader {
                 if (puz != null)
                     return puz;
             } catch (Exception e) {
+                System.out.println("FORKYZ failed with " + e);
+                e.printStackTrace();
                 // on to the next one
             }
         }
