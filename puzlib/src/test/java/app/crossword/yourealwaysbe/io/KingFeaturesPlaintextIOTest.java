@@ -1,4 +1,4 @@
-package app.crossword.yourealwaysbe.puz;
+package app.crossword.yourealwaysbe.io;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -11,8 +11,8 @@ import java.time.LocalDate;
 
 import junit.framework.TestCase;
 
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.io.KingFeaturesPlaintextIO;
+import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
  * Tests for KingFeaturesPlaintextIO.
@@ -30,6 +30,37 @@ public class KingFeaturesPlaintextIOTest extends TestCase {
 
     public KingFeaturesPlaintextIOTest(String testName) {
         super(testName);
+    }
+
+    public static InputStream getTestPuzzle1InputStream() {
+        return KingFeaturesPlaintextIOTest.class.getResourceAsStream(
+            "/premiere-20100704.txt"
+        );
+    }
+
+    public static void assertIsTestPuzzle1(Puzzle puz) {
+        Box[][] boxes = puz.getBoxes();
+
+        assertEquals(21, boxes.length);
+        assertEquals(21, boxes[0].length);
+        assertEquals(1, boxes[0][0].getClueNumber());
+        assertEquals(true, boxes[0][0].isAcross());
+        assertEquals(true, boxes[0][0].isDown());
+        assertEquals(false, boxes[0][3].isAcross());
+
+        assertEquals(boxes[0][0].getSolution(), 'F');
+        assertEquals(boxes[5][14].getSolution(), 'E');
+        assertEquals(boxes[14][14].getSolution(), 'E');
+        assertEquals(boxes[14][5].getSolution(), 'R');
+        assertEquals(boxes[1][7], null);
+
+        String[] rawClues = puz.getRawClues();
+        assertEquals(rawClues[0], "Murals on plaster");
+        assertEquals(rawClues[5], "One preserving fruit, e.g.");
+        assertEquals(rawClues[7], "In stitches");
+        assertEquals(rawClues[8], "Glucose-level regulator");
+        assertEquals(rawClues[15], "Napoleonic marshal Michel");
+        assertEquals(rawClues[25], "Cocky retort to a bully");
     }
 
     @Override
@@ -60,20 +91,11 @@ public class KingFeaturesPlaintextIOTest extends TestCase {
             fail("IO Error in IO.load - " + e.getMessage());
         }
 
+        assertIsTestPuzzle1(puz);
+
         assertEquals(TITLE, puz.getTitle());
         assertEquals(AUTHOR, puz.getAuthor());
         assertEquals(COPYRIGHT, puz.getCopyright());
-        // Fails because date is unsaved - assertEquals(puz.getDate(), DATE);
-
-        assertEquals("Aloha State state bird", puz.findAcrossClue(26));
-        assertEquals("In stitches", puz.findDownClue(7));
-
-        // Last clues
-        assertEquals("Brutal force", puz.findAcrossClue(124));
-        assertEquals("'-- -hoo!'", puz.findDownClue(118));
-
-        // Clue with special characters
-        assertEquals("'\u00c0 -- sant\u00e9!'", puz.findDownClue(52));
     }
 
 }

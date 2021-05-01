@@ -15,11 +15,11 @@ public class JPZIOTest extends TestCase{
         super(testName);
     }
 
-    public InputStream getTestPuzzle1InputStream() {
+    public static InputStream getTestPuzzle1InputStream() {
         return JPZIOTest.class.getResourceAsStream("/lat_puzzle_111128.xml");
     }
 
-    public void assertIsTestPuzzle1(Puzzle puz) {
+    public static void assertIsTestPuzzle1(Puzzle puz) {
         assertEquals("LA Times, Mon, Nov 28, 2011", puz.getTitle());
         assertEquals("Jeff Chen / Ed. Rich Norris", puz.getAuthor());
         assertEquals("(c) 2011 Tribune Media Services, Inc.", puz.getCopyright());
@@ -32,6 +32,14 @@ public class JPZIOTest extends TestCase{
         );
 
         Box[][] boxes = puz.getBoxes();
+
+        assertEquals(15, boxes.length);
+        assertEquals(15, boxes[0].length);
+        assertEquals(1, boxes[0][0].getClueNumber());
+        assertEquals(true, boxes[0][0].isAcross());
+        assertEquals(true, boxes[0][0].isDown());
+        assertEquals(false, boxes[0][3].isAcross());
+
         assertEquals(boxes[0][0].getSolution(), 'C');
         assertEquals(boxes[5][14].getSolution(), 'Y');
         assertEquals(boxes[14][14].getSolution(), 'S');

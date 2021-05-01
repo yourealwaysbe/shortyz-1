@@ -42,12 +42,46 @@ public class IOTest extends TestCase {
         super.tearDown();
     }
 
+    public static InputStream getTestPuzzle1InputStream() {
+        return JPZIOTest.class.getResourceAsStream("/test.puz");
+    }
+
+    public static void assertIsTestPuzzle1(Puzzle puz) {
+        assertEquals("NY Times, Fri, Nov 13, 2009", puz.getTitle());
+        assertEquals("Dana Motley / Will Shortz", puz.getAuthor());
+        assertEquals("© 2009, The New York Times", puz.getCopyright());
+
+        Box[][] boxes = puz.getBoxes();
+
+        assertEquals(15, boxes.length);
+        assertEquals(15, boxes[0].length);
+        assertEquals(1, boxes[0][0].getClueNumber());
+        assertEquals(true, boxes[0][0].isAcross());
+        assertEquals(true, boxes[0][0].isDown());
+        assertEquals(false, boxes[0][3].isAcross());
+
+        assertEquals(boxes[0][0].getSolution(), 'R');
+        assertEquals(boxes[5][14], null);
+        assertEquals(boxes[14][14].getSolution(), 'S');
+        assertEquals(boxes[14][5].getSolution(), 'T');
+        assertEquals(boxes[3][6].getSolution(), 'E');
+
+        // clue number lookup not set by import, test only raw clues
+        String[] rawClues = puz.getRawClues();
+        assertEquals(rawClues[0], "Bring to perfection");
+        assertEquals(rawClues[5], "Sch. whose sports teams are the Violets");
+        assertEquals(rawClues[7], "Not work at all");
+        assertEquals(rawClues[8], "Kale kin");
+        assertEquals(rawClues[15], "President who was born a King");
+        assertEquals(rawClues[25], "Surprised reaction");
+    }
+
     /**
      * Test of load method, of class IO.
      */
     public void testLoad() throws Exception {
         try (
-            InputStream is = IOTest.class.getResourceAsStream("/test.puz")
+            InputStream is = getTestPuzzle1InputStream();
         ) {
             Puzzle puz = IO.loadNative(is);
             System.out.println("Loaded.");
@@ -62,6 +96,8 @@ public class IOTest extends TestCase {
             System.out.println("14  across: "+ puz.findAcrossClue(14));
             System.out.println("18  down  : "+ puz.findDownClue(18));
             System.out.println("2 down: "+puz.findDownClue(2));
+
+            assertIsTestPuzzle1(puz);
         }
     }
 

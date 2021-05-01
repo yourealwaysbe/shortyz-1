@@ -1,4 +1,4 @@
-package app.crossword.yourealwaysbe.puz;
+package app.crossword.yourealwaysbe.io;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,8 +11,8 @@ import java.time.LocalDate;
 
 import junit.framework.TestCase;
 
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.io.UclickXMLIO;
+import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
  * Tests for UclickXMLIO.
@@ -31,10 +31,44 @@ public class UclickXMLIOTest extends TestCase {
         super(testName);
     }
 
+    public static InputStream getTestPuzzle1InputStream() {
+        return UclickXMLIOTest.class.getResourceAsStream(
+            "/crnet091215-data.xml"
+        );
+    }
+
+    public static void assertIsTestPuzzle1(Puzzle puz) {
+        assertEquals(TITLE, puz.getTitle());
+        assertEquals(AUTHOR, puz.getAuthor());
+
+        Box[][] boxes = puz.getBoxes();
+
+        assertEquals(15, boxes.length);
+        assertEquals(15, boxes[0].length);
+        assertEquals(1, boxes[0][0].getClueNumber());
+        assertEquals(true, boxes[0][0].isAcross());
+        assertEquals(true, boxes[0][0].isDown());
+        assertEquals(false, boxes[0][3].isAcross());
+
+        assertEquals(boxes[0][0].getSolution(), 'G');
+        assertEquals(boxes[5][14], null);
+        assertEquals(boxes[14][14].getSolution(), 'S');
+        assertEquals(boxes[14][5].getSolution(), 'L');
+        assertEquals(boxes[3][6].getSolution(), 'N');
+
+        String[] rawClues = puz.getRawClues();
+        assertEquals(rawClues[0], "Film legend Greta");
+        assertEquals(rawClues[5], "Rampaging");
+        assertEquals(rawClues[7], "Get even for");
+        assertEquals(rawClues[8], "Nickname for an NCO");
+        assertEquals(rawClues[15], "Covered with rocks");
+        assertEquals(rawClues[25], "Annoying noise");
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        is = UclickXMLIOTest.class.getResourceAsStream("/crnet091215-data.xml");
+        is = getTestPuzzle1InputStream();
         tmp = File.createTempFile("uclick-test", ".puz");
         os = new DataOutputStream(new FileOutputStream(tmp));
     }
@@ -59,18 +93,8 @@ public class UclickXMLIOTest extends TestCase {
             puz = IO.loadNative(dis);
         }
 
-        assertEquals(TITLE, puz.getTitle());
-        assertEquals(AUTHOR, puz.getAuthor());
+        assertIsTestPuzzle1(puz);
         assertEquals(COPYRIGHT, puz.getCopyright());
-
-        assertEquals("Film legend Greta", puz.findAcrossClue(1));
-        assertEquals("Ballerina's skirt", puz.findAcrossClue(49));
-        assertEquals("Equips for combat", puz.findAcrossClue(60));
-        assertEquals("Double curves", puz.findAcrossClue(65));
-
-        assertEquals("Squash or pumpkin", puz.findDownClue(1));
-        assertEquals("Toss in", puz.findDownClue(21));
-        assertEquals("Bullfight shouts", puz.findDownClue(56));
     }
 
 }
