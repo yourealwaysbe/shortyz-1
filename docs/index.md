@@ -13,7 +13,7 @@ Across Lite (.puz) or JPZ in particular.
 
 * [Brendan Emmet Quigley][beq] -- custom puzzle creator, releasing some
   puzzles online.
-* [ComminiCrossings][communicrossings] -- homepage of Steve Weyer.
+* [CommuniCrossings][communicrossings] -- homepage of Steve Weyer.
 * [Diary of a Crossword Fiend][diary] -- crossword reviews and links to
   puzzles across the web (under Today's Puzzles).
 * [Hub Crosswords][hubcrosswords] -- Sunday-sized crosswords from Emily
