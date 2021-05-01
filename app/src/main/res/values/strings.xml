@@ -300,6 +300,8 @@
     <string name="key_right">right</string>
 
     <string name="keyboard_always_show">Always show</string>
+    <string name="keyboard_hide_back">Hide keyboard with back button</string>
     <string name="keyboard_show_sparingly">Show sparingly</string>
+    <string name="keyboard_show_sparingly_desc">Hide keyboard on clue change</string>
     <string name="keyboard_never_show">Never show</string>
 </resources>

@@ -25,7 +25,7 @@ public class KeyboardManager {
     private int blockHideDepth = 0;
 
     private enum KeyboardMode {
-        ALWAYS_SHOW, SHOW_SPARINGLY, NEVER_SHOW
+        ALWAYS_SHOW, HIDE_BACK, SHOW_SPARINGLY, NEVER_SHOW
     }
 
     /**
@@ -110,10 +110,11 @@ public class KeyboardManager {
      * pushBlockHide
      */
     public boolean hideKeyboard(boolean force) {
+        KeyboardMode mode = getKeyboardMode();
+        boolean prefHide =
+            mode != KeyboardMode.ALWAYS_SHOW && mode != KeyboardMode.HIDE_BACK;
         boolean softHide =
-            getKeyboardMode() != KeyboardMode.ALWAYS_SHOW
-                && !keyboardView.hasKeysDown()
-                && !isBlockHide();
+            prefHide && !keyboardView.hasKeysDown() && !isBlockHide();
         boolean doHide = force || softHide;
 
         if (doHide)
@@ -131,8 +132,9 @@ public class KeyboardManager {
      * passed on
      */
     public boolean handleBackKey() {
+        boolean force = getKeyboardMode() != KeyboardMode.ALWAYS_SHOW;
         return keyboardView.getVisibility() == View.VISIBLE
-            && hideKeyboard();
+            && hideKeyboard(force);
     }
 
     /**
@@ -152,13 +154,16 @@ public class KeyboardManager {
 
     private KeyboardMode getKeyboardMode() {
         String never = activity.getString(R.string.keyboard_never_show);
+        String back = activity.getString(R.string.keyboard_hide_back);
         String spare = activity.getString(R.string.keyboard_show_sparingly);
         String always = activity.getString(R.string.keyboard_always_show);
 
-        String modePref = prefs.getString("keyboardShowHide", spare);
+        String modePref = prefs.getString("keyboardShowHide", back);
 
         if (never.equals(modePref))
             return KeyboardMode.NEVER_SHOW;
+        else if (back.equals(modePref))
+            return KeyboardMode.HIDE_BACK;
         else if (always.equals(modePref))
             return KeyboardMode.ALWAYS_SHOW;
         else
