@@ -43,7 +43,6 @@ public class HTMLActivity extends ForkyzActivity {
                     finish();
                 }
             });
-            download.setImageBitmap(createBitmap("icons1.ttf", "k"));
             setWebViewOnTouchListener(webview, download);
         }
     }
