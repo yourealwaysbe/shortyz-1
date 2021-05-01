@@ -693,6 +693,12 @@ public class BrowseActivity extends ForkyzActivity {
                         return true;
                     } else if (id == R.id.speed_dial_import) {
                         getImportURI.launch(IMPORT_MIME_TYPE);
+                    } else if (id == R.id.speed_dial_online_sources) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(
+                            Uri.parse(getString(R.string.online_sources_url))
+                        );
+                        startActivity(i);
                     }
                     return false;
                 }

@@ -27,6 +27,8 @@
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
+    <string name="online_sources">Online Sources</string>
+    <string name="online_sources_url">https://yourealwaysbe.github.io/forkyz</string>
     <string name="import_puzzle">Import Puzzle</string>
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
