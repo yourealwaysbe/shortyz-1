@@ -345,11 +345,10 @@ public class BrowseActivityViewModel extends ViewModel {
                 startLoadFiles();
 
             handler.post(() -> {
-                Toast t = Toast.makeText(
-                    application,
-                    "Imported " + uri + ": " + success,
-                    Toast.LENGTH_LONG
+                String msg = application.getString(
+                    success ? R.string.import_success : R.string.import_failure
                 );
+                Toast t = Toast.makeText(application, msg, Toast.LENGTH_SHORT);
                 t.show();
             });
         });

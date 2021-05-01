@@ -11,6 +11,11 @@
     <string name="preview">Preview</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
 
+    <!-- imports -->
+    <string name="import_fallback_source">Import</string>
+    <string name="import_success">Puzzle imported</string>
+    <string name="import_failure">Import failed</string>
+
     <!-- permissions -->
     <string name="perm_read_desc">Requested on older devices to read saved puzzles.</string>
     <string name="perm_write_desc">Requested on older devices to store puzzles.</string>
