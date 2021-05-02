@@ -103,7 +103,9 @@
             android:name="app.crossword.yourealwaysbe.BrowseActivity"
             android:label="@string/app_name"
             android:configChanges="orientation"
-            android:theme="@style/Theme.Forkyz">
+            android:theme="@style/Theme.Forkyz"
+            tools:ignore="AppLinkUrlError"
+        >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
