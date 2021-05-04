@@ -90,6 +90,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_margin="16dp"
+        android:contentDescription="@string/add_puzzle"
         app:sdMainFabClosedSrc="@drawable/ic_add"
         app:sdMainFabOpenedSrc="@drawable/ic_add"
         app:sdOverlayLayout="@id/speed_dial_overlay"
