@@ -281,9 +281,8 @@ public class ClueListActivity extends PuzzleActivity
                         || (board.getBoxes()[curr.across][curr.down] == null)) {
                     board.setHighlightLetter(last);
                 }
-
-                return true;
             }
+            return true;
         }
 
         char c = Character.toUpperCase(event.getDisplayLabel());
