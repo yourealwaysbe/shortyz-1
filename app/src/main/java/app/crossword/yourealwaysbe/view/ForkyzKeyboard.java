@@ -29,7 +29,7 @@ import app.crossword.yourealwaysbe.forkyz.R;
 
 public class ForkyzKeyboard
     extends LinearLayout
-    implements View.OnTouchListener {
+    implements View.OnTouchListener, View.OnClickListener {
 
     private static final String FORKYZ_TEXT_KEY = "ForkyzTextKey";
     private static final String FORKYZ_IMAGE_KEY = "ForkyzImageKey";
@@ -86,6 +86,13 @@ public class ForkyzKeyboard
         }
 
         return false;
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        onKeyDown(id);
+        onKeyUp(id);
     }
 
     /**
@@ -205,6 +212,7 @@ public class ForkyzKeyboard
                 if (keyCode > -1) {
                     ForkyzKeyboard.this.addKeyCode(view.getId(), keyCode);
                     view.setOnTouchListener(ForkyzKeyboard.this);
+                    view.setOnClickListener(ForkyzKeyboard.this);
                 }
             } finally {
                 ta.recycle();
