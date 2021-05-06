@@ -219,11 +219,7 @@ public class BrowseActivity extends ForkyzActivity {
     }
 
     private void setListItemColor(View v, boolean selected){
-        if(selected) {
-            v.setSelected(true);
-        } else {
-            v.setSelected(false);
-        }
+        v.setSelected(selected);
     }
 
     @Override
