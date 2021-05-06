@@ -78,6 +78,7 @@ public class PlayActivity extends PuzzleActivity
     private KeyboardManager keyboardManager;
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
+    private CharSequence boardViewDescriptionBase;
     private TextView clue;
 
     private boolean showErrors = false;
@@ -172,6 +173,7 @@ public class PlayActivity extends PuzzleActivity
         }
 
         this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
+        this.boardViewDescriptionBase = this.boardView.getContentDescription();
         this.clueTabs = this.findViewById(R.id.playClueTab);
 
         ForkyzKeyboard keyboardView
@@ -900,15 +902,19 @@ public class PlayActivity extends PuzzleActivity
         }
 
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
-        this.boardView.setBitmap(getRenderer().draw(previous,
-                                                    displayScratch, displayScratch),
-                                 rescale);
+        this.boardView.setBitmap(
+            getRenderer().draw(previous, displayScratch, displayScratch),
+            rescale
+        );
+        this.boardView.setContentDescription(
+            getRenderer().getContentDescription(this.boardViewDescriptionBase)
+        );
         this.boardView.requestFocus();
         /*
-		 * If we jumped to a new word, ensure the first letter is visible.
-		 * Otherwise, insure that the current letter is visible. Only necessary
-		 * if the cursor is currently off screen.
-		 */
+         * If we jumped to a new word, ensure the first letter is visible.
+         * Otherwise, insure that the current letter is visible. Only necessary
+         * if the cursor is currently off screen.
+         */
         if (rescale && this.prefs.getBoolean("ensureVisible", true)) {
             Point topLeft;
             Point bottomRight;

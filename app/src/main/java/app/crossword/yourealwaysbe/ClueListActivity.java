@@ -38,6 +38,7 @@ public class ClueListActivity extends PuzzleActivity
                               implements ClueTabs.ClueTabsListener {
     private KeyboardManager keyboardManager;
     private ScrollingImageView imageView;
+    private CharSequence imageViewDescriptionBase;
     private PlayboardRenderer renderer;
     private ClueTabs clueTabs;
 
@@ -71,6 +72,7 @@ public class ClueListActivity extends PuzzleActivity
         setContentView(R.layout.clue_list);
 
         this.imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
+        this.imageViewDescriptionBase = this.imageView.getContentDescription();
         this.imageView.setAllowOverScroll(false);
 
         this.imageView.setContextMenuListener(new ClickListener() {
@@ -350,6 +352,9 @@ public class ClueListActivity extends PuzzleActivity
         scaleRendererToCurWord();
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         this.imageView.setBitmap(renderer.drawWord(displayScratch, displayScratch));
+        this.imageView.setContentDescription(
+            renderer.getContentDescription(this.imageViewDescriptionBase)
+        );
     }
 
     /**

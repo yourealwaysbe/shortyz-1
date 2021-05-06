@@ -11,6 +11,7 @@
         android:layout_height="48dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:contentDescription="@string/current_word"
     >
         <requestFocus />
     </app.crossword.yourealwaysbe.view.ScrollingImageView>
