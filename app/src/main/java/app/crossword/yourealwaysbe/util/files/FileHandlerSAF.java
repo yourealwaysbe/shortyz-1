@@ -235,10 +235,9 @@ public class FileHandlerSAF extends FileHandler {
                 fileHandle.getUri()
             );
         } catch (IllegalArgumentException e) {
-            throwAsFileNotFoundIfAppropriate(e);
+            // happens when e.g. file was deleted, so consider as IO
+            throw new IOException(e);
         }
-        // never reached
-        return null;
     }
 
     @Override
@@ -249,10 +248,9 @@ public class FileHandlerSAF extends FileHandler {
                 fileHandle.getUri()
             );
         } catch (IllegalArgumentException e) {
-            throwAsFileNotFoundIfAppropriate(e);
+            // happens when e.g. file was deleted, so consider as IO
+            throw new IOException(e);
         }
-        // never reached
-        return null;
     }
 
     @Override
@@ -537,24 +535,5 @@ public class FileHandlerSAF extends FileHandler {
 
     private ContentResolver getContentResolver() {
         return getApplicationContext().getContentResolver();
-    }
-
-    /**
-     * Rethrow exception as FileNotFoundException if appropriate
-     *
-     * The SAF seems to throw IllegalArgumentException when a file does
-     * not exist as its permission check fails first when it detects the
-     * missing file.
-     */
-    private void throwAsFileNotFoundIfAppropriate(
-        IllegalArgumentException e
-    ) throws IllegalArgumentException, FileNotFoundException {
-        // if the file does not exist, this might be thrown since
-        // Android cannot determine access permissions
-        if (e.getCause() instanceof FileNotFoundException) {
-            throw (FileNotFoundException) e.getCause();
-        } else {
-            throw e;
-        }
     }
 }
