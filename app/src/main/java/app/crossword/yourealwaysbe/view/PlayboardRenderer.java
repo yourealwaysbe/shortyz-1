@@ -291,12 +291,29 @@ public class PlayboardRenderer {
         return new Point(x, y);
     }
 
+    public Point findPointBottomRight(Word word) {
+        Position p = word.start;
+
+        int acrossLen = word.across ? word.length : 1;
+        int downLen = word.across ? 1 : word.length;
+
+        int boxSize = (int) (BASE_BOX_SIZE_INCHES * dpi * scale);
+        int x = (p.across * boxSize) + acrossLen * boxSize;
+        int y = (p.down * boxSize) + downLen * boxSize;
+
+        return new Point(x, y);
+    }
+
     public Point findPointTopLeft(Position p) {
         int boxSize = (int) (BASE_BOX_SIZE_INCHES  * dpi * scale);
         int x = p.across * boxSize;
         int y = p.down * boxSize;
 
         return new Point(x, y);
+    }
+
+    public Point findPointTopLeft(Word word) {
+        return findPointTopLeft(word.start);
     }
 
     public float fitTo(int shortDimension) {
