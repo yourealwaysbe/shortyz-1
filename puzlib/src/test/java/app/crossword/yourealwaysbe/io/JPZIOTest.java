@@ -10,7 +10,7 @@ import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
-public class JPZIOTest extends TestCase{
+public class JPZIOTest extends TestCase {
 
     public JPZIOTest(String testName) {
         super(testName);

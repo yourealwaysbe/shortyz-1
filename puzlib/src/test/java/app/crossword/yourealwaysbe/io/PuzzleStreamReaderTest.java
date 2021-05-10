@@ -43,5 +43,13 @@ public class PuzzleStreamReaderTest extends TestCase {
             })
         );
     }
+
+    public void testIPuz() throws Exception {
+        IPuzIOTest.assertIsTestPuzzle1(
+            PuzzleStreamReader.parseInput(() -> {
+                return IPuzIOTest.getTestPuzzle1InputStream();
+            })
+        );
+    }
 }
 

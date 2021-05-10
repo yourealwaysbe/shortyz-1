@@ -1,0 +1,46 @@
+{
+    "version": "http://ipuz.org/v2",
+    "kind": [ "http://ipuz.org/crossword#1" ],
+    "title": "Test &amp; puzzle",
+    "author": "Test author",
+    "copyright": "Test copyright",
+    "notes": "Test notes<br/>Two lines of <b>notes</b>",
+    "url": "https://testurl.com",
+    "publisher": "Test publisher",
+    "date": "01/02/2003",
+    "dimensions": { "width": 3, "height": 2 },
+    "puzzle": [
+        [ 1, 2, "#" ],
+        [ { "cell": 3, "value": "A", "style": { "shapebg": "circle" } }, 0, 0 ]
+    ],
+    "saved": [
+        [ null, "B", "#" ],
+        [ null, { "value": "C" }, 0 ]
+    ],
+    "solution": [
+        [ "A", "B", "#" ],
+        [ "A", { "value": "C" }, { "value": "D" } ]
+    ],
+    "showenumerations": true,
+    "clues": {
+        "Across": [
+            [ 1, "Test clue 1" ],
+            [ "3/2", "Test clue 2" ],
+        ],
+        "Down:Vertical": [
+            { "number": 1, "clue": "Test clue 3" },
+            {
+                "numbers": [ 2, 1, 3 ],
+                "clue": "Test clue 4",
+                "continued": [
+                    { "number": 1, "direction": "Across" },
+                    { "number": 1, "direction": "Down" }
+                ],
+                "references": [
+                    { "number": "1&2", "direction": "Across" }
+                ],
+                "enumeration": "3-2-1"
+            }
+        ]
+    }
+}
