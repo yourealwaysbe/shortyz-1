@@ -9,6 +9,7 @@ public class PuzzleStreamReader {
     private static final PuzzleParser[] PARSERS = {
         new IO(),
         new JPZIO(),
+        new IPuzIO(),
         new UclickXMLIO(),
         new BrainsOnlyIO(),
         new KingFeaturesPlaintextIO()

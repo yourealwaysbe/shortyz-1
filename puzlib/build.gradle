@@ -2,8 +2,10 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 group 'app.crossword.yourealwaysbe'
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation group: 'junit', name: 'junit', version: '3.+'
+
+    implementation 'org.json:json:20210307'
+    implementation 'org.jsoup:jsoup:1.13.1'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
