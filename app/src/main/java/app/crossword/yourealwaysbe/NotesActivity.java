@@ -59,6 +59,7 @@ public class NotesActivity extends PuzzleActivity {
 
     protected KeyboardManager keyboardManager;
     private ScrollingImageView imageView;
+    private CharSequence imageViewDescriptionBase;
     private EditText notesBox;
     private BoardEditText scratchView;
     private BoardEditText anagramSourceView;
@@ -117,6 +118,7 @@ public class NotesActivity extends PuzzleActivity {
         clue.setText(getLongClueText(board.isAcross(), c, curWordLen));
 
         imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
+        imageViewDescriptionBase = imageView.getContentDescription();
         imageView.setAllowOverScroll(false);
         this.imageView.setContextMenuListener(new ClickListener() {
             public void onContextMenu(Point e) {
@@ -482,6 +484,9 @@ public class NotesActivity extends PuzzleActivity {
         boolean displayScratchDown = displayScratch && getBoard().isAcross();
         this.imageView.setBitmap(renderer.drawWord(displayScratchAcross,
                                                    displayScratchDown));
+        this.imageView.setContentDescription(
+            renderer.getContentDescription(this.imageViewDescriptionBase)
+        );
     }
 
     private void moveScratchToNote() {

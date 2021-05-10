@@ -195,9 +195,6 @@ public abstract class FileHandler {
         Map<Uri, MetaCache.MetaRecord> cachedMetas
             = metaCache.getDirCache(dirHandle);
 
-        LOGGER.info("FORKYZ cache size: " + cachedMetas.size());
-        LOGGER.info("FORKYZ num files: " + puzFiles.size());
-
         for (FileHandle puzFile : puzFiles) {
             String metaName = getMetaFileName(puzFile);
             FileHandle metaFile = null;
@@ -229,8 +226,6 @@ public abstract class FileHandler {
         metaCache.cleanupCache(dirHandle, files);
 
         long end = System.currentTimeMillis();
-
-        LOGGER.info("FORKYZ Loading took " + (end-start));
 
         return files;
     }

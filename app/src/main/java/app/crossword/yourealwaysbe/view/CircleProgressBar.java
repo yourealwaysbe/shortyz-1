@@ -6,11 +6,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 
@@ -18,8 +20,6 @@ import app.crossword.yourealwaysbe.forkyz.R;
  * Created by rcooper on 10/26/14.
  */
 public class CircleProgressBar extends View {
-    private static Typeface icons1;
-    private static Typeface icons4;
     private int nullColor;
     private int inProgressColor;
     private int doneColor;
@@ -64,10 +64,6 @@ public class CircleProgressBar extends View {
         metrics = context.getResources().getDisplayMetrics();
         circleStroke = metrics.density * 6F;
         circleFine = metrics.density * 2f;
-        if(icons1 == null) {
-            icons1 = Typeface.createFromAsset(context.getAssets(), "icons1.ttf");
-            icons4 = Typeface.createFromAsset(context.getAssets(), "icons4.ttf");
-        }
         pcntFilledRect = new RectF(0, 0, 0, 0);
     }
 
@@ -113,10 +109,14 @@ public class CircleProgressBar extends View {
         if (this.complete) {
             paint.setColor(doneColor);
             paint.setStrokeWidth(circleStroke);
-            canvas.drawCircle(halfWidth, halfWidth, halfWidth - halfStroke - metrics.density * 2f, paint);
-            paint.setTypeface(icons1);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawText("4", halfWidth, halfHeight + textSize / 2f, paint);
+            canvas.drawCircle(
+                halfWidth, halfWidth,
+                halfWidth - halfStroke - metrics.density * 2f,
+                paint
+            );
+            drawDrawable(
+                R.drawable.ic_done, halfWidth, halfWidth, doneColor, canvas
+            );
         } else if (this.percentFilled < 0) {
             paint.setColor(errorColor);
             paint.setStrokeWidth(circleStroke);
@@ -124,11 +124,9 @@ public class CircleProgressBar extends View {
             paint.setStyle(Paint.Style.FILL);
             canvas.drawText("?", halfWidth, halfWidth + textSize / 3f, paint);
         } else if (this.percentFilled == 0) {
-//            paint.setStrokeWidth(circleFine);
-//            canvas.drawCircle(halfWidth, halfHeight, halfWidth - metrics.density * 4f, paint);
-            paint.setTypeface(icons4);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawText("W", halfWidth, halfWidth + textSize / 2.5f, paint);
+            drawDrawable(
+                R.drawable.ic_play, halfWidth, textSize, nullColor, canvas
+            );
         } else {
             paint.setColor(inProgressColor);
             paint.setStrokeWidth(circleFine);
@@ -148,4 +146,20 @@ public class CircleProgressBar extends View {
             canvas.drawText(percentFilled+"%", halfWidth, halfHeight + textSize / 3f, paint);
         }
     }
+
+    private void drawDrawable(
+        int resId, float halfWidth, float diameter, int color, Canvas canvas
+    ) {
+        Drawable icon = ContextCompat.getDrawable(getContext(), resId);
+        Drawable iconWrapped = DrawableCompat.wrap(icon);
+        DrawableCompat.setTint(iconWrapped, color);
+        iconWrapped.setBounds(
+            (int) (halfWidth - 0.5 * diameter),
+            (int) (halfWidth - 0.5 * diameter),
+            (int) (halfWidth + 0.5 * diameter),
+            (int) (halfWidth + 0.5 * diameter)
+        );
+        iconWrapped.draw(canvas);
+    }
+
 }

@@ -53,6 +53,7 @@ public class BoardEditText extends ScrollingImageView {
     // to intercept
     private ClickListener ctxListener;
     private BoardEditFilter[] filters;
+    private CharSequence contentDescriptionBase;
 
     /**
      * Call setRenderer to set the same renderer as used by the activity using
@@ -87,6 +88,8 @@ public class BoardEditText extends ScrollingImageView {
         });
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        contentDescriptionBase = getContentDescription();
     }
 
     @Override
@@ -284,6 +287,11 @@ public class BoardEditText extends ScrollingImageView {
     private void render() {
         boolean displayScratch = prefs.getBoolean("displayScratch", false);
         setBitmap(renderer.drawBoxes(boxes, selection, displayScratch, displayScratch));
+        setContentDescription(
+            renderer.getContentDescription(
+                contentDescriptionBase, boxes, selection.across
+            )
+        );
     }
 
     private boolean canDelete(Position pos) {

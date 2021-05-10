@@ -78,6 +78,7 @@ public class PlayActivity extends PuzzleActivity
     private KeyboardManager keyboardManager;
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
+    private CharSequence boardViewDescriptionBase;
     private TextView clue;
 
     private boolean showErrors = false;
@@ -172,6 +173,7 @@ public class PlayActivity extends PuzzleActivity
         }
 
         this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
+        this.boardViewDescriptionBase = this.boardView.getContentDescription();
         this.clueTabs = this.findViewById(R.id.playClueTab);
 
         ForkyzKeyboard keyboardView
@@ -605,32 +607,23 @@ public class PlayActivity extends PuzzleActivity
                 this.startActivity(i);
                 return true;
             } else if (id == R.id.play_menu_zoom_in) {
-                this.boardView.scrollTo(0, 0);
-                {
-                    float newScale = getRenderer().zoomIn();
-                    this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    boardView.setCurrentScale(newScale);
-                }
+                float newScale = getRenderer().zoomIn();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                boardView.setCurrentScale(newScale);
                 this.render(true);
 
                 return true;
             } else if (id == R.id.play_menu_zoom_in_max) {
-                this.boardView.scrollTo(0, 0);
-                {
-                    float newScale = getRenderer().zoomInMax();
-                    this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    boardView.setCurrentScale(newScale);
-                }
+                float newScale = getRenderer().zoomInMax();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                boardView.setCurrentScale(newScale);
                 this.render(true);
 
                 return true;
             } else if (id == R.id.play_menu_zoom_out) {
-                this.boardView.scrollTo(0, 0);
-                {
-                    float newScale = getRenderer().zoomOut();
-                    this.prefs.edit().putFloat(SCALE, newScale).apply();
-                    boardView.setCurrentScale(newScale);
-                }
+                float newScale = getRenderer().zoomOut();
+                this.prefs.edit().putFloat(SCALE, newScale).apply();
+                boardView.setCurrentScale(newScale);
                 this.render(true);
 
                 return true;
@@ -642,7 +635,6 @@ public class PlayActivity extends PuzzleActivity
                 boardView.setCurrentScale(newScale);
                 this.prefs.edit().putFloat(SCALE, newScale).apply();
                 this.render(true);
-                this.boardView.scrollTo(0, 0);
 
                 return true;
             } else if (id == R.id.play_menu_info) {
@@ -838,7 +830,7 @@ public class PlayActivity extends PuzzleActivity
     }
 
     private void setClueSize(int dps) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.clue.setAutoSizeTextTypeUniformWithConfiguration(
                 5, dps, 1, TypedValue.COMPLEX_UNIT_SP
             );
@@ -900,51 +892,47 @@ public class PlayActivity extends PuzzleActivity
         }
 
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
-        this.boardView.setBitmap(getRenderer().draw(previous,
-                                                    displayScratch, displayScratch),
-                                 rescale);
+        this.boardView.setBitmap(
+            getRenderer().draw(previous, displayScratch, displayScratch),
+            rescale
+        );
+        this.boardView.setContentDescription(
+            getRenderer().getContentDescription(this.boardViewDescriptionBase)
+        );
         this.boardView.requestFocus();
         /*
-		 * If we jumped to a new word, ensure the first letter is visible.
-		 * Otherwise, insure that the current letter is visible. Only necessary
-		 * if the cursor is currently off screen.
-		 */
-        if (rescale && this.prefs.getBoolean("ensureVisible", true)) {
+         * If we jumped to a new word, ensure the first letter is visible.
+         * Otherwise, insure that the current letter is visible. Only necessary
+         * if the cursor is currently off screen.
+         */
+        if (this.prefs.getBoolean("ensureVisible", true)) {
+            Playboard board = getBoard();
+            Word currentWord = board.getCurrentWord();
+            Position cursorPos = board.getHighlightLetter();
+            PlayboardRenderer renderer = getRenderer();
+
             Point topLeft;
             Point bottomRight;
             Point cursorTopLeft;
             Point cursorBottomRight;
-            cursorTopLeft = getRenderer().findPointTopLeft(getBoard()
-                    .getHighlightLetter());
-            cursorBottomRight = getRenderer().findPointBottomRight(getBoard()
-                    .getHighlightLetter());
 
-            if ((previous != null) && previous.equals(getBoard().getCurrentWord())) {
+            cursorTopLeft = renderer.findPointTopLeft(cursorPos);
+            cursorBottomRight = renderer.findPointBottomRight(cursorPos);
+
+            if ((previous != null) && previous.equals(currentWord)) {
                 topLeft = cursorTopLeft;
                 bottomRight = cursorBottomRight;
             } else {
-                topLeft = getRenderer()
-                        .findPointTopLeft(getBoard().getCurrentWordStart());
-                bottomRight = getRenderer().findPointBottomRight(getBoard()
-                        .getCurrentWordStart());
+                topLeft = renderer.findPointTopLeft(currentWord);
+                bottomRight = renderer.findPointBottomRight(currentWord);
             }
 
-            int tlDistance = cursorTopLeft.distance(topLeft);
-            int brDistance = cursorBottomRight.distance(bottomRight);
-
-            if (!this.boardView.isVisible(topLeft) && (tlDistance < brDistance)) {
-                this.boardView.ensureVisible(topLeft);
-            }
-
-            if (!this.boardView.isVisible(bottomRight)
-                    && (brDistance < tlDistance)) {
-                this.boardView.ensureVisible(bottomRight);
-            }
+            this.boardView.ensureVisible(bottomRight);
+            this.boardView.ensureVisible(topLeft);
 
             // ensure the cursor is always on the screen.
             this.boardView.ensureVisible(cursorBottomRight);
             this.boardView.ensureVisible(cursorTopLeft);
-
         }
 
         this.clue.setText(getLongClueText(

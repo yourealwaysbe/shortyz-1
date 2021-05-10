@@ -42,6 +42,7 @@
                 android:nextFocusForward="@+id/scratchMiniboard"
                 android:nextFocusDown="@+id/scratchMiniboard"
                 android:nextFocusUp="@+id/anagramSolution"
+                android:contentDescription="@string/board_lab"
             >
                 <requestFocus/>
             </app.crossword.yourealwaysbe.view.ScrollingImageView>
@@ -60,6 +61,7 @@
                 android:focusableInTouchMode="true"
                 android:nextFocusForward="@+id/notesBox"
                 android:nextFocusDown="@+id/notesBox"
+                android:contentDescription="@string/scratch_lab"
             />
             <TextView
                 android:id="@+id/notesLab"
@@ -96,6 +98,7 @@
                 android:focusableInTouchMode="true"
                 android:nextFocusForward="@+id/anagramSolution"
                 android:nextFocusDown="@+id/anagramSolution"
+                android:contentDescription="@string/anagram_source_lab"
             />
             <TextView
                 android:id="@+id/anagramSolutionLab"
@@ -112,6 +115,7 @@
                 android:focusableInTouchMode="true"
                 android:nextFocusForward="@+id/miniboard"
                 android:nextFocusDown="@+id/miniboard"
+                android:contentDescription="@string/anagram_solution_lab"
             />
         </LinearLayout>
     </ScrollView>

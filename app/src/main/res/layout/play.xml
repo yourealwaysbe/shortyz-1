@@ -32,6 +32,7 @@
         app:layout_constraintVertical_weight="100"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/grid"
     />
     <app.crossword.yourealwaysbe.view.ClueTabs
         android:id="@+id/playClueTab"

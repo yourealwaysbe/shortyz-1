@@ -1,8 +1,97 @@
 <resources>
-    <style name="Theme.Forkyz" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- customize the color palette -->
+    <!-- inherit from the material theme -->
+    <style name="Theme.Forkyz" parent="Base.Theme.AppCompat">
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="titleTextColor">@color/titleTextColor</item>
+        <item name="actionOverflowButtonStyle">@style/actionOverflowButtonStyle</item>
+        <item name="toolbarNavigationButtonStyle">@style/actionNavigationButtonStyle</item>
+        <item name="android:itemBackground">@color/background_light</item>
+        <item name="textAppearanceLargePopupMenu">@style/actionMenuTextLarge</item>
+        <item name="textAppearanceSmallPopupMenu">@style/actionMenuTextSmall</item>
+        <item name="actionBarPopupTheme">@style/submenuHeaderStyle</item>
+        <item name="android:dialogTheme">@style/dialogTheme</item>
+        <item name="alertDialogTheme">@style/dialogTheme</item>
+        <item name="android:alertDialogTheme">@style/dialogTheme</item>
+        <item name="android:spinnerDropDownItemStyle">@style/spinnerItemStyle</item>
+    </style>
+
+    <style name="actionOverflowButtonStyle"   parent="Widget.AppCompat.Light.ActionButton.Overflow">
+        <item name="android:tint">@color/titleTextColor</item>
+    </style>
+
+    <style name="actionNavigationButtonStyle"   parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:tint">@color/titleTextColor</item>
+    </style>
+
+    <style name="actionMenuTextLarge" parent="@style/TextAppearance.AppCompat.Widget.PopupMenu.Large">
+        <item name="android:textColor">@color/textColorPrimary</item>
+    </style>
+
+    <style name="actionMenuTextSmall" parent="@style/TextAppearance.AppCompat.Widget.PopupMenu.Small">
+        <item name="android:textColor">@color/textColorPrimary</item>
+    </style>
+
+    <style name="submenuHeaderStyle" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorPrimary</item>
+    </style>
+
+    <style name="dialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:background">@color/background_light</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="textColorAlertDialogListItem">@color/textColorPrimary</item>
+        <item name="android:buttonBarButtonStyle">@style/dialogButtonStyle</item>
+        <item name="buttonBarButtonStyle">@style/dialogButtonStyle</item>
+    </style>
+
+    <style name="dialogButtonStyle" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">@color/accent</item>
+    </style>
+
+    <style name="spinnerItemStyle" parent="@android:style/Widget.Holo.DropDownItem.Spinner">
+        <item name="android:textColor">@color/textColorPrimary</item>
+    </style>
+
+    <style name="keyboardStyle" parent="Base.Theme.AppCompat">
+        <item name="android:background">@color/background_dark</item>
+        <item name="buttonStyle">@style/keyboardButtonStyle</item>
+        <item name="android:buttonStyle">@style/keyboardButtonStyle</item>
+        <item name="imageButtonStyle">@style/keyboardImageButtonStyle</item>
+        <item name="android:imageButtonStyle">@style/keyboardImageButtonStyle</item>
+    </style>
+
+    <style name="keyboardButtonStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textSize">@dimen/keyboardTextSize</item>
+    </style>
+
+    <style name="keyboardImageButtonStyle" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:tint">@color/textColorPrimary</item>
+    </style>
+
+    <style name="puzzleInfoDialogStyle" parent="Theme.Forkyz">
+    </style>
+
+    <style name="downloadDialogStyle" parent="Theme.Forkyz">
+        <item name="android:background">@color/background_light</item>
+    </style>
+
+    <style name="speedDialStyle" parent="Theme.Forkyz">
+        <item name="colorPrimary">@color/speedDialTint</item>
+        <item name="colorAccent">@color/speedDialTint</item>
+    </style>
+
+    <style name="speedDialOverlayStyle" parent="Theme.Forkyz">
+        <item name="android:background">@color/screenFade</item>
     </style>
 </resources>

@@ -21,5 +21,6 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:contentDescription="@string/back"
+        app:srcCompat="@drawable/ic_back"
     />
 </RelativeLayout>

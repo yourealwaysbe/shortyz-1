@@ -14,12 +14,13 @@ import android.os.Build;
 
 import androidx.core.content.ContextCompat;
 
+import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Note;
-import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
+import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 
 import java.util.logging.Logger;
@@ -290,12 +291,29 @@ public class PlayboardRenderer {
         return new Point(x, y);
     }
 
+    public Point findPointBottomRight(Word word) {
+        Position p = word.start;
+
+        int acrossLen = word.across ? word.length : 1;
+        int downLen = word.across ? 1 : word.length;
+
+        int boxSize = (int) (BASE_BOX_SIZE_INCHES * dpi * scale);
+        int x = (p.across * boxSize) + acrossLen * boxSize;
+        int y = (p.down * boxSize) + downLen * boxSize;
+
+        return new Point(x, y);
+    }
+
     public Point findPointTopLeft(Position p) {
         int boxSize = (int) (BASE_BOX_SIZE_INCHES  * dpi * scale);
         int x = p.across * boxSize;
         int y = p.down * boxSize;
 
         return new Point(x, y);
+    }
+
+    public Point findPointTopLeft(Word word) {
+        return findPointTopLeft(word.start);
     }
 
     public float fitTo(int shortDimension) {
@@ -348,6 +366,101 @@ public class PlayboardRenderer {
         return scale;
     }
 
+    /**
+     * Dynamic content description describing currently selected box on board
+     *
+     * @param baseDescription short description of what the board is
+     * displaying
+     */
+    public String getContentDescription(CharSequence baseDescription) {
+        Box curBox = board.getCurrentBox();
+        return getContentDescription(baseDescription, curBox);
+    }
+
+    /**
+     * Dynamic content description describing currently selected box
+     *
+     * @param baseDescription short description of what the board is
+     * displaying
+     * @param boxes
+     * @param index which of the boxes to get description for, will return a
+     * "no selection" string if index is out of range
+     */
+    public String getContentDescription(
+        CharSequence baseDescription, Box[] boxes, int index
+    ) {
+        if (index < 0 || index >= boxes.length) {
+            Context context = ForkyzApplication.getInstance();
+            return context.getString(
+                R.string.cur_box_none_selected, baseDescription
+            );
+        } else {
+            Box curBox = boxes[index];
+            return getContentDescription(baseDescription, curBox);
+        }
+    }
+    /**
+     * Dynamic content description for the given box
+     *
+     * @param baseDescription short description of the box
+     */
+    public String getContentDescription(CharSequence baseDescription, Box box) {
+        Context context = ForkyzApplication.getInstance();
+
+        String response = box.isBlank()
+            ? context.getString(R.string.cur_box_blank)
+            : String.valueOf(box.getResponse());
+
+        int clueNumber = box.getClueNumber();
+        String number = drawClueNumber(box)
+            ? context.getString(R.string.cur_box_number, clueNumber)
+            : context.getString(R.string.cur_box_no_number);
+
+        String acrossClueInfo;
+        if (box.isPartOfAcross()) {
+            acrossClueInfo = context.getString(
+                R.string.cur_box_across_clue_info,
+                box.getPartOfAcrossClueNumber()
+            );
+        } else {
+            acrossClueInfo = context.getString(
+                R.string.cur_box_no_across_clue_info
+            );
+        }
+
+        String downClueInfo;
+        if (box.isPartOfDown()) {
+            downClueInfo = context.getString(
+                R.string.cur_box_down_clue_info,
+                box.getPartOfDownClueNumber()
+            );
+        } else {
+            downClueInfo = context.getString(
+                R.string.cur_box_no_down_clue_info
+            );
+        }
+
+        String circled = context.getString(
+            box.isCircled()
+                ? R.string.cur_box_circled
+                : R.string.cur_box_not_circled
+        );
+
+        String error = context.getString(
+            highlightError(box)
+                ? R.string.cur_box_error
+                : R.string.cur_box_no_error
+        );
+
+       String contentDesc = context.getString(
+            R.string.cur_box_desc,
+            baseDescription,
+            response, acrossClueInfo, downClueInfo, number, circled, error
+        );
+
+        return contentDesc;
+    }
+
     private void drawBox(Canvas canvas,
                          int x, int y,
                          int row, int col,
@@ -381,9 +494,7 @@ public class PlayboardRenderer {
                 canvas.drawRect(r, this.currentLetterHighlight);
             } else if ((currentWord != null) && currentWord.checkInWord(col, row)) {
                 canvas.drawRect(r, this.currentWordHighlight);
-            } else if (this.board.isShowErrors() && !box.isBlank() &&
-                    (box.hasSolution()  &&
-                     box.getSolution() != box.getResponse())) {
+            } else if (highlightError(box)) {
                 box.setCheated(true);
                 canvas.drawRect(r, this.red);
             } else if (this.hintHighlight && box.isCheated()) {
@@ -392,7 +503,7 @@ public class PlayboardRenderer {
                 canvas.drawRect(r, this.white);
             }
 
-            if (box.isAcross() || box.isDown()) {
+            if (drawClueNumber(box)) {
                 canvas.drawText(Integer.toString(box.getClueNumber()), x + 2, y + numberTextSize + 2, this.numberText);
             }
 
@@ -519,5 +630,16 @@ public class PlayboardRenderer {
         if ((row != (highlight.down - 1)) || (col != highlight.across)) {
             canvas.drawLine(x, y + boxSize, x + boxSize, y + boxSize, boxColor);
         }
+    }
+
+    private boolean highlightError(Box box) {
+        return this.board.isShowErrors()
+            && !box.isBlank()
+            && box.hasSolution()
+            && box.getSolution() != box.getResponse();
+    }
+
+    private boolean drawClueNumber(Box box) {
+        return box.isAcross() || box.isDown();
     }
 }

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+>
     <string name="puzzle_select">Select a puzzle:</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
@@ -10,6 +12,11 @@
     <string name="elapsed_time">Elapsed Time: %1$s</string>
     <string name="preview">Preview</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
+
+    <!-- imports -->
+    <string name="import_fallback_source">Import</string>
+    <string name="import_success">Puzzle imported</string>
+    <string name="import_failure">Import failed</string>
 
     <!-- permissions -->
     <string name="perm_read_desc">Requested on older devices to read saved puzzles.</string>
@@ -22,6 +29,10 @@
     <string name="delete">Delete</string>
     <string name="archive">Archive</string>
     <string name="unarchive">Un-Archive</string>
+    <string name="add_puzzle">Add Puzzle</string>
+    <string name="online_sources">Online Sources</string>
+    <string name="online_sources_url">https://yourealwaysbe.github.io/forkyz</string>
+    <string name="import_puzzle">Import Puzzle</string>
     <string name="download_puzzles">Download Puzzles</string>
     <string name="back">Back</string>
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
@@ -36,6 +47,9 @@
     <string name="please_allow_storage">Please allow writing to storage when prompted. Forkyz needs this permission to store downloaded crossword files and cannot work without it.</string>
     <string name="title_view_archives">Archives</string>
     <string name="title_view_crosswords">Crosswords</string>
+
+    <!-- clues list -->
+    <string name="current_word">Current word</string>
 
     <!-- notes page -->
     <string name="anagram_source_lab">Anagram remaining letters</string>
@@ -183,6 +197,7 @@
     <string name="notes">Notes</string>
 
     <!-- play menu -->
+    <string name="grid">Grid</string>
     <string name="clues">Clues</string>
     <string name="zoom">Zoom</string>
     <string name="zoom_in">Zoom In</string>
@@ -203,6 +218,24 @@
     <string name="puzzle">Puzzle</string>
     <string name="info">Info</string>
     <string name="support_puzzle_source">Support Puzzle Source</string>
+
+    <!-- playboard -->
+    <!-- args: description, response, across clue info, down clue info, if
+    numbered, if circled, if error -->
+    <string name="cur_box_desc">%1$s, current box %2$s%3$s%4$s%5$s%6$s%7$s</string>
+    <!-- description only -->
+    <string name="cur_box_none_selected">%1$s</string>
+    <string tools:ignore="PluralsCandidate" name="cur_box_across_clue_info">, in %1$d across</string>
+    <string name="cur_box_no_across_clue_info"></string>
+    <string tools:ignore="PluralsCandidate" name="cur_box_down_clue_info">, in %1$d down</string>
+    <string name="cur_box_no_down_clue_info"></string>
+    <string name="cur_box_number">, number %1$d</string>
+    <string name="cur_box_no_number"></string>
+    <string name="cur_box_circled">, circled</string>
+    <string name="cur_box_not_circled"></string>
+    <string name="cur_box_error">, is error</string>
+    <string name="cur_box_no_error"></string>
+    <string name="cur_box_blank">blank</string>
 
     <!-- browse menu -->
     <string name="app_theme">App Theme</string>
@@ -292,6 +325,8 @@
     <string name="key_right">right</string>
 
     <string name="keyboard_always_show">Always show</string>
+    <string name="keyboard_hide_back">Hide keyboard with back button</string>
     <string name="keyboard_show_sparingly">Show sparingly</string>
+    <string name="keyboard_show_sparingly_desc">Hide keyboard on clue change</string>
     <string name="keyboard_never_show">Never show</string>
 </resources>

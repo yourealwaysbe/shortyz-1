@@ -1,78 +1,38 @@
+
 package app.crossword.yourealwaysbe.net;
 
 import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.logging.Level;
 
 import android.net.Uri;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.io.JPZIO;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
-import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
-import app.crossword.yourealwaysbe.versions.DefaultUtil;
 
+/**
+ * Abstract for puzzle sources using .JPZ XML format
+ */
 public abstract class AbstractJPZDownloader extends AbstractDownloader {
 
-    protected AbstractJPZDownloader(
-        String baseUrl, DirHandle downloadDirectory, String downloaderName
+    public AbstractJPZDownloader(
+        String baseUrl,
+        DirHandle downloadDirectory,
+        String downloaderName
     ) {
         super(baseUrl, downloadDirectory, downloaderName);
     }
 
-    protected Downloader.DownloadResult download(
-        LocalDate date, String urlSuffix, Map<String, String> headers
-    ) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-        DownloadResult jpzResult = download(date, urlSuffix, headers, false);
-
-        if (jpzResult == null)
-            return null;
-
-        FileHandle jpzFile = jpzResult.getFileHandle();
-
-        FileHandle puzFile = fileHandler.createFileHandle(
-            downloadDirectory,
-            this.createFileName(date),
-            FileHandler.MIME_TYPE_PUZ
-        );
-        if (puzFile == null)
-            return null;
-
-        boolean success = false;
-
-        try (
-            InputStream is = fileHandler.getBufferedInputStream(jpzFile);
-            DataOutputStream dos
-                = new DataOutputStream(fileHandler.getBufferedOutputStream(puzFile));
-        ) {
-            JPZIO.convertJPZPuzzle(is, dos , date);
-            fileHandler.delete(jpzFile);
-            return new Downloader.DownloadResult(puzFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            fileHandler.delete(jpzFile);
-            if (!success)
-                fileHandler.delete(puzFile);
-        }
-
-        return null;
-    }
-
-    public String createFileName(LocalDate date) {
-        return date.getYear() + "-" + date.getMonthValue() + "-" + date.getDayOfMonth() + "-" +
-        this.getName().replaceAll(" ", "") + FileHandler.FILE_EXT_PUZ;
+    public Downloader.DownloadResult download(LocalDate date) {
+        return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
     protected Downloader.DownloadResult download(
@@ -81,45 +41,57 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         Map<String, String> headers,
         boolean canDefer
     ) {
+        URL url = null;
+        try {
+            url = new URL(this.baseUrl + urlSuffix);
+        } catch (MalformedURLException e) {
+            LOG.log(
+                Level.SEVERE,
+                "Error downloading " + getName() + " puzzle: " + e
+            );
+            return null;
+        }
+
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
+
+        String fileName = this.createFileName(date);
+
         FileHandle f = fileHandler.createFileHandle(
-            downloadDirectory,
-            this.createFileName(date)+".jpz",
-            FileHandler.MIME_TYPE_GENERIC
+            this.downloadDirectory,
+            this.createFileName(date),
+            FileHandler.MIME_TYPE_PUZ
         );
         if (f == null)
             return null;
 
         boolean success = false;
 
-        try {
-            URL url = new URL(this.baseUrl + urlSuffix);
-            LOG.info("Downloading from "+url);
+        try (
+            InputStream is = url.openStream();
+            DataOutputStream dos = new DataOutputStream(
+                 fileHandler.getBufferedOutputStream(f)
+            )
+        ) {
+            success =
+                JPZIO.convertPuzzle(is, dos, date);
 
-            PuzzleMeta meta = new PuzzleMeta();
-            meta.date = date;
-            meta.source = getName();
-            meta.sourceUrl = url.toString();
-            meta.updatable = false;
-
-            Uri fileUri = fileHandler.getUri(f);
-            utils.storeMetas(fileHandler.getUri(f), meta, downloadDirectory);
-
-            success = utils.downloadFile(url, f, headers, true, this.getName());
-
-            if (success) {
-                utils.removeMetas(fileHandler.getUri(f));
-                success = true;
-                return new Downloader.DownloadResult(f);
-            } else if (canDefer) {
-                return Downloader.DownloadResult.DEFERRED_FILE;
+            if (!success) {
+                LOG.log(
+                    Level.SEVERE,
+                    "Unable to convert " + getName()
+                        + " XML puzzle into Across Lite format."
+                );
             } else {
-                utils.removeMetas(fileUri);
-                return null;
+                return new Downloader.DownloadResult(f);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ioe) {
+            LOG.log(
+                Level.SEVERE,
+                "Exception converting " + getName()
+                    + " XML puzzle into Across Lite format.",
+                ioe
+            );
         } finally {
             if (!success)
                 fileHandler.delete(f);
@@ -128,3 +100,4 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         return null;
     }
 }
+

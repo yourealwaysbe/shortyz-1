@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe;
 
-
 import android.Manifest;
 import android.app.Dialog;
 import android.app.NotificationManager;
@@ -22,6 +21,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.GetContent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.app.ActivityCompat;
@@ -32,7 +34,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 
 import app.crossword.yourealwaysbe.forkyz.BuildConfig;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
@@ -50,7 +54,6 @@ import app.crossword.yourealwaysbe.view.CircleProgressBar;
 import app.crossword.yourealwaysbe.view.StoragePermissionDialog;
 import app.crossword.yourealwaysbe.view.recycler.RemovableRecyclerViewAdapter;
 import app.crossword.yourealwaysbe.view.recycler.SeparatedRecyclerViewAdapter;
-import app.crossword.yourealwaysbe.view.recycler.ShowHideOnScroll;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -69,6 +72,10 @@ import java.util.stream.Collectors;
 public class BrowseActivity extends ForkyzActivity {
     private static final int REQUEST_WRITE_STORAGE = 1002;
 
+    // allow import of all docs (parser will take care of detecting if it's a
+    // puzzle that's recognised)
+    private static final String IMPORT_MIME_TYPE =  "*/*";
+
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
 
@@ -86,10 +93,22 @@ public class BrowseActivity extends ForkyzActivity {
     private RecyclerView puzzleList;
     private NotificationManager nm;
     private boolean hasWritePermissions;
-    private FloatingActionButton download;
+    private SpeedDialView buttonAdd;
     private Set<PuzMetaFile> selected = new HashSet<>();
     private MenuItem viewCrosswordsArchiveMenuItem;
     private View pleaseWaitView;
+    private Uri pendingImport;
+
+    ActivityResultLauncher<String> getImportURI = registerForActivityResult(
+        new GetContent(),
+        new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri uri) {
+                onImportURI(uri, false);
+            }
+        }
+    );
+
     private ActionMode actionMode;
     private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -111,7 +130,7 @@ public class BrowseActivity extends ForkyzActivity {
                 utils.onActionBarWithText(menu.getItem(i));
             }
 
-            download.setVisibility(View.GONE);
+            setSpeedDialVisibility(View.GONE);
 
             return true;
         }
@@ -145,7 +164,7 @@ public class BrowseActivity extends ForkyzActivity {
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             clearSelection();
-            download.setVisibility(View.VISIBLE);
+            setSpeedDialVisibility(View.VISIBLE);
             actionMode = null;
         }
     };
@@ -200,11 +219,7 @@ public class BrowseActivity extends ForkyzActivity {
     }
 
     private void setListItemColor(View v, boolean selected){
-        if(selected) {
-            v.setSelected(true);
-        } else {
-            v.setSelected(false);
-        }
+        v.setSelected(selected);
     }
 
     @Override
@@ -337,20 +352,8 @@ public class BrowseActivity extends ForkyzActivity {
             this.accessor = Accessor.DATE_DESC;
         }
 
-        download = (FloatingActionButton)
-            this.findViewById(R.id.button_floating_action);
-
-        if(download != null) {
-            download.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    DialogFragment dialog = new DownloadDialog();
-                    dialog.show(getSupportFragmentManager(), "DownloadDialog");
-                }
-            });
-            download.setImageBitmap(createBitmap("icons1.ttf", ","));
-            setPuzzleListOnTouchListener();
-        }
+        buttonAdd = findViewById(R.id.speed_dial_add);
+        setupSpeedDial();
 
         if (ForkyzApplication.getInstance().isMissingWritePermission()) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -409,6 +412,14 @@ public class BrowseActivity extends ForkyzActivity {
         // populated properly inside onResume or with puzzle list
         // observer
         setPuzzleListAdapter(buildEmptyList(), false);
+
+        // If this was started by a file open
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        if (Intent.ACTION_VIEW.equals(action)) {
+            // loaded by onResume
+            setPendingImport(intent.getData());
+        }
     }
 
     private void setViewCrosswordsOrArchiveUI() {
@@ -452,7 +463,18 @@ public class BrowseActivity extends ForkyzActivity {
         // the UI is re-rendered when they exit the settings dialog.
         if (model.getPuzzleFiles().getValue() == null
                 || utils.checkBackgroundDownload(prefs, hasWritePermissions)) {
-            startLoadPuzzleList();
+
+            if (hasPendingImport()) {
+                Uri importUri = getPendingImport();
+                clearPendingImport();
+                onImportURI(importUri, true);
+
+                // won't be triggered by import if archive is shown
+                if (model.getIsViewArchive())
+                    startLoadPuzzleList();
+            } else {
+                startLoadPuzzleList();
+            }
         } else {
             refreshLastAccessedPuzzle();
         }
@@ -635,19 +657,75 @@ public class BrowseActivity extends ForkyzActivity {
         }
     }
 
-    // suppress this warning because ShowHideOnScroll does not implement click
-    // functionality
-    @SuppressWarnings("ClickableViewAccessibility")
-    private void setPuzzleListOnTouchListener() {
-        this.puzzleList.setOnTouchListener(new ShowHideOnScroll(download));
-    }
-
     private void showPleaseWait() {
         pleaseWaitView.setVisibility(View.VISIBLE);
     }
 
     private void hidePleaseWait() {
         pleaseWaitView.setVisibility(View.GONE);
+    }
+
+    private void setSpeedDialVisibility(int visibility) {
+        buttonAdd.setVisibility(visibility);
+    }
+
+    private void setupSpeedDial() {
+        buttonAdd.inflate(R.menu.speed_dial_browse_menu);
+
+        buttonAdd.setOnActionSelectedListener(
+            new SpeedDialView.OnActionSelectedListener() {
+                @Override
+                public boolean onActionSelected(
+                    SpeedDialActionItem actionItem
+                ) {
+                    int id = actionItem.getId();
+                    if (id == R.id.speed_dial_download) {
+                        buttonAdd.close();
+                        DialogFragment dialog = new DownloadDialog();
+                        dialog.show(
+                            getSupportFragmentManager(),
+                            "DownloadDialog"
+                        );
+                        return true;
+                    } else if (id == R.id.speed_dial_import) {
+                        getImportURI.launch(IMPORT_MIME_TYPE);
+                    } else if (id == R.id.speed_dial_online_sources) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(
+                            Uri.parse(getString(R.string.online_sources_url))
+                        );
+                        startActivity(i);
+                    }
+                    return false;
+                }
+            }
+        );
+
+        setSpeedDialVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Import from URI, force reload of puz list if asked
+     */
+    private void onImportURI(Uri uri, boolean forceReload) {
+        if (uri != null)
+            model.importURI(uri, forceReload);
+    }
+
+    private boolean hasPendingImport() {
+        return pendingImport != null;
+    }
+
+    private Uri getPendingImport() {
+        return pendingImport;
+    }
+
+    private void clearPendingImport() {
+        pendingImport = null;
+    }
+
+    private void setPendingImport(Uri uri) {
+        pendingImport = uri;
     }
 
     private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {

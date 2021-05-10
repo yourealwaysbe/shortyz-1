@@ -18,8 +18,6 @@ android {
 
     lintOptions {
         abortOnError false
-        disable "UnsafeExperimentalUsageError",
-                "UnsafeExperimentalUsageWarning"
     }
 
     defaultConfig {
@@ -91,7 +89,7 @@ android {
 
 dependencies {
     def lifecycle_version = "2.3.1"
-    def room_version = "2.2.6"
+    def room_version = "2.3.0"
 
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:4.3.1'
     annotationProcessor "androidx.room:room-compiler:$room_version"
@@ -99,10 +97,11 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.room:room-runtime:$room_version"
-    implementation 'androidx.activity:activity:1.2.2'
+    implementation 'com.github.leinardi:FloatingActionButtonSpeedDial:3.1.1'
+    implementation 'androidx.activity:activity:1.2.3'
     implementation 'androidx.appcompat:appcompat:1.3.0-rc01'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta01'
-    implementation 'androidx.fragment:fragment:1.3.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
+    implementation 'androidx.fragment:fragment:1.3.3'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.2.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'

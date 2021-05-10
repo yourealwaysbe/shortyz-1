@@ -25,7 +25,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-public class IO {
+public class IO implements PuzzleParser {
     public static final int DEFAULT_BUFFER_SIZE = 1024;
     public static final String FILE_MAGIC = "ACROSS&DOWN";
     public static final String VERSION_STRING = "1.2";
@@ -70,16 +70,38 @@ public class IO {
     public static Puzzle load(DataInputStream puzzleInput,
                               DataInputStream metaInput) throws IOException {
         Puzzle puz = IO.loadNative(puzzleInput);
-        puzzleInput.close();
-        IO.readCustom(puz, metaInput);
+
+        if (puz != null)
+            IO.readCustom(puz, metaInput);
 
         return puz;
+    }
+
+    @Override
+    public Puzzle parseInput(InputStream is) throws IOException {
+        return loadNative(new DataInputStream(is));
+    }
+
+    public static Puzzle loadNative(InputStream input) throws IOException {
+        return loadNative(new DataInputStream(input));
     }
 
     public static Puzzle loadNative(DataInputStream input) throws IOException {
         Puzzle puz = new Puzzle();
 
-        input.skipBytes(0x18);
+        input.skipBytes(0x2);
+
+        byte[] fileMagic = new byte[FILE_MAGIC.length()];
+
+        input.read(fileMagic, 0, fileMagic.length);
+
+        // check that this is a puz file
+        if (!FILE_MAGIC.equals(new String(fileMagic, CHARSET)))
+            return  null;
+
+        // done in two steps to match saveNative method
+        input.skip(1);
+        input.skipBytes(0xA);
 
         byte[] versionString = new byte[3];
 
@@ -265,6 +287,10 @@ public class IO {
         input.skipBytes(1);
     }
 
+    public static PuzzleMeta readMeta(InputStream is) throws IOException {
+        return readMeta(new DataInputStream(is));
+    }
+
     public static PuzzleMeta readMeta(DataInputStream is) throws IOException {
         int version = is.read();
         IOVersion v = getIOVersion(version);
@@ -291,12 +317,32 @@ public class IO {
                 CHARSET.name());
     }
 
-    public static void save(Puzzle puz, DataOutputStream puzzleOutputStream,
-                            DataOutputStream metaOutputStream) throws IOException {
+    public static void save(
+        Puzzle puz,
+        OutputStream puzzleOutputStream,
+        OutputStream metaOutputStream
+    ) throws IOException {
+        save(
+            puz,
+            new DataOutputStream(puzzleOutputStream),
+            new DataOutputStream(metaOutputStream)
+        );
+    }
+
+    public static void save(
+        Puzzle puz,
+        DataOutputStream puzzleOutputStream,
+        DataOutputStream metaOutputStream
+    ) throws IOException {
         IO.saveNative(puz, puzzleOutputStream);
         puzzleOutputStream.close();
         IO.writeCustom(puz, metaOutputStream);
         metaOutputStream.close();
+    }
+
+    public static void saveNative(Puzzle puz, OutputStream dos)
+            throws IOException {
+        saveNative(puz, new DataOutputStream(dos));
     }
 
     public static void saveNative(Puzzle puz, DataOutputStream dos)

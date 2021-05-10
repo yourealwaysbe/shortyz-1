@@ -1,10 +1,25 @@
 
 package app.crossword.yourealwaysbe;
 
+import java.io.IOException;
+import java.lang.Void;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
+
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -26,29 +41,19 @@ import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
 
-import java.io.IOException;
-import java.lang.Void;
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
-
 public class BrowseActivityViewModel extends ViewModel {
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivityViewModel.class.getCanonicalName());
 
+    // important that it is single thread to avoid multiple
+    // simultaneous operations
     private ExecutorService executorService
         = Executors.newSingleThreadExecutor();
     // not fixed num in case user creates loads of downloads
     private ExecutorService downloadExecutorService
         = Executors.newCachedThreadPool();
     private Handler handler = new Handler(Looper.getMainLooper());
+
     private SharedPreferences prefs;
 
     private boolean isViewArchive = false;
@@ -89,12 +94,7 @@ public class BrowseActivityViewModel extends ViewModel {
     }
 
     public void startLoadFiles(boolean archive) {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
             DirHandle directory
@@ -110,7 +110,6 @@ public class BrowseActivityViewModel extends ViewModel {
             handler.post(() -> {
                 setIsViewArchive(archive);
                 puzzleFiles.setValue(puzFiles);
-                isUIBusy.setValue(false);
             });
         });
     }
@@ -120,21 +119,13 @@ public class BrowseActivityViewModel extends ViewModel {
     }
 
     public void deletePuzzles(Collection<PuzMetaFile> puzMetas) {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
             for (PuzMetaFile puzMeta : puzMetas)
                 fileHandler.delete(puzMeta);
 
-            handler.post(() -> {
-                isUIBusy.setValue(false);
-                startLoadFiles();
-            });
+            startLoadFiles();
         });
     }
 
@@ -147,31 +138,18 @@ public class BrowseActivityViewModel extends ViewModel {
     public void movePuzzles(
         Collection<PuzMetaFile> puzMetas, DirHandle srcDir, DirHandle destDir
     ) {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
             for (PuzMetaFile puzMeta : puzMetas)
                 fileHandler.moveTo(puzMeta, srcDir, destDir);
 
-            handler.post(() -> {
-                isUIBusy.setValue(false);
-                startLoadFiles();
-            });
+            startLoadFiles();
         });
     }
 
     public void cleanUpPuzzles() {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
             boolean deleteOnCleanup
@@ -222,10 +200,7 @@ public class BrowseActivityViewModel extends ViewModel {
             for (PuzMetaFile puzMeta : toArchive)
                 fileHandler.moveTo(puzMeta, crosswords, archive);
 
-            handler.post(() -> {
-                isUIBusy.setValue(false);
-                startLoadFiles();
-            });
+            startLoadFiles();
         });
     }
 
@@ -252,19 +227,16 @@ public class BrowseActivityViewModel extends ViewModel {
                 scrapes.scrape();
             }
 
-            handler.post(() -> {
-                startLoadFiles();
-            });
+            if (!getIsViewArchive()) {
+                handler.post(() -> {
+                    startLoadFiles();
+                });
+            }
         });
     }
 
     public void loadPuzzle(PuzMetaFile puzMeta) {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
             try {
                 Puzzle puz = fileHandler.load(puzMeta);
@@ -274,7 +246,6 @@ public class BrowseActivityViewModel extends ViewModel {
                     );
                 }
                 handler.post(() -> {
-                    isUIBusy.setValue(false);
                     ForkyzApplication application
                         = ForkyzApplication.getInstance();
                     application.setBoard(
@@ -291,7 +262,6 @@ public class BrowseActivityViewModel extends ViewModel {
                     puzzleLoadEvents.call();
                 });
             } catch (IOException e) {
-                isUIBusy.setValue(false);
                 handler.post(() -> {
                     String filename = null;
                     try {
@@ -320,12 +290,7 @@ public class BrowseActivityViewModel extends ViewModel {
     }
 
     public void refreshPuzzleMeta(PuzHandle refreshHandle) {
-        if (isUIBusy.getValue())
-            return;
-
-        isUIBusy.setValue(true);
-
-        executorService.execute(() -> {
+        threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
             boolean changed = false;
 
@@ -352,13 +317,40 @@ public class BrowseActivityViewModel extends ViewModel {
                 final boolean updateArray = changed;
 
                 handler.post(() -> {
-                    isUIBusy.setValue(false);
                     if (updateArray)
                         puzzleFiles.setValue(pmList);
                 });
             } catch (IOException e) {
                 LOGGER.warning("Could not refresh puz meta " + e);
             }
+        });
+    }
+
+    /**
+     * Import file from uri to crosswords folder
+     *
+     * Triggers refresh of puzzle list if crosswords folder is currently
+     * shown in the case that the import succeeds or forceReload is true.
+     */
+    public void importURI(Uri uri, boolean forceReload) {
+        threadWithUILock(() -> {
+            ForkyzApplication application = ForkyzApplication.getInstance();
+            ContentResolver resolver = application.getContentResolver();
+
+            LOGGER.info("FORKYZ import " + uri);
+            boolean success = PuzzleImporter.importUri(resolver, uri);
+            LOGGER.info("FORKYZ import success? " + success);
+
+            if ((success || forceReload) && !getIsViewArchive())
+                startLoadFiles();
+
+            handler.post(() -> {
+                String msg = application.getString(
+                    success ? R.string.import_success : R.string.import_failure
+                );
+                Toast t = Toast.makeText(application, msg, Toast.LENGTH_SHORT);
+                t.show();
+            });
         });
     }
 
@@ -382,5 +374,18 @@ public class BrowseActivityViewModel extends ViewModel {
 
     private FileHandler getFileHandler() {
         return ForkyzApplication.getInstance().getFileHandler();
+    }
+
+    private void threadWithUILock(Runnable r) {
+        // no lock actually needed because executorService is single
+        // threaded guaranteed
+        executorService.execute(() -> {
+            try {
+                isUIBusy.postValue(true);
+                r.run();
+            } finally {
+                isUIBusy.postValue(false);
+            }
+        });
     }
 }

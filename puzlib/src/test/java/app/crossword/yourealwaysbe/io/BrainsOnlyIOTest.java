@@ -5,8 +5,10 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 import junit.framework.TestCase;
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.InputStream;
+
+import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,28 +18,41 @@ import java.net.URLClassLoader;
  * To change this template use File | Settings | File Templates.
  */
 public class BrainsOnlyIOTest  extends TestCase {
-    public void testParse() throws Exception {
 
-        ClassLoader cl =BrainsOnlyIOTest.class.getClassLoader();
+    public static InputStream getTestPuzzle1InputStream() {
+        return BrainsOnlyIOTest.class.getResourceAsStream("/brainsonly.txt");
+    }
 
-        URL[] urls = ((URLClassLoader)cl).getURLs();
-
-        for(URL url: urls){
-            System.out.println(url.getFile());
-        }
-        Puzzle puz = BrainsOnlyIO.parse(BrainsOnlyIOTest.class.getResourceAsStream("/brainsonly.txt"));
+    public static void assertIsTestPuzzle1(Puzzle puz) {
         assertEquals("SODA SPEAK", puz.getTitle());
-        assertEquals("S.N. & Robert Francis, edited by Stanley Newman", puz.getAuthor());
-        assertEquals(15, puz.getBoxes().length);
-        assertEquals(15, puz.getBoxes()[0].length);
-        assertEquals(1, puz.getBoxes()[0][0].getClueNumber());
-        assertEquals(true, puz.getBoxes()[0][0].isAcross());
-        assertEquals(true, puz.getBoxes()[0][0].isDown());
-        assertEquals(false, puz.getBoxes()[0][3].isAcross());
+        assertEquals(
+            "S.N. & Robert Francis, edited by Stanley Newman",
+            puz.getAuthor()
+        );
+
+        Box[][] boxes = puz.getBoxes();
+
+        assertEquals(15, boxes.length);
+        assertEquals(15, boxes[0].length);
+        assertEquals(1, boxes[0][0].getClueNumber());
+        assertEquals(true, boxes[0][0].isAcross());
+        assertEquals(true, boxes[0][0].isDown());
+        assertEquals(false, boxes[0][3].isAcross());
+
+        assertEquals(boxes[0][0].getSolution(), 'D');
+        assertEquals(boxes[5][14].getSolution(), 'Y');
+        assertEquals(boxes[14][14].getSolution(), 'P');
+        assertEquals(boxes[14][5], null);
+        assertEquals(boxes[3][6], null);
+
         assertEquals("Toss out", puz.getAcrossClues()[0]);
         assertEquals("Sancho Panza's mount", puz.getDownClues()[0]);
         assertEquals("Straighten out", puz.findAcrossClue(41));
+    }
 
+    public void testParse() throws Exception {
+        Puzzle puz = BrainsOnlyIO.parse(getTestPuzzle1InputStream());
+        assertIsTestPuzzle1(puz);
     }
 
     public void testParse2() throws Exception {

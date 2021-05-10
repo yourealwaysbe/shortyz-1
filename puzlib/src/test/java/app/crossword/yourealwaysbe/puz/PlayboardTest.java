@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import junit.framework.TestCase;
 
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.io.IOTest;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 
 /**
@@ -17,7 +18,7 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
  * @author kebernet
  */
 public class PlayboardTest extends TestCase {
-    
+
     public PlayboardTest(String testName) {
         super(testName);
     }
@@ -49,7 +50,7 @@ public class PlayboardTest extends TestCase {
          System.out.println("ON: "+board.getBoxes()[board.getHighlightLetter().across][board.getHighlightLetter().down].getSolution());
          assertEquals(3, board.getHighlightLetter().down);
          board.moveUp(false);
-         
+
          System.out.println("ON: "+board.getBoxes()[board.getHighlightLetter().across][board.getHighlightLetter().down].getSolution());
          assertEquals(2, board.getHighlightLetter().down);
          board.moveUp(false);
@@ -90,7 +91,7 @@ public class PlayboardTest extends TestCase {
          assertEquals(0, board.getHighlightLetter().down);
          board.moveUp(false);
 
-        
+
 
     }
 

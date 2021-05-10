@@ -129,7 +129,7 @@
             android:title="@string/keyboard_showhide"
             android:summary="@string/keyboard_showhide_desc"
             android:key="keyboardShowHide"
-            android:defaultValue="@string/keyboard_show_sparingly"
+            android:defaultValue="@string/keyboard_hide_back"
             android:entries="@array/keyboardShowHideLabels"
             android:entryValues="@array/keyboardShowHideValues"
         />
