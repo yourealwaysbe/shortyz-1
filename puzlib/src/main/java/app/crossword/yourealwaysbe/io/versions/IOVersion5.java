@@ -1,7 +1,7 @@
 package app.crossword.yourealwaysbe.io.versions;
 
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
+import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 import java.io.DataInputStream;
@@ -26,14 +26,14 @@ public class IOVersion5 extends IOVersion4 {
     public PuzzleMeta readMeta(DataInputStream dis) throws IOException {
         PuzzleMeta meta = super.readMeta(dis);
 
-        meta.historyList = new LinkedList<HistoryItem>();
+        meta.historyList = new LinkedList<ClueNumDir>();
 
         int length = dis.readInt();
         for (int i = 0; i < length; i++) {
             int number = dis.readInt();
             boolean across = dis.readBoolean();
 
-            HistoryItem item = new HistoryItem(number, across);
+            ClueNumDir item = new ClueNumDir(number, across);
             meta.historyList.add(item);
         }
 
@@ -45,10 +45,10 @@ public class IOVersion5 extends IOVersion4 {
               throws IOException {
         super.writeMeta(puz, dos);
 
-        List<HistoryItem> history = puz.getHistory();
+        List<ClueNumDir> history = puz.getHistory();
 
         dos.writeInt(history.size());
-        for (HistoryItem item : puz.getHistory()) {
+        for (ClueNumDir item : puz.getHistory()) {
             dos.writeInt(item.getClueNumber());
             dos.writeBoolean(item.getAcross());
         }

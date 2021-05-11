@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -45,9 +46,13 @@ public class BrainsOnlyIOTest  extends TestCase {
         assertEquals(boxes[14][5], null);
         assertEquals(boxes[3][6], null);
 
-        assertEquals("Toss out", puz.getAcrossClues()[0]);
-        assertEquals("Sancho Panza's mount", puz.getDownClues()[0]);
-        assertEquals("Straighten out", puz.findAcrossClue(41));
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        assertEquals(acrossClues.getClue(1).getHint(), "Toss out");
+        assertEquals(acrossClues.getClue(41).getHint(), "Straighten out");
+        assertEquals(downClues.getClue(1).getHint(), "Sancho Panza's mount");
+        assertEquals(downClues.getClue(59).getHint(), "Part of pewter");
     }
 
     public void testParse() throws Exception {
@@ -58,12 +63,16 @@ public class BrainsOnlyIOTest  extends TestCase {
     public void testParse2() throws Exception {
 
         Puzzle puz = BrainsOnlyIO.parse(BrainsOnlyIOTest.class.getResourceAsStream("/brainsonly2.txt"));
-        assertEquals("OCCUPIED NATIONS: Surrounding the long answers", puz.getTitle());
-        System.out.println("Across clue 15 "+ puz.findAcrossClue(15) );
-        assertEquals("Elevator guy", puz.findAcrossClue(15));
-        System.out.println("5 across "+puz.findAcrossClue(5));
-        assertEquals("Company with a duck mascot", puz.findAcrossClue(5));
-
+        assertEquals(
+            puz.getTitle(),
+            "OCCUPIED NATIONS: Surrounding the long answers"
+        );
+        ClueList acrossClues = puz.getClues(true);
+        assertEquals(acrossClues.getClue(15).getHint(), "Elevator guy");
+        assertEquals(
+            acrossClues.getClue(5).getHint(),
+            "Company with a duck mascot"
+        );
     }
 
     public void testParse3() throws Exception {

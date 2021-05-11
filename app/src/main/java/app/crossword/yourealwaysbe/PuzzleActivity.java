@@ -10,7 +10,7 @@ import android.os.Looper;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
@@ -194,23 +194,27 @@ public abstract class PuzzleActivity
     }
 
     protected String getLongClueText(
-        boolean across, Clue clue, int wordLen
+        int number, boolean across, Clue clue, int wordLen
     ) {
         boolean showCount = prefs.getBoolean("showCount", false);
+
+        String hint = (clue == null)
+            ? getString(R.string.unknown_hint)
+            : clue.getHint();
 
         if (showCount) {
             int clueFormat = across
                 ? R.string.clue_format_across_long_with_length
                 : R.string.clue_format_down_long_with_length;
             return getString(
-                clueFormat, clue.number, clue.hint, wordLen
+                clueFormat, number, clue.getHint(), wordLen
             );
         } else {
             int clueFormat = across
                 ? R.string.clue_format_across_long
                 : R.string.clue_format_down_long;
             return getString(
-                clueFormat, clue.number, clue.hint
+                clueFormat, clue.getNumber(), clue.getHint()
             );
         }
     }

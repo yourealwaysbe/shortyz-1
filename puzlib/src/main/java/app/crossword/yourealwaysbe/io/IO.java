@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.io;
 
-import app.crossword.yourealwaysbe.io.versions.IOVersion;
 import app.crossword.yourealwaysbe.io.versions.IOVersion1;
 import app.crossword.yourealwaysbe.io.versions.IOVersion2;
 import app.crossword.yourealwaysbe.io.versions.IOVersion3;
@@ -8,10 +7,14 @@ import app.crossword.yourealwaysbe.io.versions.IOVersion4;
 import app.crossword.yourealwaysbe.io.versions.IOVersion5;
 import app.crossword.yourealwaysbe.io.versions.IOVersion6;
 import app.crossword.yourealwaysbe.io.versions.IOVersion7;
+import app.crossword.yourealwaysbe.io.versions.IOVersion;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
+import app.crossword.yourealwaysbe.puz.ClueList;
+import app.crossword.yourealwaysbe.puz.Note;
+import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
-import app.crossword.yourealwaysbe.puz.Note;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -24,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 public class IO implements PuzzleParser {
     public static final int DEFAULT_BUFFER_SIZE = 1024;
@@ -50,6 +54,9 @@ public class IO implements PuzzleParser {
     private static final byte NOTE_TEXT = (byte) 0x02;
     private static final byte NOTE_ANAGRAM_SRC = (byte) 0x03;
     private static final byte NOTE_ANAGRAM_SOL = (byte) 0x04;
+
+    // string to use if a clue is missing
+    private static final String UNKNOWN_CLUE = "-";
 
     public static int cksum_region(byte[] data, int offset, int length,
                                    int cksum) {
@@ -110,21 +117,22 @@ public class IO implements PuzzleParser {
         }
 
         input.skip(1);
-        puz.setVersion(new String(versionString));
 
         input.skipBytes(2);
         puz.setSolutionChecksum(Short.reverseBytes(input.readShort()));
 
         input.skipBytes(0xC);
 
-        puz.setWidth(0xFFFF & input.readByte());
-        puz.setHeight(0xFFFF & input.readByte());
-        puz.setNumberOfClues(Short.reverseBytes(input.readShort()));
+        int width = 0xFFFF & input.readByte();
+        int height = 0xFFFF & input.readByte();
+
+        // read/skip number of clues
+        input.readShort();
 
         input.skipBytes(2);
         puz.setScrambled(input.readShort() != 0);
 
-        Box[][] boxes = new Box[puz.getHeight()][puz.getWidth()];
+        Box[][] boxes = new Box[height][width];
         byte[] answerByte = new byte[1];
 
         for (int x = 0; x < boxes.length; x++) {
@@ -166,43 +174,25 @@ public class IO implements PuzzleParser {
         puz.setAuthor(readNullTerminatedString(input));
         puz.setCopyright(readNullTerminatedString(input));
 
-        ArrayList<String> acrossClues = new ArrayList<String>();
-        ArrayList<Integer> acrossCluesLookup = new ArrayList<Integer>();
-        ArrayList<Integer> downCluesLookup = new ArrayList<Integer>();
-        ArrayList<String> downClues = new ArrayList<String>();
-        ArrayList<String> rawClues = new ArrayList<String>();
-
         for (int x = 0; x < boxes.length; x++) {
             for (int y = 0; y < boxes[x].length; y++) {
                 if (boxes[x][y] == null) {
                     continue;
                 }
 
-                if (boxes[x][y].isAcross()
-                        && (boxes[x][y].getClueNumber() != 0)) {
-                    String value = readNullTerminatedString(input);
+                int clueNumber = boxes[x][y].getClueNumber();
 
-                    acrossCluesLookup.add(boxes[x][y].getClueNumber());
-                    acrossClues.add(value);
-                    rawClues.add(value);
+                if (boxes[x][y].isAcross() && (clueNumber != 0)) {
+                    String value = readNullTerminatedString(input);
+                    puz.addClue(new Clue(clueNumber, true, value));
                 }
 
                 if (boxes[x][y].isDown() && (boxes[x][y].getClueNumber() != 0)) {
                     String value = readNullTerminatedString(input);
-                    downCluesLookup.add(boxes[x][y].getClueNumber());
-                    downClues.add(value);
-                    rawClues.add(value);
+                    puz.addClue(new Clue(clueNumber, false, value));
                 }
             }
         }
-
-        puz.setDownClues(downClues.toArray(new String[downClues.size()]));
-        puz.setDownCluesLookup(downCluesLookup
-                .toArray(new Integer[downCluesLookup.size()]));
-        puz.setAcrossClues(acrossClues.toArray(new String[acrossClues.size()]));
-        puz.setAcrossCluesLookup(acrossCluesLookup
-                .toArray(new Integer[acrossCluesLookup.size()]));
-        puz.setRawClues(rawClues.toArray(new String[rawClues.size()]));
 
         puz.setNotes(readNullTerminatedString(input));
 
@@ -219,11 +209,11 @@ public class IO implements PuzzleParser {
                     // For reading legacy files only
                     // info now stored in meta
                     case ANTS:
-                        loadNotesNative(acrossClues.size(), true, puz, input);
+                        loadNotesNative(true, puz, input);
                         break;
 
                     case DNTS:
-                        loadNotesNative(downClues.size(), false, puz, input);
+                        loadNotesNative(false, puz, input);
                         break;
 
                     default:
@@ -267,7 +257,6 @@ public class IO implements PuzzleParser {
 
     public static void readGextSection(DataInputStream input, Puzzle puz)
             throws IOException {
-        puz.setGEXT(true);
         input.skipBytes(4);
 
         Box[][] boxes = puz.getBoxes();
@@ -362,7 +351,7 @@ public class IO implements PuzzleParser {
 
         tmpDos.write(new byte[10]);
 
-        tmpDos.writeBytes(puz.getVersion());
+        tmpDos.writeBytes(VERSION_STRING);
         tmpDos.writeByte(0);
 
         tmpDos.write(new byte[2]);
@@ -389,7 +378,9 @@ public class IO implements PuzzleParser {
         Box[][] boxes = puz.getBoxes();
         byte[] gextSection = null;
 
-        if (puz.getGEXT()) {
+        boolean hasGEXT = puz.hasCircled();
+
+        if (hasGEXT) {
             gextSection = new byte[numberOfBoxes];
         }
 
@@ -400,7 +391,7 @@ public class IO implements PuzzleParser {
                 } else {
                     byte val = (byte) boxes[x][y].getSolution(); // Character.toString().getBytes("Cp1252")[0];
 
-                    if (puz.getGEXT() && boxes[x][y].isCircled()) {
+                    if (hasGEXT && boxes[x][y].isCircled()) {
                         gextSection[(width * x) + y] = GEXT_SQUARE_CIRCLED;
                     }
 
@@ -424,13 +415,13 @@ public class IO implements PuzzleParser {
         writeNullTerminatedString(tmpDos, puz.getAuthor());
         writeNullTerminatedString(tmpDos, puz.getCopyright());
 
-        for (String clue : puz.getRawClues()) {
+        for (String clue : getRawClues(puz)) {
             writeNullTerminatedString(tmpDos, clue);
         }
 
         writeNullTerminatedString(tmpDos, puz.getNotes());
 
-        if (puz.getGEXT()) {
+        if (hasGEXT) {
             tmpDos.writeBytes(GEXT_MARKER);
             tmpDos.writeShort(Short.reverseBytes((short) numberOfBoxes));
 
@@ -655,49 +646,60 @@ public class IO implements PuzzleParser {
      * For reading IOVersion5 and below that dubiously stored clue notes by
      * possibly abuse of the Across Lite format.
      *
+     * Boxes must be set on puz first.
+     *
      * Format of a note:
      *     + 1st byte is number of fields in note
      *     + Each field is
      *         + byte identifying field
      *         + null terminated string which is field value
      */
-    private static void loadNotesNative(int numNotes,
-                                        boolean isAcross,
+    private static void loadNotesNative(boolean isAcross,
                                         Puzzle puz,
                                         DataInputStream input)
             throws IOException {
 
-        for (int x = 0; x < numNotes; x++) {
-            String scratch = null;
-            String text = null;
-            String anagramSrc = null;
-            String anagramSol = null;
+        for (ClueNumDir cnd : puz.getClueNumDirs()) {
+            int number = cnd.getClueNumber();
+            boolean across = cnd.getAcross();
 
-            byte numFields = input.readByte();
-            for (byte i = 0; i < numFields; i++) {
-                byte field = input.readByte();
+            if (across == isAcross) {
+                String scratch = null;
+                String text = null;
+                String anagramSrc = null;
+                String anagramSol = null;
 
-                String val = readNullTerminatedString(input);
+                byte numFields = input.readByte();
+                for (byte i = 0; i < numFields; i++) {
+                    byte field = input.readByte();
 
-                switch (field) {
-                case NOTE_SCRATCH:
-                    scratch = val;
-                    break;
-                case NOTE_TEXT:
-                    text = val;
-                    break;
-                case NOTE_ANAGRAM_SRC:
-                    anagramSrc = val;
-                    break;
-                case NOTE_ANAGRAM_SOL:
-                    anagramSol = val;
-                    break;
+                    String val = readNullTerminatedString(input);
+
+                    switch (field) {
+                    case NOTE_SCRATCH:
+                        scratch = val;
+                        break;
+                    case NOTE_TEXT:
+                        text = val;
+                        break;
+                    case NOTE_ANAGRAM_SRC:
+                        anagramSrc = val;
+                        break;
+                    case NOTE_ANAGRAM_SOL:
+                        anagramSol = val;
+                        break;
+                    }
                 }
-            }
 
-            if (scratch != null || text != null || anagramSrc != null || anagramSol != null) {
-                Note n = new Note(scratch, text, anagramSrc, anagramSol);
-                puz.setNoteRaw(n, x, isAcross);
+                if (scratch != null
+                        || text != null
+                        || anagramSrc != null
+                        || anagramSol != null) {
+                    Note n = new Note(
+                        scratch, text, anagramSrc, anagramSol
+                    );
+                    puz.setNote(number, n, isAcross);
+                }
             }
         }
     }
@@ -721,5 +723,39 @@ public class IO implements PuzzleParser {
         default:
             throw new IOException("UnknownVersion " + version);
         }
+    }
+
+    /**
+     * Return list of clues in puz format order
+     *
+     * That is, in numerical order, with across appearing before down
+     * when same number
+     */
+    private static List<String> getRawClues(Puzzle puz) {
+        int numClues = puz.getNumberOfClues();
+
+        List<String> rawClues = new ArrayList<>(numClues);
+
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        for (ClueNumDir cnd : puz.getClueNumDirs()) {
+            int clueNum = cnd.getClueNumber();
+            boolean across = cnd.getAcross();
+
+            if (across) {
+                if (acrossClues.hasClue(clueNum))
+                    rawClues.add(acrossClues.getClue(clueNum).getHint());
+                else
+                    rawClues.add(UNKNOWN_CLUE);
+            } else {
+                if (downClues.hasClue(clueNum))
+                    rawClues.add(downClues.getClue(clueNum).getHint());
+                else
+                    rawClues.add(UNKNOWN_CLUE);
+            }
+        }
+
+        return rawClues;
     }
 }

@@ -1,6 +1,7 @@
 package app.crossword.yourealwaysbe.io;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 import java.io.BufferedReader;
@@ -58,8 +59,6 @@ public class BrainsOnlyIO implements PuzzleParser {
             System.out.println("width: " + width + ", height: " + height);
             throw new IOException("Invalid puzzle contents");
         }
-        puz.setWidth(width);
-        puz.setHeight(height);
         readLineAtOffset(reader, 4);
         Box[][] boxes = new Box[height][width];
         for(int down = 0; down < height; down++){
@@ -90,56 +89,48 @@ public class BrainsOnlyIO implements PuzzleParser {
         for(String clue = readLineAtOffset(reader, 0); !"".equals(clue); clue = readLineAtOffset(reader, 0)){
             acrossClues.add(clue);
         }
-        puz.setAcrossClues(acrossClues.toArray(new String[acrossClues.size()]));
 
         ArrayList<String> downClues = new ArrayList<String>();
         for(String clue = readLineAtOffset(reader, 0); !"".equals(clue); clue = readLineAtOffset(reader, 0)){
             downClues.add(clue);
         }
-        puz.setDownClues(downClues.toArray(new String[downClues.size()]));
 
-
-        ArrayList<Integer> acrossLookups = new ArrayList<Integer>();
-
-
+        int acrossIdx = 0;
         for(int h = 0; h < height; h++){
             for(int w = 0; w < width; w++){
-                if(boxes[h][w] != null && boxes[h][w].getClueNumber() > 0 && boxes[h][w].isAcross()){
-                    System.out.println("across index "+acrossLookups.size()+" clue value "+boxes[h][w].getClueNumber());
-                    acrossLookups.add(boxes[h][w].getClueNumber());
+                if (
+                    boxes[h][w] != null
+                        && boxes[h][w].getClueNumber() > 0
+                        && boxes[h][w].isAcross()
+                ){
+                    puz.addClue(new Clue(
+                        boxes[h][w].getClueNumber(),
+                        true,
+                        acrossClues.get(acrossIdx)
+                    ));
+                    acrossIdx += 1;
                 }
             }
         }
-        puz.setAcrossCluesLookup(acrossLookups.toArray(new Integer[acrossLookups.size()]));
 
-        ArrayList<Integer> downLookups = new ArrayList<Integer>();
+        int downIdx = 0;
         for(int h = 0; h < boxes.length; h++){
             for(int w = 0; w < width; w++){
-                if(boxes[h][w] != null && boxes[h][w].getClueNumber() > 0 && boxes[h][w].isDown()){
-                    downLookups.add(boxes[h][w].getClueNumber());
+                if(
+                    boxes[h][w] != null
+                        && boxes[h][w].getClueNumber() > 0
+                        && boxes[h][w].isDown()
+                ){
+                    puz.addClue(new Clue(
+                        boxes[h][w].getClueNumber(),
+                        false,
+                        downClues.get(downIdx)
+                    ));
+                    downIdx += 1;
                 }
             }
         }
-        puz.setDownCluesLookup(downLookups.toArray(new Integer[downLookups.size()]));
 
-
-        ArrayList<String> rawClues = new ArrayList<String>();
-        for(int h = 0; h < height; h++){
-            for(int w = 0; w < width; w++){
-                if(boxes[h][w] != null && boxes[h][w].getClueNumber() > 0){
-                    if(boxes[h][w].isAcross()){
-                        rawClues.add(puz.findAcrossClue(boxes[h][w].getClueNumber()));
-                    }
-                    if(boxes[h][w].isDown()){
-                        rawClues.add(puz.findDownClue(boxes[h][w].getClueNumber()));
-                    }
-                }
-            }
-        }
-        puz.setRawClues(rawClues.toArray(new String[rawClues.size()]));
-        puz.setNumberOfClues(rawClues.size());
-
-        puz.setVersion(IO.VERSION_STRING);
         puz.setNotes("");
         return puz;
     }

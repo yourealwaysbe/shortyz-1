@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import junit.framework.TestCase;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -54,13 +55,30 @@ public class KingFeaturesPlaintextIOTest extends TestCase {
         assertEquals(boxes[14][5].getSolution(), 'R');
         assertEquals(boxes[1][7], null);
 
-        String[] rawClues = puz.getRawClues();
-        assertEquals(rawClues[0], "Murals on plaster");
-        assertEquals(rawClues[5], "One preserving fruit, e.g.");
-        assertEquals(rawClues[7], "In stitches");
-        assertEquals(rawClues[8], "Glucose-level regulator");
-        assertEquals(rawClues[15], "Napoleonic marshal Michel");
-        assertEquals(rawClues[25], "Cocky retort to a bully");
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        assertEquals(acrossClues.getClue(1).getHint(), "Murals on plaster");
+        assertEquals(
+            acrossClues.getClue(8).getHint(),
+            "Glucose-level regulator"
+        );
+        assertEquals(
+            acrossClues.getClue(23).getHint(),
+            "Cocky retort to a bully"
+        );
+        assertEquals(
+            downClues.getClue(5).getHint(),
+            "One preserving fruit, e.g."
+        );
+        assertEquals(
+            downClues.getClue(7).getHint(),
+            "In stitches"
+        );
+        assertEquals(
+            downClues.getClue(14).getHint(),
+            "Napoleonic marshal Michel"
+        );
     }
 
     @Override

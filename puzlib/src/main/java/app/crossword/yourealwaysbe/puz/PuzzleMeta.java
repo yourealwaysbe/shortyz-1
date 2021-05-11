@@ -1,7 +1,7 @@
 package app.crossword.yourealwaysbe.puz;
 
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
-import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
+import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ public class PuzzleMeta implements Serializable {
     public String supportUrl;
     public Position position;
     public boolean across;
-    public List<HistoryItem> historyList;
+    public List<ClueNumDir> historyList;
     public Note[] acrossNotes;
     public Note[] downNotes;
 

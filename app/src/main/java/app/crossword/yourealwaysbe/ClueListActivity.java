@@ -19,7 +19,7 @@ import android.widget.Toast;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard;
@@ -158,26 +158,20 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     @Override
-    public void onClueTabsClick(Clue clue,
-                                int index,
-                                boolean across,
-                                ClueTabs view) {
+    public void onClueTabsClick(Clue clue, ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             Word old = board.getCurrentWord();
-            board.jumpTo(index, across);
+            board.jumpToClue(clue.getNumber(), clue.getIsAcross());
             displayKeyboard(old);
         }
     }
 
     @Override
-    public void onClueTabsLongClick(Clue clue,
-                                    int index,
-                                    boolean across,
-                                    ClueTabs view) {
+    public void onClueTabsLongClick(Clue clue, ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
-            board.jumpTo(index, across);
+            board.jumpToClue(clue.getNumber(), clue.getIsAcross());
             launchNotes();
         }
     }
@@ -207,13 +201,13 @@ public class ClueListActivity extends PuzzleActivity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Playboard board = getBoard();
+        Puzzle puz = board.getPuzzle();
+        int curClueNumber = board.getClueNumber();
         Word w = board.getCurrentWord();
         boolean across = w.across;
         Position last = new Position(w.start.across
                 + (across ? (w.length - 1) : 0), w.start.down
                 + ((!across) ? (w.length - 1) : 0));
-        int clueIdx = board.getCurrentClueIndex();
-        int cluesLen = board.getAcrossClues().length;
 
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
@@ -248,16 +242,20 @@ public class ClueListActivity extends PuzzleActivity
             return true;
 
         case KeyEvent.KEYCODE_DPAD_UP:
-            int next = clueIdx == 0 ? cluesLen - 1 : clueIdx - 1;
+            int prev
+                = puz.getClues(across)
+                    .getPreviousClueNumber(curClueNumber, true);
             clueTabs.setForceSnap(true);
-            board.jumpTo(next, across);
+            board.jumpToClue(prev, across);
             clueTabs.setForceSnap(false);
             break;
 
         case KeyEvent.KEYCODE_DPAD_DOWN:
-            next = (clueIdx + 1) % cluesLen;
+            int next
+                = puz.getClues(across)
+                    .getNextClueNumber(curClueNumber, true);
             clueTabs.setForceSnap(true);
-            board.jumpTo(next, across);
+            board.jumpToClue(next, across);
             clueTabs.setForceSnap(false);
             break;
 
@@ -375,12 +373,18 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     private void selectFirstClue() {
+        Playboard board = getBoard();
+        Puzzle puz = board.getPuzzle();
+        int firstClue;
+
         switch (clueTabs.getCurrentPageType()) {
         case ACROSS:
-            getBoard().jumpTo(0, true);
+            firstClue = puz.getClues(true).getFirstClueNumber();
+            getBoard().jumpToClue(firstClue, true);
             break;
         case DOWN:
-            getBoard().jumpTo(0, false);
+            firstClue = puz.getClues(false).getFirstClueNumber();
+            getBoard().jumpToClue(firstClue, false);
             break;
         case HISTORY:
             // nothing to do

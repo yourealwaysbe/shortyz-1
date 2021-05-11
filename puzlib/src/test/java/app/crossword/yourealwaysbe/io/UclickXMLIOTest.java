@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import junit.framework.TestCase;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -56,13 +57,16 @@ public class UclickXMLIOTest extends TestCase {
         assertEquals(boxes[14][5].getSolution(), 'L');
         assertEquals(boxes[3][6].getSolution(), 'N');
 
-        String[] rawClues = puz.getRawClues();
-        assertEquals(rawClues[0], "Film legend Greta");
-        assertEquals(rawClues[5], "Rampaging");
-        assertEquals(rawClues[7], "Get even for");
-        assertEquals(rawClues[8], "Nickname for an NCO");
-        assertEquals(rawClues[15], "Covered with rocks");
-        assertEquals(rawClues[25], "Annoying noise");
+
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        assertEquals(acrossClues.getClue(1).getHint(), "Film legend Greta");
+        assertEquals(acrossClues.getClue(50).getHint(), "Distress signal");
+        assertEquals(downClues.getClue(5).getHint(), "Rampaging");
+        assertEquals(downClues.getClue(6).getHint(), "Get even for");
+        assertEquals(downClues.getClue(7).getHint(), "Nickname for an NCO");
+        assertEquals(downClues.getClue(13).getHint(), "Covered with rocks");
     }
 
     @Override

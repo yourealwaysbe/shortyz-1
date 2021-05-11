@@ -28,8 +28,8 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Note;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
@@ -115,7 +115,9 @@ public class NotesActivity extends PuzzleActivity {
             );
         }
 
-        clue.setText(getLongClueText(board.isAcross(), c, curWordLen));
+        clue.setText(getLongClueText(
+            board.getClueNumber(), board.isAcross(), c, curWordLen)
+        );
 
         imageView = (ScrollingImageView) this.findViewById(R.id.miniboard);
         imageViewDescriptionBase = imageView.getContentDescription();
@@ -168,7 +170,7 @@ public class NotesActivity extends PuzzleActivity {
             }
         });
 
-        Note note = puz.getNote(c.number, getBoard().isAcross());
+        Note note = puz.getNote(c.getNumber(), c.getIsAcross());
         notesBox = (EditText) this.findViewById(R.id.notesBox);
 
         if (note != null) {
@@ -362,8 +364,9 @@ public class NotesActivity extends PuzzleActivity {
         Puzzle puz = getPuzzle();
         if (puz != null) {
             Note note = new Note(scratch, text, anagramSource, anagramSolution);
-            Clue c = getBoard().getClue();
-            puz.setNote(note, c.number, getBoard().isAcross());
+            int number = getBoard().getClueNumber();
+            boolean across = getBoard().isAcross();
+            puz.setNote(number, note, across);
         }
 
         super.onPause();

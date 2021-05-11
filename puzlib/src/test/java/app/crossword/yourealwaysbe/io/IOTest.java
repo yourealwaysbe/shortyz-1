@@ -18,7 +18,8 @@ import junit.framework.TestCase;
 
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Playboard;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
+import app.crossword.yourealwaysbe.puz.Clue;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
@@ -66,14 +67,21 @@ public class IOTest extends TestCase {
         assertEquals(boxes[14][5].getSolution(), 'T');
         assertEquals(boxes[3][6].getSolution(), 'E');
 
-        // clue number lookup not set by import, test only raw clues
-        String[] rawClues = puz.getRawClues();
-        assertEquals(rawClues[0], "Bring to perfection");
-        assertEquals(rawClues[5], "Sch. whose sports teams are the Violets");
-        assertEquals(rawClues[7], "Not work at all");
-        assertEquals(rawClues[8], "Kale kin");
-        assertEquals(rawClues[15], "President who was born a King");
-        assertEquals(rawClues[25], "Surprised reaction");
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        assertEquals(acrossClues.getClue(1).getHint(), "Bring to perfection");
+        assertEquals(acrossClues.getClue(23).getHint(), "Surprised reaction");
+        assertEquals(
+            downClues.getClue(5).getHint(),
+            "Sch. whose sports teams are the Violets"
+        );
+        assertEquals(downClues.getClue(6).getHint(), "Not work at all");
+        assertEquals(downClues.getClue(7).getHint(), "Kale kin");
+        assertEquals(
+            downClues.getClue(13).getHint(),
+            "President who was born a King"
+        );
     }
 
     /**
@@ -84,19 +92,6 @@ public class IOTest extends TestCase {
             InputStream is = getTestPuzzle1InputStream();
         ) {
             Puzzle puz = IO.loadNative(is);
-            System.out.println("Loaded.");
-            Box[][] boxes = puz.getBoxes();
-            for(int x=0; x<boxes.length; x++){
-                for(int y=0; y<boxes[x].length; y++){
-                    System.out.print( boxes[x][y]  == null ? "_ " : boxes[x][y].getSolution() +" ");
-                }
-                System.out.println();
-            }
-            System.out.println("One across: "+ puz.findAcrossClue(1));
-            System.out.println("14  across: "+ puz.findAcrossClue(14));
-            System.out.println("18  down  : "+ puz.findDownClue(18));
-            System.out.println("2 down: "+puz.findDownClue(2));
-
             assertIsTestPuzzle1(puz);
         }
     }
@@ -186,7 +181,6 @@ public class IOTest extends TestCase {
                     InputStream is2 = new FileInputStream(tmp)
                 ) {
                     puz = IO.loadNative(is2);
-                    assertTrue(puz.getGEXT());
                     assertTrue(puz.getBoxes()[2][2].isCircled());
                 }
             }
@@ -202,8 +196,8 @@ public class IOTest extends TestCase {
             Puzzle p = IO.loadNative(is);
             {
                 Playboard board = new Playboard(p);
-                for(Clue c : board.getAcrossClues()){
-                    for(Box box : board.getWordBoxes(c.number, true)){
+                for(Clue c : board.getPuzzle().getClues(true)){
+                    for(Box box : board.getWordBoxes(c.getNumber(), true)){
                         System.out.print(box.getSolution());
                     }
                     System.out.println();
@@ -215,8 +209,8 @@ public class IOTest extends TestCase {
             boolean b = IO.crack(p);
             System.out.println(b + " "+(System.currentTimeMillis() - incept));
             Playboard board = new Playboard(p);
-            for(Clue c : board.getAcrossClues()){
-                for(Box box : board.getWordBoxes(c.number, true)){
+            for(Clue c : board.getPuzzle().getClues(true)){
+                for(Box box : board.getWordBoxes(c.getNumber(), true)){
                     System.out.print(box.getSolution());
                 }
                 System.out.println();

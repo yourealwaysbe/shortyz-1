@@ -1,6 +1,7 @@
 package app.crossword.yourealwaysbe.io;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 import org.xml.sax.Attributes;
@@ -452,12 +453,9 @@ public class JPZIO implements PuzzleParser {
         if (!handler.isSuccessfulRead())
             return null;
 
-        puz.setVersion(IO.VERSION_STRING);
         puz.setTitle(handler.getTitle());
         puz.setAuthor(handler.getCreator());
         puz.setCopyright(handler.getCopyright());
-        puz.setWidth(handler.getWidth());
-        puz.setHeight(handler.getHeight());
         puz.setBoxes(handler.getBoxes());
 
         setClues(puz, handler);
@@ -482,27 +480,18 @@ public class JPZIO implements PuzzleParser {
     }
 
     private static void setClues(Puzzle puz, JPZXMLParser handler) {
-        Map<Integer, String> acrossNumToClueMap = handler.getAcrossNumToClueMap();
-        Map<Integer, String> downNumToClueMap = handler.getDownNumToClueMap();
-        int maxClueNum = handler.getMaxClueNum();
+        Map<Integer, String> acrossNumToClueMap
+            = handler.getAcrossNumToClueMap();
 
-        int numberOfClues = acrossNumToClueMap.size() + downNumToClueMap.size();
-        puz.setNumberOfClues(numberOfClues);
-
-        String[] rawClues = new String[numberOfClues];
-        int i = 0;
-        for(int clueNum = 1; clueNum <= maxClueNum; clueNum++) {
-            if (acrossNumToClueMap.containsKey(clueNum)) {
-                rawClues[i] = acrossNumToClueMap.get(clueNum);
-                i++;
-            }
-            if (downNumToClueMap.containsKey(clueNum)) {
-                rawClues[i] = downNumToClueMap.get(clueNum);
-                i++;
-            }
+        for (Map.Entry<Integer, String> entry : acrossNumToClueMap.entrySet()) {
+            puz.addClue(new Clue(entry.getKey(), true, entry.getValue()));
         }
 
-        puz.setRawClues(rawClues);
+        Map<Integer, String> downNumToClueMap = handler.getDownNumToClueMap();
+
+        for (Map.Entry<Integer, String> entry : downNumToClueMap.entrySet()) {
+            puz.addClue(new Clue(entry.getKey(), false, entry.getValue()));
+        }
     }
 
     private static void setNote(Puzzle puz, JPZXMLParser handler) {

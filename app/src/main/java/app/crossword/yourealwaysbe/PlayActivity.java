@@ -39,8 +39,8 @@ import androidx.fragment.app.DialogFragment;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.MovementStrategy;
-import app.crossword.yourealwaysbe.puz.Playboard.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 import app.crossword.yourealwaysbe.puz.Playboard;
@@ -679,39 +679,38 @@ public class PlayActivity extends PuzzleActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void onClueTabsClick(Clue clue,
-                                int index,
-                                boolean across,
-                                ClueTabs view) {
+    @Override
+    public void onClueTabsClick(Clue clue, ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
             Word old = board.getCurrentWord();
-            board.jumpTo(index, across);
+            board.jumpToClue(clue.getNumber(), clue.getIsAcross());
             displayKeyboard(old);
         }
     }
 
-    public void onClueTabsLongClick(Clue clue,
-                                    int index,
-                                    boolean across,
-                                    ClueTabs view) {
+    @Override
+    public void onClueTabsLongClick(Clue clue, ClueTabs view) {
         Playboard board = getBoard();
         if (board != null) {
-            board.jumpTo(index, across);
+            board.jumpToClue(clue.getNumber(), clue.getIsAcross());
             launchNotes();
         }
     }
 
+    @Override
     public void onClueTabsBarSwipeDown(ClueTabs view) {
         hideClueTabs();
         render(true);
     }
 
+    @Override
     public void onClueTabsBarLongclick(ClueTabs view) {
         hideClueTabs();
         render(true);
     }
 
+    @Override
     public void onClueTabsPageChange(ClueTabs view, int pageNumber) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(CLUE_TABS_PAGE, pageNumber);
@@ -885,12 +884,6 @@ public class PlayActivity extends PuzzleActivity
         if (getBoard() == null)
             return;
 
-        Clue c = getBoard().getClue();
-        if (c.hint == null) {
-            getBoard().toggleDirection();
-            return;
-        }
-
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
         this.boardView.setBitmap(
             getRenderer().draw(previous, displayScratch, displayScratch),
@@ -935,11 +928,15 @@ public class PlayActivity extends PuzzleActivity
             this.boardView.ensureVisible(cursorTopLeft);
         }
 
-        this.clue.setText(getLongClueText(
-            getBoard().isAcross(),
-            c,
-            getBoard().getCurrentWord().length
-        ));
+        Clue c = getBoard().getClue();
+        if (c != null) {
+            this.clue.setText(getLongClueText(
+                getBoard().getClueNumber(),
+                getBoard().isAcross(),
+                c,
+                getBoard().getCurrentWord().length
+            ));
+        }
 
         this.boardView.requestFocus();
     }

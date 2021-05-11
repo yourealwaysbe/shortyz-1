@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import junit.framework.TestCase;
 
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public class JPZIOTest extends TestCase{
@@ -46,14 +47,21 @@ public class JPZIOTest extends TestCase{
         assertEquals(boxes[14][5], null);
         assertEquals(boxes[3][6].getSolution(), 'N');
 
-        // clue number lookup not set by import, test only raw clues
-        String[] rawClues = puz.getRawClues();
-        assertEquals(rawClues[0], "Baby bovine (4)");
-        assertEquals(rawClues[5], "At the drop of __ (4)");
-        assertEquals(rawClues[7], "Schmooze, as with the A-list (6)");
-        assertEquals(rawClues[8], "Work like __ (4)");
-        assertEquals(rawClues[15], "Ice cream-and-cookies brand (4)");
-        assertEquals(rawClues[25], "Stat start");
+        ClueList acrossClues = puz.getClues(true);
+        ClueList downClues = puz.getClues(false);
+
+        assertEquals(acrossClues.getClue(1).getHint(), "Baby bovine (4)");
+        assertEquals(acrossClues.getClue(5).getHint(), "At the drop of __ (4)");
+        assertEquals(
+            acrossClues.getClue(13).getHint(),
+            "Ice cream-and-cookies brand (4)"
+        );
+        assertEquals(acrossClues.getClue(23).getHint(), "Stat start");
+        assertEquals(
+            downClues.getClue(6).getHint(),
+            "Schmooze, as with the A-list (6)"
+        );
+        assertEquals(downClues.getClue(7).getHint(), "Work like __ (4)");
     }
 
     public void testJPZ() throws Exception {

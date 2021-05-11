@@ -27,6 +27,7 @@ import org.jsoup.select.Elements;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
@@ -108,7 +109,6 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
                     fileHandler.getBufferedOutputStream(f)
                 )
             ) {
-                puz.setVersion(IO.VERSION_STRING);
                 IO.saveNative(puz, dos);
                 success = true;
                 return new Downloader.DownloadResult(f);
@@ -184,11 +184,9 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         puz.setAuthor(json.getJSONObject("creator").getString("name"));
         puz.setCopyright("Guardian / " + puz.getAuthor());
         puz.setDate(date);
-        puz.setWidth(CW_WIDTH);
-        puz.setHeight(CW_HEIGHT);
 
         puz.setBoxes(getBoxes(json));
-        puz.setRawClues(getRawClues(json));
+        addClues(json, puz);
 
         return puz;
     }
@@ -238,11 +236,8 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return boxes;
     }
 
-    private static String[] getRawClues(JSONObject json) throws JSONException {
-        Map<Integer, String> acrossClues = new HashMap<>();
-        Map<Integer, String> downClues = new HashMap<>();
-        int maxClueNum = 0;
-
+    private static void addClues(JSONObject json, Puzzle puz)
+            throws JSONException {
         JSONArray entries = json.getJSONArray("entries");
         for (int i = 0; i < entries.length(); i++) {
             JSONObject entry = entries.getJSONObject(i);
@@ -251,25 +246,8 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             boolean across = entry.getString("direction").equals("across");
             String clue = entry.getString("clue");
 
-            if (across)
-                acrossClues.put(num, clue);
-            else
-                downClues.put(num, clue);
-
-            maxClueNum = Math.max(maxClueNum, num);
+            puz.addClue(new Clue(num, across, clue));
         }
-
-        String[] rawClues = new String[entries.length()];
-
-        int cluePos = 0;
-        for (int i = 0; i <= maxClueNum; i++) {
-            if (acrossClues.containsKey(i))
-                rawClues[cluePos++] = acrossClues.get(i);
-            if (downClues.containsKey(i))
-                rawClues[cluePos++] = downClues.get(i);
-        }
-
-        return rawClues;
     }
 
     /**

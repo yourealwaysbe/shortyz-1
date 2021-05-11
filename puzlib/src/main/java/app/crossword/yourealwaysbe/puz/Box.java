@@ -205,7 +205,7 @@ public class Box implements Serializable {
     }
 
     /**
-     * @return the clueNumber
+     * @return the clueNumber, or 0 for no clue
      */
     public int getClueNumber() {
         return clueNumber;

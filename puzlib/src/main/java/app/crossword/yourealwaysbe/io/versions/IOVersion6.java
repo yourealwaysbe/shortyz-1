@@ -1,8 +1,10 @@
 package app.crossword.yourealwaysbe.io.versions;
 
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.Clue;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Note;
-import app.crossword.yourealwaysbe.puz.Puzzle.HistoryItem;
+import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.SortedMap;
 
 // Moves clue notes out of the puz file and into meta
 // i don't really think they were allowed in the puz file format
@@ -39,8 +42,8 @@ public class IOVersion6 extends IOVersion5 {
     protected void writeMeta(Puzzle puz, DataOutputStream dos)
               throws IOException {
         super.writeMeta(puz, dos);
-        saveNotes(dos, puz.getAcrossNotes());
-        saveNotes(dos, puz.getDownNotes());
+        saveNotes(dos, puz, true);
+        saveNotes(dos, puz, false);
     }
 
     /**
@@ -76,41 +79,63 @@ public class IOVersion6 extends IOVersion5 {
     }
 
     private static void saveNotes(
-        DataOutputStream dos, Note[] notes
+        DataOutputStream dos, Puzzle puz, boolean isAcross
     ) throws IOException {
-        if (notes == null) {
-            dos.writeInt(0);
-            return;
+
+        int size = 0;
+        for (ClueNumDir cnd : puz.getClueNumDirs()) {
+            if (cnd.getAcross() == isAcross)
+                size += 1;
         }
 
-        dos.writeInt(notes.length);
+        // not really useful since notes should match the number of clue
+        // positions
+        dos.writeInt(size);
 
-        for (Note note : notes) {
-            String scratch = null;
-            String text = null;
-            String anagramSrc = null;
-            String anagramSol = null;
+        for (ClueNumDir cnd : puz.getClueNumDirs()) {
+            if (cnd.getAcross() == isAcross) {
+                String scratch = null;
+                String text = null;
+                String anagramSrc = null;
+                String anagramSol = null;
 
-            if (note != null) {
-                scratch = note.getCompressedScratch();
-                text = note.getText();
-                anagramSrc = note.getCompressedAnagramSource();
-                anagramSol = note.getCompressedAnagramSolution();
+                Note note = puz.getNote(cnd.getClueNumber(), isAcross);
+
+                if (note != null) {
+                    scratch = note.getCompressedScratch();
+                    text = note.getText();
+                    anagramSrc = note.getCompressedAnagramSource();
+                    anagramSol = note.getCompressedAnagramSolution();
+                }
+
+                IO.writeNullTerminatedString(dos, scratch);
+                IO.writeNullTerminatedString(dos, text);
+                IO.writeNullTerminatedString(dos, anagramSrc);
+                IO.writeNullTerminatedString(dos, anagramSol);
             }
-
-            IO.writeNullTerminatedString(dos, scratch);
-            IO.writeNullTerminatedString(dos, text);
-            IO.writeNullTerminatedString(dos, anagramSrc);
-            IO.writeNullTerminatedString(dos, anagramSol);
         }
     }
 
     private void applyNotes(Puzzle puz, Note[] notes, boolean isAcross) {
         if (notes != null) {
-            for (int i = 0; i < notes.length; i++) {
-                Note n = notes[i];
-                if (n != null)
-                    puz.setNoteRaw(n, i, isAcross);
+            int idx = 0;
+            for (ClueNumDir cnd : puz.getClueNumDirs()) {
+                int number = cnd.getClueNumber();
+                boolean across = cnd.getAcross();
+
+                if (across == isAcross) {
+                    if (idx < notes.length) {
+                        Note n = notes[idx];
+                        if (n != null)
+                            puz.setNote(number, n, isAcross);
+                        idx += 1;
+                    } else {
+                        LOG.info(
+                            "WARNING: mismatch between number of "
+                                + "clues and number of notes."
+                        );
+                    }
+                }
             }
         }
     }

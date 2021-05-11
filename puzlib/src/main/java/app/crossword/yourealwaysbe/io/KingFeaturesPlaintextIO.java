@@ -2,6 +2,7 @@ package app.crossword.yourealwaysbe.io;
 
 import app.crossword.yourealwaysbe.io.charset.MacRoman;
 import app.crossword.yourealwaysbe.puz.Box;
+import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 import java.io.DataOutputStream;
@@ -98,8 +99,6 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
 
         // Convert solution grid into Box grid.
         int height = solGrid.size();
-        puz.setWidth(width);
-        puz.setHeight(height);
         Box[][] boxes = new Box[height][width];
         for (int x = 0; x < height; x++) {
             char[] row = solGrid.get(x);
@@ -115,7 +114,6 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
         puz.setBoxes(boxes);
 
         // Process clues.
-        Map<Integer, String> acrossNumToClueMap = new HashMap<Integer, String>();
         line = line.substring(1);
         int clueNum;
         do {
@@ -132,7 +130,7 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
                 i++;
             }
             String clue = line.substring(i+2).trim();
-            acrossNumToClueMap.put(clueNum, clue);
+            puz.addClue(new Clue(clueNum, true, clue));
             if (!scanner.hasNextLine()) {
                 System.err.println("Unexpected EOF - Across clues.");
                 return null;
@@ -142,7 +140,6 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
 
         int maxClueNum = clueNum;
 
-        Map<Integer, String> downNumToClueMap = new HashMap<Integer, String>();
         line = line.substring(1);
         boolean finished = false;
         do {
@@ -161,7 +158,7 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
                 i++;
             }
             String clue = line.substring(i+2).trim();
-            downNumToClueMap.put(clueNum, clue);
+            puz.addClue(new Clue(clueNum, false, clue));
             if(!finished) {
                 if (!scanner.hasNextLine()) {
                     System.err.println("Unexpected EOF - Down clues.");
@@ -173,25 +170,6 @@ public class KingFeaturesPlaintextIO implements PuzzleParser {
 
         maxClueNum = clueNum > maxClueNum ? clueNum : maxClueNum;
 
-        // Convert clues into raw clues format.
-        int numberOfClues = acrossNumToClueMap.size() + downNumToClueMap.size();
-        puz.setNumberOfClues(numberOfClues);
-        String[] rawClues = new String[numberOfClues];
-        int i = 0;
-        for(clueNum = 1; clueNum <= maxClueNum; clueNum++) {
-            if(acrossNumToClueMap.containsKey(clueNum)) {
-                rawClues[i] = acrossNumToClueMap.get(clueNum);
-                i++;
-            }
-            if(downNumToClueMap.containsKey(clueNum)) {
-                rawClues[i] = downNumToClueMap.get(clueNum);
-                i++;
-            }
-        }
-        puz.setRawClues(rawClues);
-
-        // Set puzzle information
-        puz.setVersion(IO.VERSION_STRING);
         // Makeshift title
         puz.setTitle("King Features Puzzle");
         puz.setNotes("");

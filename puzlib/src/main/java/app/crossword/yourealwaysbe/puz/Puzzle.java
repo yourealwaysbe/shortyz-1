@@ -5,66 +5,72 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import java.util.logging.Logger;
 
 public class Puzzle implements Serializable{
     private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
 
+    @FunctionalInterface
+    public static interface ClueNumDirConsumer {
+        public void accept(int number, boolean across) throws Exception;
+    }
+
     private String author;
     private String copyright;
     private String notes;
     private String title;
-    private String[] acrossClues;
-    private Integer[] acrossCluesLookup;
-    private String[] downClues;
-    private Integer[] downCluesLookup;
+    private MutableClueList acrossClues = new MutableClueList();
+    private MutableClueList downClues = new MutableClueList();
     private int numberOfClues;
     private LocalDate pubdate = LocalDate.now();
     private String source;
     private String sourceUrl = "";
     private String supportUrl;
     private Box[][] boxes;
-    private Box[] boxesList;
-    private String[] rawClues;
     private boolean updatable;
     private int height;
     private int width;
     private long playedTime;
     private boolean scrambled;
     public short solutionChecksum;
-    private String version;
-    private boolean hasGEXT;
+
+    // current play position data needed for saving state...
     private Position position;
     private boolean across = true;
 
-    private Note[] acrossNotes = null;
-    private Note[] downNotes = null;
+    private SortedMap<Integer, Note> acrossNotes = new TreeMap<>();
+    private SortedMap<Integer, Note> downNotes = new TreeMap<>();
 
-    private LinkedList<HistoryItem> historyList = new LinkedList<>();
+    private LinkedList<ClueNumDir> historyList = new LinkedList<>();
 
     // Temporary fields used for unscrambling.
     public int[] unscrambleKey;
     public byte[] unscrambleTmp;
     public byte[] unscrambleBuf;
 
-    public void setAcrossClues(String[] acrossClues) {
-        this.acrossClues = acrossClues;
+    public void addClue(Clue clue) {
+        if (clue.getIsAcross())
+            this.acrossClues.addClue(clue);
+        else
+            this.downClues.addClue(clue);
     }
 
-    public String[] getAcrossClues() {
-        return acrossClues;
-    }
-
-    public void setAcrossCluesLookup(Integer[] acrossCluesLookup) {
-        this.acrossCluesLookup = acrossCluesLookup;
-    }
-
-    public Integer[] getAcrossCluesLookup() {
-        return acrossCluesLookup;
+    /**
+     * Get clue lists
+     *
+     * Note: no reason to assume there is a numbered clue for every
+     * numbered position on the board. This is not always the case when
+     * clues span multiple entries.
+     */
+    public ClueList getClues(boolean across) {
+        return across ? this.acrossClues : this.downClues;
     }
 
     public void setAuthor(String author) {
@@ -99,12 +105,34 @@ public class Puzzle implements Serializable{
         return checkedGet(boxes, row, col + 1) != null;
     }
 
+    /**
+     * Will automatically fill in clue numbers
+     *
+     * Follows standard crossword rules. Overrides any existing
+     * numbering on the boxes. This may be something that needs to
+     * change in future. Also sets height and width.
+     *
+     * @param boxes boxes in row, col order, null means black square.
+     * Must be a true grid.
+     * @throws IllegalArgumentException if the boxes are not a grid, or
+     * contain numbering inconsistent with the "standard" crossword
+     * numbering system.
+     */
     public void setBoxes(Box[][] boxes) {
         this.boxes = boxes;
 
         int clueCount = 1;
 
+        this.height = boxes.length;
+        this.width = height > 0 ? boxes[0].length : 0;
+
         for (int row = 0; row < boxes.length; row++) {
+            if (boxes[row].length != width) {
+                throw new IllegalArgumentException(
+                    "Boxes do not form a grid"
+                );
+            }
+
             for (int col = 0; col < boxes[row].length; col++) {
                 if (boxes[row][col] == null) {
                     continue;
@@ -125,9 +153,26 @@ public class Puzzle implements Serializable{
                     }
                 }
 
+                int boxNumber = boxes[row][col].getClueNumber();
+
                 if (tickedClue) {
+                    if (boxNumber > 0 && boxNumber != clueCount) {
+                        throw new IllegalArgumentException(
+                            "Box clue number " + boxNumber
+                                + " does not match expected "
+                                + clueCount
+                        );
+                    }
+
                     boxes[row][col].setClueNumber(clueCount);
                     clueCount++;
+                } else {
+                    if (boxNumber > 0) {
+                        throw new IllegalArgumentException(
+                            "Box numbered " + boxNumber
+                                + " expected not to be numbered"
+                        );
+                    }
                 }
             }
         }
@@ -183,11 +228,25 @@ public class Puzzle implements Serializable{
     }
 
     public Box[][] getBoxes() {
-        return (boxes == null) ? this.buildBoxes() : boxes;
+        return boxes;
     }
 
-    public void setBoxesList(Box[] value) {
-        this.boxesList = value;
+    /**
+     * Assumes height and width has been set
+     *
+     * See setBoxes for more details
+     */
+    public void setBoxesFromList(Box[] boxesList, int width, int height) {
+        int i = 0;
+        Box[][] boxes = new Box[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                boxes[y][x] = boxesList[i++];
+            }
+        }
+
+        setBoxes(boxes);
     }
 
     public Box[] getBoxesList() {
@@ -204,44 +263,112 @@ public class Puzzle implements Serializable{
     }
 
     /**
+     * Iterate over clue starts in board order
+     *
+     * Left to right, top to bottom, across before down
+     */
+    public Iterable<ClueNumDir> getClueNumDirs() {
+        return new Iterable<ClueNumDir>() {
+            public Iterator<ClueNumDir> iterator() {
+                return new Iterator<ClueNumDir>() {
+                    private final int width = getWidth();
+                    private final int height = getHeight();
+                    private final Box[][] boxes = getBoxes();
+
+                    // next position (0, 0, across) -> (0, 0, down) -> (0, 1,
+                    // across) -> ...
+                    private int row = 0;
+                    private int col = 0;
+                    private boolean across = true;
+
+                    { moveToNext(); }
+
+                    @Override
+                    public boolean hasNext() {
+                        return row < height;
+                    }
+
+                    @Override
+                    public ClueNumDir next() {
+                        int number = boxes[row][col].getClueNumber();
+                        ClueNumDir result = new ClueNumDir(number, across);
+                        moveOneStep();
+                        moveToNext();
+                        return result;
+                    }
+
+                    /**
+                     * Find next clue/dir position including current position
+                     */
+                    private void moveToNext() {
+                        while (row < height) {
+                            Box box = boxes[row][col];
+                            if (box != null && box.getClueNumber() > 0) {
+                                if (across && box.isAcross())
+                                    return;
+                                else if (!across && box.isDown())
+                                    return;
+                            }
+                            moveOneStep();
+                        }
+                    }
+
+                    /**
+                     * Move to next position, one step, not to next clue/dir
+                     * position
+                     */
+                    private void moveOneStep() {
+                        if (across) {
+                            across = false;
+                        } else {
+                            across = true;
+                            col = (col + 1) % width;
+                            if (col == 0)
+                                row += 1;
+                        }
+                    }
+                };
+            }
+        };
+    }
+
+    /**
      * Initialize the temporary unscramble buffers.  Returns the scrambled solution.
      */
     public byte[] initializeUnscrambleData() {
-    	unscrambleKey = new int[4];
-    	unscrambleTmp = new byte[9];
+        unscrambleKey = new int[4];
+        unscrambleTmp = new byte[9];
 
-    	byte[] solution = getSolutionDown();
-    	unscrambleBuf = new byte[solution.length];
+        byte[] solution = getSolutionDown();
+        unscrambleBuf = new byte[solution.length];
 
-    	return solution;
+        return solution;
     }
 
+    private byte[] getSolutionDown() {
+        StringBuilder ans = new StringBuilder();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (boxes[y][x] != null) {
+                    ans.append(boxes[y][x].getSolution());
+                }
+            }
+        }
+        return ans.toString().getBytes();
+    }
 
-
-	private byte[] getSolutionDown() {
-		StringBuilder ans = new StringBuilder();
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				if (boxes[y][x] != null) {
-					ans.append(boxes[y][x].getSolution());
-				}
-			}
-		}
-		return ans.toString().getBytes();
-	}
-
-	public void setUnscrambledSolution(byte[] solution) {
-		int i = 0;
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				if (boxes[y][x] != null) {
-					boxes[y][x].setSolution((char) solution[i++]);
-				}
-			}
-		}
-		setScrambled(false);
-		setUpdatable(false);
-	}
+    public void setUnscrambledSolution(byte[] solution) {
+        int i = 0;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (boxes[y][x] != null) {
+                    boxes[y][x].setSolution((char) solution[i++]);
+                }
+            }
+        }
+        setScrambled(false);
+        setUpdatable(false);
+    }
 
     public void setCopyright(String copyright) {
         this.copyright = copyright;
@@ -259,29 +386,6 @@ public class Puzzle implements Serializable{
         return pubdate;
     }
 
-    public void setDownClues(String[] downClues) {
-        this.downClues = downClues;
-    }
-
-    public String[] getDownClues() {
-        return downClues;
-    }
-
-    public void setDownCluesLookup(Integer[] downCluesLookup) {
-        this.downCluesLookup = downCluesLookup;
-    }
-
-    public Integer[] getDownCluesLookup() {
-        return downCluesLookup;
-    }
-
-    /**
-     * @param height the height to set
-     */
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
     /**
      * @return the height
      */
@@ -297,12 +401,8 @@ public class Puzzle implements Serializable{
         return notes;
     }
 
-    public void setNumberOfClues(int numberOfClues) {
-        this.numberOfClues = numberOfClues;
-    }
-
     public int getNumberOfClues() {
-        return numberOfClues;
+        return this.acrossClues.size() + this.downClues.size();
     }
 
     public int getPercentComplete() {
@@ -343,14 +443,6 @@ public class Puzzle implements Serializable{
         }
 
         return (filled * 100) / (total);
-    }
-
-    public void setRawClues(String[] rawClues) {
-        this.rawClues = rawClues;
-    }
-
-    public String[] getRawClues() {
-        return rawClues;
     }
 
     public void setSource(String source) {
@@ -401,59 +493,42 @@ public class Puzzle implements Serializable{
         return updatable;
     }
 
-    public void setVersion(String version) {
-    	this.version = version;
-    }
-
-     public String getVersion() {
-    	 return version;
-     }
-
-    public void setGEXT(boolean hasGEXT) {
-    	this.hasGEXT = hasGEXT;
-    }
-
-    public boolean getGEXT() {
-    	return hasGEXT;
-    }
-
     public void setPosition(Position position) {
-    	this.position = position;
+        this.position = position;
     }
 
     public Position getPosition() {
-    	return position;
-    }
-
-    public void setAcross(boolean across) {
-    	this.across = across;
-    }
-
-    public boolean getAcross() {
-    	return across;
-    }
-
-    public void setScrambled(boolean scrambled) {
-    	this.scrambled = scrambled;
-    }
-
-    public boolean isScrambled() {
-    	return scrambled;
-    }
-
-    public void setSolutionChecksum(short checksum) {
-    	this.solutionChecksum = checksum;
-    }
-
-    public short getSolutionChecksum() {
-    	return solutionChecksum;
+        return position;
     }
 
     /**
-     * @param width the width to set
+     * Set whether current position is across
      */
-    public void setWidth(int width) {
-        this.width = width;
+    public void setAcross(boolean across) {
+        this.across = across;
+    }
+
+    /**
+     * Get whether current position is across
+     */
+    public boolean getAcross() {
+        return across;
+    }
+
+    public void setScrambled(boolean scrambled) {
+        this.scrambled = scrambled;
+    }
+
+    public boolean isScrambled() {
+        return scrambled;
+    }
+
+    public void setSolutionChecksum(short checksum) {
+        this.solutionChecksum = checksum;
+    }
+
+    public short getSolutionChecksum() {
+        return solutionChecksum;
     }
 
     /**
@@ -463,71 +538,45 @@ public class Puzzle implements Serializable{
         return width;
     }
 
-    public Box[][] buildBoxes() {
-        int i = 0;
-        boxes = new Box[this.height][this.width];
-
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                boxes[y][x] = boxesList[i++];
-            }
-        }
-
-        return boxes;
-    }
-
-    public Note[] getAcrossNotes() {
-        return acrossNotes;
-    }
-
-    public Note[] getDownNotes() {
-        return downNotes;
-    }
-
+    /**
+     * Returns null if no note
+     */
     public Note getNote(int clueNum, boolean isAcross) {
-        if (isAcross && acrossNotes == null)
-            return null;
-        else if (!isAcross && downNotes == null)
-            return null;
-
-        if (isAcross) {
-            int idx = getAcrossClueIndex(clueNum);
-            return (idx < 0) ? null : acrossNotes[idx];
-        } else {
-            int idx = getDownClueIndex(clueNum);
-            return (idx < 0) ? null : downNotes[idx];
-        }
+        if (isAcross)
+            return acrossNotes.get(clueNum);
+        else
+            return downNotes.get(clueNum);
     }
 
     /**
-     * Assumes acrossClues and downClues has been initialised
+     * Set note for a clue only if clue exists in puzzle
      */
-    public void setNote(Note note, int clueNum, boolean isAcross) {
-        int idx = isAcross ? getAcrossClueIndex(clueNum)
-                           : getDownClueIndex(clueNum);
+    public void setNote(int clueNum, Note note, boolean isAcross) {
+        if (!getClues(isAcross).hasClue(clueNum))
+            return;
 
-        setNoteRaw(note, idx, isAcross);
+        if (isAcross)
+            acrossNotes.put(clueNum, note);
+        else
+            downNotes.put(clueNum, note);
     }
 
     /**
-     * Assumes acrossClues and downClues has been initialised
+     * Returns true if some box is circled
      */
-    public void setNoteRaw(Note note, int clueIdx, boolean isAcross) {
-        if (isAcross) {
-            if (clueIdx >= 0 && clueIdx <= acrossClues.length) {
-                if (acrossNotes == null) {
-                    acrossNotes = new Note[acrossClues.length];
-                }
-                acrossNotes[clueIdx] = note;
-            }
-        } else {
-            if (clueIdx >= 0 && clueIdx <= downClues.length) {
-                if (downNotes == null) {
-                    downNotes = new Note[downClues.length];
-                }
-                downNotes[clueIdx] = note;
+    public boolean hasCircled() {
+        if (boxes == null)
+            return false;
+
+        for (int row = 0; row < boxes.length; row++) {
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+                if (box != null && box.isCircled())
+                    return true;
             }
         }
+
+        return false;
     }
 
     @Override
@@ -546,13 +595,11 @@ public class Puzzle implements Serializable{
 
         Puzzle other = (Puzzle) obj;
 
-        if (!Arrays.equals(acrossClues, other.acrossClues)) {
-            //            for(int i=0; i < acrossClues.length; i++)
-            //            	System.out.println((acrossClues[i].equals(other.acrossClues[i]))+"["+acrossClues[i]+"]==["+other.acrossClues[i]+"]");
+        if (!acrossClues.equals(other.acrossClues)) {
             return false;
         }
 
-        if (!Arrays.equals(acrossCluesLookup, other.acrossCluesLookup)) {
+        if (!downClues.equals(other.downClues)) {
             return false;
         }
 
@@ -588,14 +635,6 @@ public class Puzzle implements Serializable{
             return false;
         }
 
-        if (!Arrays.equals(downClues, other.downClues)) {
-            return false;
-        }
-
-        if (!Arrays.equals(downCluesLookup, other.downCluesLookup)) {
-            return false;
-        }
-
         if (height != other.height) {
             return false;
         }
@@ -605,10 +644,6 @@ public class Puzzle implements Serializable{
                 return false;
             }
         } else if (!notes.equals(other.notes)) {
-            return false;
-        }
-
-        if (getNumberOfClues() != other.getNumberOfClues()) {
             return false;
         }
 
@@ -624,69 +659,41 @@ public class Puzzle implements Serializable{
             return false;
         }
 
-        if (version == null) {
-	        if (other.version != null) {
-	            return false;
-	        }
-        } else if (!version.equals(other.version)) {
-            return false;
-        }
-
         if (scrambled != other.scrambled) {
-        	return false;
+            return false;
         }
 
         if (solutionChecksum != other.solutionChecksum) {
-        	return false;
-        }
-
-        if (!Arrays.equals(acrossNotes, other.acrossNotes)) {
             return false;
         }
 
-        if (!Arrays.equals(downNotes, other.downNotes)) {
+        if (!acrossNotes.equals(other.acrossNotes)) {
+            return false;
+        }
+
+        if (!downNotes.equals(other.downNotes)) {
             return false;
         }
 
         return true;
     }
 
-    public String findAcrossClue(int clueNumber) {
-        return this.acrossClues[getAcrossClueIndex(clueNumber)];
-    }
-
-    public String findDownClue(int clueNumber) {
-        return this.downClues[getDownClueIndex(clueNumber)];
-    }
-
-    public int getAcrossClueIndex(int number) {
-        return Arrays.binarySearch(this.acrossCluesLookup, number);
-    }
-
-    public int getDownClueIndex(int number) {
-        return Arrays.binarySearch(this.downCluesLookup, number);
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + Arrays.hashCode(acrossClues);
-        result = (prime * result) + Arrays.hashCode(acrossCluesLookup);
+        result = (prime * result) + acrossClues.hashCode();
+        result = (prime * result) + downClues.hashCode();
         result = (prime * result) + ((author == null) ? 0 : author.hashCode());
         result = (prime * result) + Arrays.hashCode(boxes);
         result = (prime * result) +
             ((copyright == null) ? 0 : copyright.hashCode());
-        result = (prime * result) + Arrays.hashCode(downClues);
-        result = (prime * result) + Arrays.hashCode(downCluesLookup);
         result = (prime * result) + height;
         result = (prime * result) + ((notes == null) ? 0 : notes.hashCode());
-        result = (prime * result) + getNumberOfClues();
         result = (prime * result) + ((title == null) ? 0 : title.hashCode());
-        result = (prime * result) + ((version == null) ? 0 : version.hashCode());
         result = (prime * result) + width;
-        result = (prime *result) + Arrays.hashCode(acrossNotes);
-        result = (prime *result) + Arrays.hashCode(downNotes);
+        result = (prime *result) + acrossNotes.hashCode();
+        result = (prime *result) + downNotes.hashCode();
 
         return result;
     }
@@ -698,12 +705,8 @@ public class Puzzle implements Serializable{
     }
 
     public void updateHistory(int clueNumber, boolean across) {
-        int clueIndex = across ?
-                        getAcrossClueIndex(clueNumber) :
-                        getDownClueIndex(clueNumber);
-
-        if (clueIndex > -1) {
-            HistoryItem item = new HistoryItem(clueNumber, across);
+        if (getClues(across).hasClue(clueNumber)) {
+            ClueNumDir item = new ClueNumDir(clueNumber, across);
             // if a new item, not equal to most recent
             if (historyList.isEmpty() ||
                 !item.equals(historyList.getFirst())) {
@@ -713,27 +716,24 @@ public class Puzzle implements Serializable{
         }
     }
 
-    public void setHistory(List<HistoryItem> newHistory) {
+    public void setHistory(List<ClueNumDir> newHistory) {
         historyList.clear();
-        for (HistoryItem item : newHistory) {
+        for (ClueNumDir item : newHistory) {
             int number = item.getClueNumber();
-            int clueIndex = item.getAcross() ?
-                            getAcrossClueIndex(number) :
-                            getDownClueIndex(number);
-            if (clueIndex > -1)
+            if (getClues(item.getAcross()).hasClue(number))
                 historyList.add(item);
         }
     }
 
-    public List<HistoryItem> getHistory() {
+    public List<ClueNumDir> getHistory() {
         return historyList;
     }
 
-    public static class HistoryItem {
+    public static class ClueNumDir {
         private int clueNumber;
         private boolean across;
 
-        public HistoryItem(int clueNumber, boolean across) {
+        public ClueNumDir(int clueNumber, boolean across) {
             this.clueNumber = clueNumber;
             this.across = across;
         }
@@ -742,8 +742,8 @@ public class Puzzle implements Serializable{
         public boolean getAcross() { return across; }
 
         public boolean equals(Object o) {
-            if (o instanceof HistoryItem) {
-                HistoryItem other = (HistoryItem) o;
+            if (o instanceof ClueNumDir) {
+                ClueNumDir other = (ClueNumDir) o;
                 return clueNumber == other.clueNumber && across == other.across;
             }
             return false;

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -13,8 +14,8 @@ import app.crossword.yourealwaysbe.util.WeakSet;
 public class Playboard implements Serializable {
     private static final Logger LOG = Logger.getLogger(Playboard.class.getCanonicalName());
 
-    private HashMap<Integer, Position> acrossWordStarts = new HashMap<Integer, Position>();
-    private HashMap<Integer, Position> downWordStarts = new HashMap<Integer, Position>();
+    private Map<Integer, Position> acrossWordStarts = new HashMap<Integer, Position>();
+    private Map<Integer, Position> downWordStarts = new HashMap<Integer, Position>();
     private MovementStrategy movementStrategy = MovementStrategy.MOVE_NEXT_ON_AXIS;
     private Position highlightLetter = new Position(0, 0);
     private Puzzle puzzle;
@@ -97,47 +98,54 @@ public class Playboard implements Serializable {
         return across;
     }
 
-    public Clue[] getAcrossClues() {
-        Clue[] clues = new Clue[puzzle.getAcrossClues().length];
-
-        for (int i = 0; i < clues.length; i++) {
-            clues[i] = new Clue();
-            clues[i].hint = puzzle.getAcrossClues()[i];
-            clues[i].number = puzzle.getAcrossCluesLookup()[i];
-        }
-
-        return clues;
-    }
-
     public Box[][] getBoxes() {
         return this.boxes;
     }
 
+    /**
+     * Returns null if no clue for current position
+     */
     public Clue getClue() {
-        Clue c = new Clue();
-
-        try {
-            Position start = this.getCurrentWordStart();
-            c.number = this.getBoxes()[start.across][start.down].getClueNumber();
-            c.hint = this.isAcross() ? this.puzzle.findAcrossClue(c.number) : this.puzzle.findDownClue(c.number);
-        } catch (Exception e) {
-        }
-
-        return c;
+        int number = getClueNumber();
+        return (number > -1)
+            ? this.puzzle.getClues(this.isAcross()).getClue(number)
+            : null;
     }
 
-    public Clue getClue(int number, boolean across) {
-        Clue clue = new Clue();
-        clue.number = number;
-        clue.hint = across ?
-                    this.puzzle.findAcrossClue(number) :
-                    this.puzzle.findDownClue(number);
-        return clue;
+    /**
+     * Clue number for current position or -1 if none
+     */
+    public int getClueNumber() {
+        Position start = this.getCurrentWordStart();
+        Box[][] boxes =  this.getBoxes();
+        if (start.across >= 0 && start.across < boxes.length) {
+            Box[] row = boxes[start.across];
+            if (start.down >= 0 && start.down < row.length) {
+                return row[start.down].getClueNumber();
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns -1 if no current clue
+     */
+    public int getCurrentClueIndex() {
+        Clue clue = getClue();
+        if (clue != null) {
+            return puzzle.getClues(clue.getIsAcross())
+                .getClueIndex(clue.getNumber());
+        } else {
+            return -1;
+        }
     }
 
     public Note getNote() {
         Clue c = this.getClue();
-        return this.puzzle.getNote(c.number, this.across);
+        if (c != null)
+            return this.puzzle.getNote(c.getNumber(), this.across);
+        else
+            return null;
     }
 
     public Box getCurrentBox() {
@@ -181,21 +189,6 @@ public class Playboard implements Serializable {
             return boxes[offAcross][offDown];
         else
             return null;
-    }
-
-
-    /** Returns the 0 based index of the current clue based on the current across or down state
-     *
-     * @return index of the across or down clue based on the current state
-     */
-    public int getCurrentClueIndex() {
-        Clue c = this.getClue();
-
-        if (across) {
-            return this.puzzle.getAcrossClueIndex(c.number);
-        } else {
-            return this.puzzle.getDownClueIndex(c.number);
-        }
     }
 
     public Word getCurrentWord() {
@@ -300,18 +293,6 @@ public class Playboard implements Serializable {
 
             return new Position(this.highlightLetter.across, row);
         }
-    }
-
-    public Clue[] getDownClues() {
-        Clue[] clues = new Clue[puzzle.getDownClues().length];
-
-        for (int i = 0; i < clues.length; i++) {
-            clues[i] = new Clue();
-            clues[i].hint = puzzle.getDownClues()[i];
-            clues[i].number = puzzle.getDownCluesLookup()[i];
-        }
-
-        return clues;
     }
 
     public void setCurrentWord(String response) {
@@ -421,11 +402,7 @@ public class Playboard implements Serializable {
         return skipCompletedLetters;
     }
 
-    public boolean isFilled(int clueIndex, boolean isAcross) {
-        int number = (isAcross ?
-                      puzzle.getAcrossCluesLookup()[clueIndex] :
-                      puzzle.getDownCluesLookup()[clueIndex]);
-
+    public boolean isFilledClueNum(int number, boolean isAcross) {
         Position start = (isAcross ?
                           this.acrossWordStarts.get(number) :
                           this.downWordStarts.get(number));
@@ -591,21 +568,30 @@ public class Playboard implements Serializable {
         return skipCorrect || skipAdjacent;
     }
 
-    public void jumpTo(int clueIndex, boolean across) {
+    /**
+     * Ignored if clueNumber does not exist
+     */
+    public void jumpToClue(int clueNumber, boolean across) {
         try {
             pushNotificationDisabled();
 
+            Position pos = null;
+
             if (across) {
-                this.setHighlightLetter(this.acrossWordStarts.get(this.puzzle.getAcrossCluesLookup()[clueIndex]));
+                pos = this.acrossWordStarts.get(clueNumber);
             } else {
-                this.setHighlightLetter(this.downWordStarts.get(this.puzzle.getDownCluesLookup()[clueIndex]));
+                pos = this.downWordStarts.get(clueNumber);
             }
 
-            this.setAcross(across);
+            if (pos != null) {
+                this.setHighlightLetter(pos);
+                this.setAcross(across);
+            }
 
             popNotificationDisabled();
 
-            notifyChange();
+            if (pos != null)
+                notifyChange();
         } catch (Exception e) {
         }
     }
@@ -807,7 +793,7 @@ public class Playboard implements Serializable {
         if (note == null) {
             note = new Note(response.length());
             Clue c = this.getClue();
-            this.puzzle.setNote(note, c.number, this.across);
+            this.puzzle.setNote(c.getNumber(), note, this.across);
         }
 
         // Update the scratch text
@@ -999,44 +985,6 @@ public class Playboard implements Serializable {
             notificationDisabledDepth -= 1;
     }
 
-    public static class Clue implements Serializable {
-        public String hint;
-        public int number;
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-
-            final Clue other = (Clue) obj;
-
-            if ((this.hint == null) ? (other.hint != null) : (!this.hint.equals(other.hint))) {
-                return false;
-            }
-
-            if (this.number != other.number) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return this.number;
-        }
-
-        @Override
-        public String toString() {
-            return number + ". " + hint;
-        }
-    }
-
     public static class Position implements Serializable {
         public int across;
         public int down;
@@ -1110,7 +1058,9 @@ public class Playboard implements Serializable {
 
     private void updateHistory() {
         if (puzzle != null) {
-            puzzle.updateHistory(getClue().number, isAcross());
+            Clue c = getClue();
+            if (c != null)
+                puzzle.updateHistory(c.getNumber(), c.getIsAcross());
         }
     }
 

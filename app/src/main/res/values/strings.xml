@@ -12,6 +12,7 @@
     <string name="elapsed_time">Elapsed Time: %1$s</string>
     <string name="preview">Preview</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
+    <string name="unknown_hint">(No explicit clue)</string>
 
     <!-- imports -->
     <string name="import_fallback_source">Import</string>

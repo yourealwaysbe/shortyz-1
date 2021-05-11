@@ -61,7 +61,7 @@ public class PuzzleFinishedActivity extends ForkyzActivity {
             );
         }
 
-        int totalClues = puz.getAcrossClues().length + puz.getDownClues().length;
+        int totalClues = puz.getNumberOfClues();
         int totalBoxes = 0;
         int cheatedBoxes = 0;
         for(Box b : puz.getBoxesList()){
