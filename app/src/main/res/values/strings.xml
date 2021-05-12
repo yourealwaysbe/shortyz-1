@@ -39,7 +39,6 @@
     <string name="no_puzzles_download_or_configure_storage">No puzzles found. Download puzzles with the button below or configure a storage directory in settings.</string>
     <string name="no_puzzles">No puzzles found.</string>
     <string name="unable_to_read_file">Unable to read file %1$s</string>
-    <string name="unable_to_download_from">Unable to download from\n%1$s</string>
     <string name="download_notification_channel_name">Downloads</string>
     <string name="download_notification_channel_desc">Notifications about downloaded puzzles</string>
     <string name="please_wait">Please wait&#8230;</string>
@@ -284,7 +283,6 @@
 
     <!-- manifest -->
     <string name="app_name">Forkyz</string>
-    <string name="download_label">Download to Forkyz</string>
     <string name="settings_label">Settings</string>
     <string name="clues_list_label">Clues</string>
     <string name="notes_label">Notes</string>

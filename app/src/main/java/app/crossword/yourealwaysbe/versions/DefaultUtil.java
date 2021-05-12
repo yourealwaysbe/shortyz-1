@@ -16,17 +16,16 @@ import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map.Entry;
 import java.util.Map;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public abstract class DefaultUtil implements AndroidVersionUtils {
     public abstract void setContext(Context ctx);
@@ -37,22 +36,27 @@ public abstract class DefaultUtil implements AndroidVersionUtils {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        OkHttpClient httpclient = new OkHttpClient.Builder().build();
+        try {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-        Request.Builder requestBuilder = new Request.Builder()
-            .url(url.toString());
+            conn.setRequestProperty("Connection", "close");
 
-        for (Entry<String, String> e : headers.entrySet()){
-            requestBuilder = requestBuilder.header(e.getKey(), e.getValue());
-        }
-        try (
-            OutputStream fos = fileHandler.getOutputStream(destination);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ) {
-            Response response = httpclient.newCall(requestBuilder.build()).execute();
-            IO.copyStream(response.body().byteStream(), baos);
-            IO.copyStream(new ByteArrayInputStream(baos.toByteArray()), fos);
-            return true;
+            for (Entry<String, String> e : headers.entrySet()){
+                conn.setRequestProperty(e.getKey(), e.getValue());
+            }
+
+            try (
+                OutputStream fos = fileHandler.getOutputStream(destination);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                InputStream is = new BufferedInputStream(conn.getInputStream());
+            ) {
+                IO.copyStream(is, baos);
+                IO.copyStream(
+                    new ByteArrayInputStream(baos.toByteArray()),
+                    fos
+                );
+                return true;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;

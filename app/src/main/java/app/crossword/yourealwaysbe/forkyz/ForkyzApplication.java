@@ -25,15 +25,9 @@ import app.crossword.yourealwaysbe.util.files.FileHandlerSAF;
 import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
-import com.franmontiel.persistentcookiejar.PersistentCookieJar;
-import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
-import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-
-import okhttp3.CookieJar;
 
 public class ForkyzApplication extends Application {
     private static final Logger LOGGER
@@ -47,7 +41,6 @@ public class ForkyzApplication extends Application {
     private PuzHandle puzHandle;
     private PlayboardRenderer renderer;
     private SharedPreferences settings;
-    private AtomicReference<PersistentCookieJar> cookieJar = new AtomicReference<>(null);
 
     private FileHandler fileHandler;
 
@@ -189,14 +182,6 @@ public class ForkyzApplication extends Application {
 
     public SharedPreferences getSettings() {
         return settings;
-    }
-
-    public CookieJar getCookieJar(){
-        if(this.cookieJar.get() == null){
-            this.cookieJar.compareAndSet(null,
-            new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(this)));
-        }
-        return this.cookieJar.get();
     }
 
     public static ForkyzApplication getInstance(){

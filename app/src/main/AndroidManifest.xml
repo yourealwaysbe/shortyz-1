@@ -55,21 +55,6 @@
         android:supportsRtl="true"
     >
         <activity
-            android:name="app.crossword.yourealwaysbe.HttpDownloadActivity"
-            android:label="@string/download_label"
-            android:configChanges="orientation">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:host="*"
-                    android:pathPattern="/.*\\.puz"
-                    android:scheme="http"
-                />
-            </intent-filter>
-        </activity>
-        <activity
             tools:ignore="UnusedAttribute"
             android:name="app.crossword.yourealwaysbe.PlayActivity"
             android:hardwareAccelerated="false"
