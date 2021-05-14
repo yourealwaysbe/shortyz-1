@@ -1,6 +1,7 @@
 
 package app.crossword.yourealwaysbe.net;
 
+import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +69,7 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         boolean success = false;
 
         try (
-            InputStream is = url.openStream();
+            InputStream is = new BufferedInputStream(url.openStream());
             DataOutputStream dos = new DataOutputStream(
                  fileHandler.getBufferedOutputStream(f)
             )
