@@ -337,9 +337,7 @@ public class BrowseActivityViewModel extends ViewModel {
             ForkyzApplication application = ForkyzApplication.getInstance();
             ContentResolver resolver = application.getContentResolver();
 
-            LOGGER.info("FORKYZ import " + uri);
             boolean success = PuzzleImporter.importUri(resolver, uri);
-            LOGGER.info("FORKYZ import success? " + success);
 
             if ((success || forceReload) && !getIsViewArchive())
                 startLoadFiles();
