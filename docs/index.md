@@ -17,8 +17,9 @@ Across Lite (.puz) or JPZ in particular.
 * [Diary of a Crossword Fiend][diary] -- crossword reviews and links to
   puzzles across the web (under Today's Puzzles).
 * [Hub Crosswords][hubcrosswords] -- Sunday-sized crosswords from Emily
-  Cox, Henry Rathvon, and Brendan Emmett Quigley (still appearing in
-  Boston Globe and Hartford Courant). Puzzles released via Patreon.
+  Cox, Henry Rathvon, and Brendan Emmett Quigley. Puzzles released via
+  Patreon.
+* [Jim Mortleman][jimjar] -- monthly cryptics via Twitter.
 * [Out of Left Field][outofleftfield] -- former The Nation crossword
   compilers Joshua Kosman and Henri Picciotto now releasing cryptics via
   Patreon.
@@ -36,6 +37,7 @@ Across Lite (.puz) or JPZ in particular.
 [communicrossings]: https://communicrossings.com/crosswords-weyer
 [diary]: https://crosswordfiend.com/
 [hubcrosswords]: https://www.patreon.com/hubcrosswords
+[jimjar]: https://twitter.com/Jimjar
 [outofleftfield]: http://www.leftfieldcryptics.com/
 
 [crypticcru]: https://archive.nytimes.com/www.nytimes.com/premium/xword/cryptic-archive.html
