@@ -1072,9 +1072,9 @@ public class PlayActivity extends PuzzleActivity
             String[] split =
                 notes.split("(?i:(?m:^\\s*Across:?\\s*$|^\\s*\\d))", 2);
 
-            final String text = (split.length > 1) ? split[0].trim() : null;
+            final String text = split[0].trim();
 
-            if (text != null && text.length() > 0) {
+            if (text.length() > 0) {
                 view.setText(getString(
                     R.string.tap_to_show_full_notes_with_text, text
                 ));
