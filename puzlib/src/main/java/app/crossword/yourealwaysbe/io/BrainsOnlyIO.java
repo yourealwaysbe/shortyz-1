@@ -27,7 +27,6 @@ public class BrainsOnlyIO implements PuzzleParser {
         try {
             Puzzle puz = parse(is);
             puz.setDate(date);
-            System.out.println("PARSED PUZZLE " + puz.getTitle());
             IO.saveNative(puz, os);
         } catch (IOException e) {
             System.err.println("Unable to dump puzzle to output stream.");
@@ -48,7 +47,6 @@ public class BrainsOnlyIO implements PuzzleParser {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String title = readLineAtOffset(reader, 4);
-        System.out.println("Title line: "+title);
         int startIndex = title.indexOf(" ") + 1;
         puz.setTitle(title.substring(startIndex >= 0 ? startIndex : 0));
         puz.setAuthor(readLineAtOffset(reader, 1));
@@ -56,14 +54,12 @@ public class BrainsOnlyIO implements PuzzleParser {
         int width = Integer.parseInt(readLineAtOffset(reader, 1));
         int height = Integer.parseInt(readLineAtOffset(reader, 1));
         if (width == 0 || height == 0) {
-            System.out.println("width: " + width + ", height: " + height);
             throw new IOException("Invalid puzzle contents");
         }
         readLineAtOffset(reader, 4);
         Box[][] boxes = new Box[height][width];
         for(int down = 0; down < height; down++){
             String line = readLineAtOffset(reader, 0);
-            //System.out.println("line: "+line);
             if (line.length() != width)
                 throw new IOException(
                     String.format(
