@@ -2,10 +2,14 @@ package app.crossword.yourealwaysbe.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public class PuzzleStreamReader {
+    private static final Logger LOGGER
+        = Logger.getLogger(PuzzleStreamReader.class.getCanonicalName());
+
     private static final PuzzleParser[] PARSERS = {
         new IO(),
         new JPZIO(),
@@ -38,8 +42,7 @@ public class PuzzleStreamReader {
                 if (puz != null)
                     return puz;
             } catch (Exception e) {
-                System.out.println("FORKYZ failed with " + e);
-                e.printStackTrace();
+                LOGGER.info("Parse attempt failed with " + e);
                 // on to the next one
             }
         }
