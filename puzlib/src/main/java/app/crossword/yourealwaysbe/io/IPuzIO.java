@@ -4,6 +4,9 @@ package app.crossword.yourealwaysbe.io;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.StringBuilder;
+import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -12,7 +15,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.lang.StringBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +25,7 @@ import org.jsoup.nodes.Document;
 
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
+import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -45,6 +48,8 @@ import app.crossword.yourealwaysbe.puz.Puzzle;
 public class IPuzIO implements PuzzleParser {
     private static final Logger LOG
         = Logger.getLogger(IPuzIO.class.getCanonicalName());
+
+    private static final Charset WRITE_CHARSET = Charset.forName("UTF-8");
 
     private static final String FIELD_VERSION = "version";
     private static final String FIELD_KIND = "kind";
@@ -94,14 +99,18 @@ public class IPuzIO implements PuzzleParser {
     private static final String DEFAULT_BLOCK = "#";
     private static final String DEFAULT_EMPTY = "0";
 
+    private static final String WRITE_VERSION = "http://ipuz.org/v2";
+    private static final String WRITE_KIND = "http://ipuz.org/crossword#1";
+
     private static final String[] SUPPORTED_VERSIONS = {
         "http://ipuz.org/v1",
-        "http://ipuz.org/v2"
+        WRITE_VERSION
     };
     private static final String[] SUPPORTED_KINDS = {
-        "http://ipuz.org/crossword#1",
+        WRITE_KIND,
         "http://ipuz.org/crossword/crypticcrossword#1"
     };
+
 
     // Fields considered important enough for it to be impossible to
     // load the puzzle without them
@@ -125,17 +134,21 @@ public class IPuzIO implements PuzzleParser {
         public IPuzFormatException(String msg) { super(msg); }
     }
 
-
     @Override
     public Puzzle parseInput(InputStream is) throws Exception {
         return readPuzzle(is);
     }
 
     public static Puzzle readPuzzle(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        VisibleByteArrayOutputStream baos = new VisibleByteArrayOutputStream();
         IO.copyStream(is, baos);
-        // uses default encoding :/
-        JSONObject json = new JSONObject(baos.toString());
+
+        String charset = getCharsetName(baos);
+
+        if (charset == null)
+            return null;
+
+        JSONObject json = new JSONObject(baos.toString(charset));
 
         try {
             checkIPuzVersion(json);
@@ -749,5 +762,233 @@ public class IPuzIO implements PuzzleParser {
         }
 
         return null;
+    }
+
+    public static void writePuzzle(Puzzle puz, OutputStream os)
+            throws IOException {
+        JSONObject json = new JSONObject();
+
+        addIPuzHeader(json);
+        addMetaData(puz, json);
+        addBoxes(puz, json);
+        addClues(puz, json);
+
+        // TODO: write extensions
+
+        byte[] encoded = WRITE_CHARSET.encode(json.toString()).array();
+        os.write(encoded);
+    }
+
+    private static void addIPuzHeader(JSONObject puzJson) {
+        puzJson.put(FIELD_VERSION, WRITE_VERSION);
+
+        JSONArray kinds = new JSONArray();
+        kinds.put(WRITE_KIND);
+        puzJson.put(FIELD_KIND, kinds);
+    }
+
+    private static void addMetaData(Puzzle puz, JSONObject puzJson) {
+        safePut(puzJson, FIELD_TITLE, puz.getTitle());
+        safePut(puzJson, FIELD_AUTHOR, puz.getAuthor());
+        safePut(puzJson, FIELD_COPYRIGHT, puz.getCopyright());
+        safePut(puzJson, FIELD_NOTES, puz.getNotes());
+        safePut(puzJson, FIELD_URL, puz.getSourceUrl());
+        safePut(puzJson, FIELD_PUBLISHER, puz.getSource());
+
+        LocalDate date = puz.getDate();
+        if (date != null)
+            puzJson.put(FIELD_DATE, DATE_FORMATTER.format(date));
+    }
+
+    private static void addBoxes(Puzzle puz, JSONObject puzJson) {
+        addDimensions(puz, puzJson);
+        addPuzzleCells(puz, puzJson);
+        addSaved(puz, puzJson);
+        addSolution(puz, puzJson);
+    }
+
+    private static void addDimensions(Puzzle puz, JSONObject puzJson) {
+        JSONObject dimensions = new JSONObject();
+        dimensions.put(FIELD_WIDTH, puz.getWidth());
+        dimensions.put(FIELD_HEIGHT, puz.getHeight());
+        puzJson.put(FIELD_DIMENSIONS, dimensions);
+    }
+
+    private static void addPuzzleCells(Puzzle puz, JSONObject puzJson) {
+        JSONArray cellsJson = new JSONArray();
+
+        Box[][] boxes = puz.getBoxes();
+
+        for (int row = 0; row < boxes.length; row++) {
+            JSONArray rowJson = new JSONArray();
+
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+
+                if (box == null) {
+                    rowJson.put(DEFAULT_BLOCK);
+                } else {
+                    int clueNumber = box.getClueNumber();
+
+                    if (box.isCircled()) {
+                        JSONObject styleJson = new JSONObject();
+                        styleJson.put(FIELD_SHAPE_BG, SHAPE_BG_CIRCLE);
+
+                        JSONObject cellJson = new JSONObject();
+
+                        cellJson.put(FIELD_STYLE, styleJson);
+
+                        if (clueNumber > 0)
+                            cellJson.put(FIELD_CELL, clueNumber);
+
+                        rowJson.put(cellJson);
+                    } else if (clueNumber > 0) {
+                        rowJson.put(clueNumber);
+                    } else {
+                        rowJson.put(DEFAULT_EMPTY);
+                    }
+                }
+            }
+
+            cellsJson.put(rowJson);
+        }
+
+        puzJson.put(FIELD_PUZZLE, cellsJson);
+    }
+
+    private static void addSaved(Puzzle puz, JSONObject puzJson) {
+        JSONArray cellsJson = new JSONArray();
+
+        Box[][] boxes = puz.getBoxes();
+
+        for (int row = 0; row < boxes.length; row++) {
+            JSONArray rowJson = new JSONArray();
+
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+
+                if (box == null)
+                    rowJson.put(DEFAULT_BLOCK);
+                else if (box.isBlank())
+                    rowJson.put(DEFAULT_EMPTY);
+                else
+                    rowJson.put(String.valueOf(box.getResponse()));
+            }
+
+            cellsJson.put(rowJson);
+        }
+
+        puzJson.put(FIELD_SAVED, cellsJson);
+    }
+
+    private static void addSolution(Puzzle puz, JSONObject puzJson) {
+        if (!puz.hasSolution())
+            return;
+
+        JSONArray cellsJson = new JSONArray();
+
+        Box[][] boxes = puz.getBoxes();
+
+        for (int row = 0; row < boxes.length; row++) {
+            JSONArray rowJson = new JSONArray();
+
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+
+                if (box == null) {
+                    rowJson.put(DEFAULT_BLOCK);
+                } else if (box.hasSolution()) {
+                    rowJson.put(String.valueOf(box.getSolution()));
+                } else {
+                    rowJson.put(JSONObject.NULL);
+                }
+            }
+
+            cellsJson.put(rowJson);
+        }
+
+        puzJson.put(FIELD_SOLUTION, cellsJson);
+    }
+
+    private static void addClues(Puzzle puz, JSONObject puzJson) {
+        JSONObject cluesJson = new JSONObject();
+
+        JSONArray acrossJson = getClueListJsonArray(puz.getClues(true));
+        JSONArray downJson = getClueListJsonArray(puz.getClues(false));
+
+        cluesJson.put(FIELD_CLUES_ACROSS, acrossJson);
+        cluesJson.put(FIELD_CLUES_DOWN, downJson);
+
+        puzJson.put(FIELD_CLUES, cluesJson);
+    }
+
+    private static JSONArray getClueListJsonArray(ClueList clues) {
+        JSONArray cluesJson = new JSONArray();
+
+        for (Clue clue : clues) {
+            JSONArray clueJson = new JSONArray();
+            clueJson.put(clue.getNumber());
+            clueJson.put(clue.getHint());
+
+            cluesJson.put(clueJson);
+        }
+
+        return cluesJson;
+    }
+
+    /**
+     * Puts the object if it is not null
+     */
+    private static void safePut(JSONObject json, String field, Object value) {
+        if (value != null)
+            json.put(field, value);
+    }
+
+    /**
+     * Determine character encoding of JSON from first byte
+     *
+     * Ala RFC 4627.
+     *
+     * @return null if baos does not contain enough bytes
+     */
+    private static String getCharsetName(VisibleByteArrayOutputStream baos) {
+        // 00 00 00 xx  UTF-32BE
+        // 00 xx 00 xx  UTF-16BE
+        // xx 00 00 00  UTF-32LE
+        // xx 00 xx 00  UTF-16LE
+        // xx xx xx xx  UTF-8
+
+        if (baos.size() < 4)
+            return null;
+
+        if (baos.view(0) == 0 && baos.view(1) == 0 && baos.view(2) == 0)
+            return "UTF-32BE";
+
+        if (baos.view(0) == 0 && baos.view(2) == 0)
+            return "UTF-16BE";
+
+        if (baos.view(1) == 0 && baos.view(2) == 0 && baos.view(3) == 0)
+            return "UTF-32LE";
+
+        if (baos.view(1) == 0 && baos.view(3) == 0)
+            return "UTF-16LE";
+
+        return "UTF-8";
+    }
+
+    /**
+     * ByteArrayOutputStream where you can check bytes written
+     *
+     * Avoids having to create a copy of the byte buffer just to read
+     * the first four bytes when determining JSON charset.
+     */
+    private static class VisibleByteArrayOutputStream
+        extends ByteArrayOutputStream {
+        /**
+         * See what's at character position
+         */
+        public byte view(int pos) {
+            return buf[pos];
+        }
     }
 }

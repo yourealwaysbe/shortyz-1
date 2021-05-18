@@ -562,6 +562,24 @@ public class Puzzle implements Serializable{
     }
 
     /**
+     * Returns true if some box has a solution set
+     */
+    public boolean hasSolution() {
+        if (boxes == null)
+            return false;
+
+        for (int row = 0; row < boxes.length; row++) {
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+                if (box != null && box.hasSolution())
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns true if some box is circled
      */
     public boolean hasCircled() {
