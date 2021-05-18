@@ -1,5 +1,7 @@
 package app.crossword.yourealwaysbe.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 
@@ -70,6 +72,23 @@ public class IPuzIOTest extends TestCase {
         try (InputStream is = getTestPuzzle1InputStream()) {
             Puzzle puz = IPuzIO.readPuzzle(is);
             assertIsTestPuzzle1(puz);
+        }
+    }
+
+    public void testIPuzWriteRead() throws Exception {
+        try (InputStream is = getTestPuzzle1InputStream()) {
+            Puzzle puz = IPuzIO.readPuzzle(is);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IPuzIO.writePuzzle(puz, baos);
+            baos.close();
+
+            ByteArrayInputStream bais
+                = new ByteArrayInputStream(baos.toByteArray());
+
+            Puzzle puz2 = IPuzIO.readPuzzle(bais);
+
+            assertEquals(puz, puz2);
         }
     }
 
