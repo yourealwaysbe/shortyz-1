@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -26,6 +28,9 @@ import org.jsoup.nodes.Document;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.ClueList;
+import app.crossword.yourealwaysbe.puz.Note;
+import app.crossword.yourealwaysbe.puz.Playboard.Position;
+import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -111,7 +116,6 @@ public class IPuzIO implements PuzzleParser {
         "http://ipuz.org/crossword/crypticcrossword#1"
     };
 
-
     // Fields considered important enough for it to be impossible to
     // load the puzzle without them
     private static final String[] FIELD_CLUES_UNSUPPORTED = {
@@ -122,6 +126,46 @@ public class IPuzIO implements PuzzleParser {
         "Zones",
         "Clues"
     };
+
+    private static final String EXT_NAMESPACE = "app.crossword.yourealwaysbe";
+
+    private static final String FIELD_EXT_SUPPORT_URL
+        = getQualifiedExtensionName("supporturl");
+    private static final String FIELD_EXT_PLAY_DATA
+        = getQualifiedExtensionName("playdata");
+
+    private static final String FIELD_VOLATILE = "volatile";
+    private static final String FIELD_IS_VOLATILE = "*";
+    private static final String FIELD_IS_NOT_VOLATILE = "";
+
+    private static final String[] VOLATILE_EXTENSIONS = {
+        FIELD_EXT_PLAY_DATA
+    };
+
+    private static final String[] NON_VOLATILE_EXTENSIONS = {
+        FIELD_EXT_SUPPORT_URL
+    };
+
+    private static final String FIELD_BOX_EXTRAS = "boxextras";
+    private static final String FIELD_BOX_CHEATED = "cheated";
+    private static final String FIELD_BOX_RESPONDER = "responder";
+    private static final String FIELD_COMPLETION_TIME = "completiontime";
+    private static final String FIELD_PCNT_COMPLETE = "percentcomplete";
+    private static final String FIELD_PCNT_FILLED = "percentfilled";
+    private static final String FIELD_UPDATABLE = "updatable";
+    private static final String FIELD_POSITION = "position";
+    private static final String FIELD_POSITION_ROW = "row";
+    private static final String FIELD_POSITION_COL = "col";
+    private static final String FIELD_POSITION_ACROSS = "across";
+    private static final String FIELD_CLUE_HISTORY = "cluehistory";
+    private static final String FIELD_CLUE_ACROSS = "across";
+    private static final String FIELD_CLUE_NOTES = "cluenotes";
+    private static final String FIELD_CLUE_NOTE_CLUE = "clue";
+    private static final String FIELD_CLUE_NOTE_SCRATCH = "scratch";
+    private static final String FIELD_CLUE_NOTE_TEXT = "text";
+    private static final String FIELD_CLUE_NOTE_ANAGRAM_SRC = "anagramsource";
+    private static final String FIELD_CLUE_NOTE_ANAGRAM_SOL
+        = "anagramsolution";
 
     private static final Pattern INT_STRING_RE = Pattern.compile("\\d+");
     private static final DateTimeFormatter DATE_FORMATTER
@@ -159,6 +203,7 @@ public class IPuzIO implements PuzzleParser {
             readMetaData(json, puz);
             readBoxes(json, puz);
             readClues(json, puz);
+            readExtensions(json, puz);
 
             return puz;
         } catch (IPuzFormatException | JSONException e) {
@@ -764,6 +809,186 @@ public class IPuzIO implements PuzzleParser {
         return null;
     }
 
+    /**
+     * Read non-standard IPuz fields into puzzle
+     */
+    private static void readExtensions(JSONObject puzJson, Puzzle puz)
+            throws IPuzFormatException {
+        String supportUrl = puzJson.optString(FIELD_EXT_SUPPORT_URL);
+        if (supportUrl != null && !supportUrl.isEmpty())
+            puz.setSupportUrl(supportUrl);
+
+        JSONObject playData = puzJson.optJSONObject(FIELD_EXT_PLAY_DATA);
+
+        if (playData != null && !JSONObject.NULL.equals(playData))
+            readPlayData(playData, puz);
+    }
+
+    /**
+     * Read play data extension from playData object to puz
+     *
+     * @param playData the playData field of the puz json
+     */
+    private static void readPlayData(JSONObject playData, Puzzle puz)
+            throws IPuzFormatException {
+        readBoxExtras(playData, puz);
+        readPosition(playData, puz);
+        readClueHistory(playData, puz);
+        readClueNotes(playData, puz);
+
+        if (playData.has(FIELD_COMPLETION_TIME))
+            puz.setTime(playData.getLong(FIELD_COMPLETION_TIME));
+
+        if (playData.has(FIELD_UPDATABLE))
+            puz.setUpdatable(playData.getBoolean(FIELD_UPDATABLE));
+    }
+
+    /**
+     * Read non-standard info about boxes (e.g. is cheated)
+     *
+     * Assumes boxes have been set on puz
+     */
+    private static void readBoxExtras(JSONObject playData, Puzzle puz) {
+        if (!playData.has(FIELD_BOX_EXTRAS))
+            return;
+
+        JSONArray cellsJson = playData.getJSONArray(FIELD_BOX_EXTRAS);
+
+        Box[][] boxes = puz.getBoxes();
+
+        int numRows = Math.min(cellsJson.length(), boxes.length);
+
+        for (int row = 0; row < numRows; row++) {
+            JSONArray rowJson = cellsJson.getJSONArray(row);
+
+            int numCols = Math.min(rowJson.length(), boxes[row].length);
+
+            for (int col = 0; col < numCols; col++) {
+                Box box = boxes[row][col];
+                if (box != null) {
+                    JSONObject boxJson = rowJson.getJSONObject(col);
+
+                    if (boxJson.has(FIELD_BOX_CHEATED)) {
+                        box.setCheated(boxJson.getBoolean(FIELD_BOX_CHEATED));
+                    }
+                    if (boxJson.has(FIELD_BOX_RESPONDER)) {
+                        box.setResponder(
+                            boxJson.getString(FIELD_BOX_RESPONDER)
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Read the position from playData
+     *
+     * Assumes puz.getWidth() and puz.getHeight() returns accurate data
+     */
+    private static void readPosition(JSONObject playData, Puzzle puz) {
+        if (!playData.has(FIELD_POSITION))
+            return;
+
+        JSONObject positionJson = playData.getJSONObject(FIELD_POSITION);
+
+        if (positionJson.has(FIELD_POSITION_ROW)
+                && positionJson.has(FIELD_POSITION_COL)
+                && positionJson.has(FIELD_POSITION_ACROSS)) {
+
+            int row = positionJson.optInt(FIELD_POSITION_ROW, -1);
+            int col = positionJson.optInt(FIELD_POSITION_COL, -1);
+            boolean across = positionJson.getBoolean(FIELD_POSITION_ACROSS);
+
+            if (0 <= row && row <= puz.getHeight()
+                    && 0 <= col && col <= puz.getWidth()) {
+                puz.setPosition(new Position(col, row));
+                puz.setAcross(across);
+            }
+        }
+    }
+
+    /**
+     * Reads clue history from playData
+     */
+    private static void readClueHistory(JSONObject playData, Puzzle puz) {
+        if (!playData.has(FIELD_CLUE_HISTORY))
+            return;
+
+        JSONArray historyJson = playData.getJSONArray(FIELD_CLUE_HISTORY);
+
+        LinkedList<ClueNumDir> history = new LinkedList<>();
+
+        for (int i = 0; i < historyJson.length(); i++) {
+            JSONObject itemJson = historyJson.getJSONObject(i);
+            ClueNumDir cnd = decodeClueNumDir(itemJson);
+            if (cnd != null)
+                history.add(cnd);
+        }
+
+        puz.setHistory(history);
+    }
+
+    /**
+     * Read notes from playData
+     */
+    private static void readClueNotes(JSONObject playData, Puzzle puz) {
+        if (!playData.has(FIELD_CLUE_NOTES))
+            return;
+
+        JSONArray notesJson = playData.getJSONArray(FIELD_CLUE_NOTES);
+
+        for (int i = 0; i < notesJson.length(); i++) {
+            JSONObject noteJson = notesJson.getJSONObject(i);
+            JSONObject cndJson = noteJson.optJSONObject(FIELD_CLUE_NOTE_CLUE);
+            ClueNumDir cnd = decodeClueNumDir(cndJson);
+
+            if (cnd != null) {
+                String scratch
+                    = noteJson.optString(FIELD_CLUE_NOTE_SCRATCH, null);
+                String text
+                    = noteJson.optString(FIELD_CLUE_NOTE_TEXT, null);
+                String anagramSrc
+                    = noteJson.optString(FIELD_CLUE_NOTE_ANAGRAM_SRC, null);
+                String anagramSol
+                    = noteJson.optString(FIELD_CLUE_NOTE_ANAGRAM_SOL, null);
+
+                if (scratch != null
+                        || text != null
+                        || anagramSrc != null
+                        || anagramSol != null) {
+                    puz.setNote(
+                        cnd.getClueNumber(),
+                        new Note(scratch, text, anagramSrc, anagramSol),
+                        cnd.getAcross()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Read a JSON representation of ClueNumDir to ClueNumDir
+     *
+     * @return null if not right
+     */
+    private static ClueNumDir decodeClueNumDir(JSONObject cnd) {
+        if (cnd == null)
+            return null;
+        if (JSONObject.NULL.equals(cnd))
+            return null;
+        if (!cnd.has(FIELD_CLUE_NUMBER) || !cnd.has(FIELD_CLUE_ACROSS))
+            return null;
+
+        int number = cnd.getInt(FIELD_CLUE_NUMBER);
+        boolean across = cnd.getBoolean(FIELD_CLUE_ACROSS);
+
+        return new ClueNumDir(number, across);
+    }
+
+    /**
+     * Write puzzle to os using WRITE_CHARSET
+     */
     public static void writePuzzle(Puzzle puz, OutputStream os)
             throws IOException {
         JSONObject json = new JSONObject();
@@ -772,13 +997,15 @@ public class IPuzIO implements PuzzleParser {
         addMetaData(puz, json);
         addBoxes(puz, json);
         addClues(puz, json);
-
-        // TODO: write extensions
+        addExtensions(puz, json);
 
         byte[] encoded = WRITE_CHARSET.encode(json.toString()).array();
         os.write(encoded);
     }
 
+    /**
+     * Add IPuz version and kind
+     */
     private static void addIPuzHeader(JSONObject puzJson) {
         puzJson.put(FIELD_VERSION, WRITE_VERSION);
 
@@ -787,6 +1014,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_KIND, kinds);
     }
 
+    /**
+     * Add basic puzzle metadata (title, author, etc).
+     */
     private static void addMetaData(Puzzle puz, JSONObject puzJson) {
         safePut(puzJson, FIELD_TITLE, puz.getTitle());
         safePut(puzJson, FIELD_AUTHOR, puz.getAuthor());
@@ -800,6 +1030,9 @@ public class IPuzIO implements PuzzleParser {
             puzJson.put(FIELD_DATE, DATE_FORMATTER.format(date));
     }
 
+    /**
+     * Read all IPuz supported box information to json
+     */
     private static void addBoxes(Puzzle puz, JSONObject puzJson) {
         addDimensions(puz, puzJson);
         addPuzzleCells(puz, puzJson);
@@ -807,6 +1040,9 @@ public class IPuzIO implements PuzzleParser {
         addSolution(puz, puzJson);
     }
 
+    /**
+     * Add puzzle dimensions to json
+     */
     private static void addDimensions(Puzzle puz, JSONObject puzJson) {
         JSONObject dimensions = new JSONObject();
         dimensions.put(FIELD_WIDTH, puz.getWidth());
@@ -814,6 +1050,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_DIMENSIONS, dimensions);
     }
 
+    /**
+     * Add the puzzle field to json
+     */
     private static void addPuzzleCells(Puzzle puz, JSONObject puzJson) {
         JSONArray cellsJson = new JSONArray();
 
@@ -856,6 +1095,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_PUZZLE, cellsJson);
     }
 
+    /**
+     * Add the saved field to json
+     */
     private static void addSaved(Puzzle puz, JSONObject puzJson) {
         JSONArray cellsJson = new JSONArray();
 
@@ -881,6 +1123,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_SAVED, cellsJson);
     }
 
+    /**
+     * Add the solution field to json if the puzzle has one
+     */
     private static void addSolution(Puzzle puz, JSONObject puzJson) {
         if (!puz.hasSolution())
             return;
@@ -910,6 +1155,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_SOLUTION, cellsJson);
     }
 
+    /**
+     * Add the clues lists to the json
+     */
     private static void addClues(Puzzle puz, JSONObject puzJson) {
         JSONObject cluesJson = new JSONObject();
 
@@ -922,6 +1170,9 @@ public class IPuzIO implements PuzzleParser {
         puzJson.put(FIELD_CLUES, cluesJson);
     }
 
+    /**
+     * Convert a clues list into a json array and return it
+     */
     private static JSONArray getClueListJsonArray(ClueList clues) {
         JSONArray cluesJson = new JSONArray();
 
@@ -934,6 +1185,168 @@ public class IPuzIO implements PuzzleParser {
         }
 
         return cluesJson;
+    }
+
+    /**
+     * Write Puzzle features not natively supported by IPuz
+     */
+    private static void addExtensions(Puzzle puz, JSONObject puzJson) {
+        addExtensionVolatility(puzJson);
+
+        safePut(puzJson, FIELD_EXT_SUPPORT_URL, puz.getSupportUrl());
+
+        JSONObject playData = new JSONObject();
+
+        addBoxExtras(puz, playData);
+        addPosition(puz, playData);
+        addClueHistory(puz, playData);
+        addClueNotes(puz, playData);
+
+        playData.put(FIELD_COMPLETION_TIME, puz.getTime());
+        playData.put(FIELD_PCNT_FILLED, puz.getPercentFilled());
+        playData.put(FIELD_PCNT_COMPLETE, puz.getPercentComplete());
+        playData.put(FIELD_UPDATABLE, puz.isUpdatable());
+
+        puzJson.put(FIELD_EXT_PLAY_DATA, playData);
+    }
+
+    /**
+     * Add Note objects about individual clues to playData
+     *
+     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     */
+    private static void addClueNotes(Puzzle puz, JSONObject playData) {
+        JSONArray notesJson = new JSONArray();
+
+        for (ClueNumDir cnd : puz.getClueNumDirs()) {
+            Note note = puz.getNote(cnd.getClueNumber(), cnd.getAcross());
+            if (note != null && !note.isEmpty()) {
+                JSONObject noteJson = new JSONObject();
+
+                noteJson.put(FIELD_CLUE_NOTE_CLUE, encodeClueNumDir(cnd));
+                safePut(
+                    noteJson,
+                    FIELD_CLUE_NOTE_SCRATCH,
+                    note.getCompressedScratch()
+                );
+                safePut(
+                    noteJson,
+                    FIELD_CLUE_NOTE_TEXT,
+                    note.getText()
+                );
+                safePut(
+                    noteJson,
+                    FIELD_CLUE_NOTE_ANAGRAM_SRC,
+                    note.getCompressedAnagramSource()
+                );
+                safePut(
+                    noteJson,
+                    FIELD_CLUE_NOTE_ANAGRAM_SOL,
+                    note.getCompressedAnagramSolution()
+                );
+
+                notesJson.put(noteJson);
+            }
+        }
+
+        if (notesJson.length() > 0)
+            playData.put(FIELD_CLUE_NOTES, notesJson);
+    }
+
+    /**
+     * Encode a ClueNumDir as a JSONObject
+     */
+    private static JSONObject encodeClueNumDir(ClueNumDir cnd) {
+        JSONObject cndJson = new JSONObject();
+        cndJson.put(FIELD_CLUE_NUMBER, cnd.getClueNumber());
+        cndJson.put(FIELD_CLUE_ACROSS, cnd.getAcross());
+        return cndJson;
+    }
+
+    /**
+     * Add clue history list to playData
+     *
+     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     */
+    private static void addClueHistory(Puzzle puz, JSONObject playData) {
+        List<ClueNumDir> history = puz.getHistory();
+        if (history.isEmpty())
+            return;
+
+        JSONArray historyJson = new JSONArray();
+        for (ClueNumDir item : puz.getHistory()) {
+            historyJson.put(encodeClueNumDir(item));
+        }
+
+        playData.put(FIELD_CLUE_HISTORY, historyJson);
+    }
+
+    /**
+     * Add current highlight position to playData
+     *
+     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     */
+    private static void addPosition(Puzzle puz, JSONObject playData) {
+        Position pos = puz.getPosition();
+        if (pos == null)
+            return;
+
+        JSONObject positionJson = new JSONObject();
+
+        positionJson.put(FIELD_POSITION_ROW, pos.down);
+        positionJson.put(FIELD_POSITION_COL, pos.across);
+        positionJson.put(FIELD_POSITION_ACROSS, puz.getAcross());
+
+        playData.put(FIELD_POSITION, positionJson);
+    }
+
+    /**
+     * Add additional info about boxes (cheated, responder) to playData
+     * if there is any
+     *
+     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     */
+    private static void addBoxExtras(Puzzle puz, JSONObject playData) {
+        if (!puz.hasCheated() && !puz.hasResponders())
+            return;
+
+        Box[][] boxes = puz.getBoxes();
+        if (boxes == null)
+            return;
+
+        JSONArray cellsJson = new JSONArray();
+
+        for (int row = 0; row < boxes.length; row++) {
+            JSONArray rowJson = new JSONArray();
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+                JSONObject boxJson = new JSONObject();
+
+                if (box != null) {
+                    if (box.isCheated())
+                        boxJson.put(FIELD_BOX_CHEATED, true);
+                    safePut(boxJson, FIELD_BOX_RESPONDER, box.getResponder());
+                }
+
+                rowJson.put(boxJson);
+            }
+            cellsJson.put(rowJson);
+        }
+
+        playData.put(FIELD_BOX_EXTRAS, cellsJson);
+    }
+
+    /**
+     * Write volatility info about our extensions to json
+     */
+    private static void addExtensionVolatility(JSONObject puzJson) {
+        JSONObject volatileJson = new JSONObject();
+
+        for (String field : VOLATILE_EXTENSIONS)
+            volatileJson.put(field, FIELD_IS_VOLATILE);
+
+        for (String field : NON_VOLATILE_EXTENSIONS)
+            volatileJson.put(field, FIELD_IS_NOT_VOLATILE);
     }
 
     /**
@@ -974,6 +1387,13 @@ public class IPuzIO implements PuzzleParser {
             return "UTF-16LE";
 
         return "UTF-8";
+    }
+
+    /**
+     * Returns fully qualified name of an extension field
+     */
+    private static String getQualifiedExtensionName(String fieldName) {
+        return EXT_NAMESPACE + ":" + fieldName;
     }
 
     /**

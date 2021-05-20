@@ -580,6 +580,42 @@ public class Puzzle implements Serializable{
     }
 
     /**
+     * Returns true if some box has cheated
+     */
+    public boolean hasCheated() {
+        if (boxes == null)
+            return false;
+
+        for (int row = 0; row < boxes.length; row++) {
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+                if (box != null && box.isCheated())
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if some box has a responder set
+     */
+    public boolean hasResponders() {
+        if (boxes == null)
+            return false;
+
+        for (int row = 0; row < boxes.length; row++) {
+            for (int col = 0; col < boxes[row].length; col++) {
+                Box box = boxes[row][col];
+                if (box != null && box.getResponder() != null)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns true if some box is circled
      */
     public boolean hasCircled() {
