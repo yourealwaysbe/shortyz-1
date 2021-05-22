@@ -32,15 +32,16 @@ public abstract class AbstractJPZDownloader extends AbstractDownloader {
         super(baseUrl, downloadDirectory, downloaderName);
     }
 
+    @Override
     public Downloader.DownloadResult download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
+    @Override
     protected Downloader.DownloadResult download(
         LocalDate date,
         String urlSuffix,
-        Map<String, String> headers,
-        boolean canDefer
+        Map<String, String> headers
     ) {
         URL url = null;
         try {

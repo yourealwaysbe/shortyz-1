@@ -110,12 +110,6 @@
             android:label="@string/puzzle_completed_label"
             android:theme="@style/Theme.AppCompat.Dialog"/>
 
-        <receiver android:name="app.crossword.yourealwaysbe.net.DownloadReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name="app.crossword.yourealwaysbe.service.BackgroundDownloadService"
             android:permission="android.permission.BIND_JOB_SERVICE"

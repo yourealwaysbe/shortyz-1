@@ -10,7 +10,6 @@ import android.view.SubMenu;
 import android.view.View;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
-import app.crossword.yourealwaysbe.net.DownloadReceiver;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
@@ -20,9 +19,6 @@ import java.net.URL;
 import java.util.Map;
 
 public interface AndroidVersionUtils {
-
-    void storeMetas(Uri uri, PuzzleMeta meta, DirHandle parentDir);
-    DownloadReceiver.Metas removeMetas(Uri uri);
 
     void setContext(Context ctx);
 

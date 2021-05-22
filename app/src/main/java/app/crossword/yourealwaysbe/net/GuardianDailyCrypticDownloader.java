@@ -57,10 +57,12 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         );
     }
 
+    @Override
     public DayOfWeek[] getDownloadDates() {
         return DATE_WEEKDAY;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -70,15 +72,16 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return SUPPORT_URL;
     }
 
+    @Override
     public Downloader.DownloadResult download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
+    @Override
     protected Downloader.DownloadResult download(
         LocalDate date,
         String urlSuffix,
-        Map<String, String> headers,
-        boolean canDefer
+        Map<String, String> headers
     ) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();

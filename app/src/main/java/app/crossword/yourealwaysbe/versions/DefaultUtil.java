@@ -10,7 +10,6 @@ import android.view.Window;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.net.DownloadReceiver;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandle;
@@ -66,12 +65,6 @@ public abstract class DefaultUtil implements AndroidVersionUtils {
     public abstract void onActionBarWithText(MenuItem a);
 
     public abstract void onActionBarWithText(SubMenu reveal);
-
-    public abstract void storeMetas(
-        Uri uri, PuzzleMeta meta, DirHandle parentDir
-    );
-
-    public abstract DownloadReceiver.Metas removeMetas(Uri uri);
 
     public void hideWindowTitle(AppCompatActivity a) {
         a.requestWindowFeature(Window.FEATURE_NO_TITLE);

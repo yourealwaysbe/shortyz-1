@@ -89,15 +89,6 @@ public abstract class AbstractDownloader implements Downloader {
         String urlSuffix,
         Map<String, String> headers
     ){
-        return download(date, urlSuffix, headers, true);
-    }
-
-    protected Downloader.DownloadResult download(
-        LocalDate date,
-        String urlSuffix,
-        Map<String, String> headers,
-        boolean canDefer
-    ) {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
         FileHandle f = null;
@@ -121,16 +112,11 @@ public abstract class AbstractDownloader implements Downloader {
             meta.updatable = false;
 
             Uri fileUri = fileHandler.getUri(f);
-            utils.storeMetas(fileUri, meta, downloadDirectory);
 
             if (utils.downloadFile(url, f, headers, true, this.getName())) {
-                utils.removeMetas(fileUri);
                 success = true;
                 return new Downloader.DownloadResult(f);
-            } else if (canDefer) {
-                return Downloader.DownloadResult.DEFERRED_FILE;
             } else {
-                utils.removeMetas(fileUri);
                 return null;
             }
         } catch (IOException e) {
