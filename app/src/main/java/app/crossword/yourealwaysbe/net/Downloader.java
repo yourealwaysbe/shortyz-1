@@ -45,20 +45,12 @@ public interface Downloader {
 
     public static class DownloadResult {
         private FileHandle fileHandle;
-        private boolean isDeferred;
-        public static final DownloadResult DEFERRED_FILE = new DownloadResult();
 
         public DownloadResult(FileHandle fileHandle) {
             this.fileHandle = fileHandle;
-            this.isDeferred = false;
-        }
-
-        private DownloadResult() {
-            this.isDeferred = true;
         }
 
         public FileHandle getFileHandle() { return fileHandle; }
-        public boolean getIsDeferred() { return isDeferred; }
     }
 
     void setContext(Context context);

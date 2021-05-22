@@ -220,9 +220,8 @@ public class Downloaders {
 
             Downloader.DownloadResult downloadResult = d.download(date);
 
-            if (downloadResult == null || downloadResult.getIsDeferred()) {
+            if (downloadResult == null)
                 return null;
-            }
 
             FileHandle downloaded = downloadResult.getFileHandle();
 

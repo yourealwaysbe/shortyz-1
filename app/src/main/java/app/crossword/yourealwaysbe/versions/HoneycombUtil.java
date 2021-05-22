@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
-import app.crossword.yourealwaysbe.net.DownloadReceiver;
 import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
@@ -122,16 +121,6 @@ public class HoneycombUtil extends DefaultUtil {
             return;
         }
         ab.hide();
-    }
-
-    public void storeMetas(Uri uri, PuzzleMeta meta, DirHandle parentDir) {
-        DownloadReceiver.metas.put(uri,
-            new DownloadReceiver.Metas(meta, parentDir)
-        );
-    }
-
-    public DownloadReceiver.Metas removeMetas(Uri uri) {
-        return DownloadReceiver.metas.remove(uri);
     }
 
     @Override
