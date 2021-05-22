@@ -54,29 +54,22 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     }
 
     @Override
-    public DirHandle getTempDirectory() {
-        File tempDir = new File(getRootDirectory(), "temp");
-        tempDir.mkdirs();
-        return new DirHandle(tempDir);
-    }
-
-    @Override
-    public FileHandle getFileHandle(Uri uri) {
+    protected FileHandle getFileHandle(Uri uri) {
         return new FileHandle(new File(uri.getPath()));
     }
 
     @Override
-    public boolean exists(DirHandle dir) {
+    protected boolean exists(DirHandle dir) {
         return dir.getFile().exists();
     }
 
     @Override
-    public boolean exists(FileHandle file) {
+    protected boolean exists(FileHandle file) {
         return file.getFile().exists();
     }
 
     @Override
-    public Iterable<FileHandle> listFiles(final DirHandle dir) {
+    protected Iterable<FileHandle> listFiles(final DirHandle dir) {
         return new Iterable<FileHandle>() {
             public Iterator<FileHandle> iterator() {
                 return new Iterator<FileHandle>() {
@@ -96,27 +89,27 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     }
 
     @Override
-    public Uri getUri(DirHandle d) {
+    protected Uri getUri(DirHandle d) {
         return d.getUri();
     }
 
     @Override
-    public Uri getUri(FileHandle f) {
+    protected Uri getUri(FileHandle f) {
         return f.getUri();
     }
 
     @Override
-    public String getName(FileHandle f) {
+    protected String getName(FileHandle f) {
         return f.getFile().getName();
     }
 
     @Override
-    public long getLastModified(FileHandle file) {
+    protected long getLastModified(FileHandle file) {
         return file.getFile().lastModified();
     }
 
     @Override
-    public FileHandle createFileHandle(
+    protected FileHandle createFileHandle(
         DirHandle dir, String fileName, String mimeType
     ) {
         File file = new File(dir.getFile(), fileName);
@@ -141,13 +134,13 @@ public abstract class FileHandlerJavaFile extends FileHandler {
     }
 
     @Override
-    public OutputStream getOutputStream(FileHandle fileHandle)
+    protected OutputStream getOutputStream(FileHandle fileHandle)
             throws IOException {
         return new FileOutputStream(fileHandle.getFile());
     }
 
     @Override
-    public InputStream getInputStream(FileHandle fileHandle)
+    protected InputStream getInputStream(FileHandle fileHandle)
             throws IOException {
         return new FileInputStream(fileHandle.getFile());
     }

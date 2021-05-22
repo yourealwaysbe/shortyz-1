@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Locale;
 
@@ -20,22 +19,10 @@ public class IndependentDailyCrypticDownloader
     public IndependentDailyCrypticDownloader() {
         super(
             "https://ams.cdn.arkadiumhosted.com/assets/gamesfeed/independent/daily-crossword/",
-            getStandardDownloadDir(),
-            NAME
+            NAME,
+            DATE_DAILY,
+            SUPPORT_URL
         );
-    }
-
-    public DayOfWeek[] getDownloadDates() {
-        return DATE_DAILY;
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public String getSupportUrl() {
-        return SUPPORT_URL;
     }
 
     protected String createUrlSuffix(LocalDate date) {

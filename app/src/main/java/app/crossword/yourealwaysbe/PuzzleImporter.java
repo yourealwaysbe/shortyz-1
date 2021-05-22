@@ -12,10 +12,7 @@ import android.net.Uri;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.PuzzleStreamReader;
-import app.crossword.yourealwaysbe.net.AbstractDownloader;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.util.files.DirHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
@@ -26,9 +23,7 @@ public class PuzzleImporter {
         = Logger.getLogger(PuzzleImporter.class.getCanonicalName());
 
     private static final String IMPORT_FILE_NAME_PATTERN
-        = "import-%d-%s.puz";
-    private static final String IMPORT_FILE_MIME_TYPE
-        = FileHandler.MIME_TYPE_PUZ;
+        = "import-%d-%s";
     private static final String IMPORT_FALLBACK_SOURCE
         = ForkyzApplication.getInstance().getString(
             R.string.import_fallback_source
@@ -47,8 +42,7 @@ public class PuzzleImporter {
             return false;
 
         FileHandler fileHandler =
-            ForkyzApplication.getInstance().getFileHandler(); FileHandle
-            fileHandle = fileHandler.getFileHandle(uri);
+            ForkyzApplication.getInstance().getFileHandler();
 
         Puzzle puz = PuzzleStreamReader.parseInput(() -> {
             return new BufferedInputStream(resolver.openInputStream(uri));
@@ -63,15 +57,7 @@ public class PuzzleImporter {
             puz.setSource(IMPORT_FALLBACK_SOURCE);
 
         try {
-            DirHandle saveDir = AbstractDownloader.getStandardDownloadDir();
-
-            FileHandle saveFile = fileHandler.createFileHandle(
-                saveDir, getNewFileName(), IMPORT_FILE_MIME_TYPE
-            );
-
-            fileHandler.saveCreateMeta(puz, saveDir, saveFile);
-
-            return true;
+            return fileHandler.saveNewPuzzle(puz, getNewFileName());
         } catch (IOException e) {
             LOGGER.severe("Failed to save imported puzzle: " + e);
             return false;

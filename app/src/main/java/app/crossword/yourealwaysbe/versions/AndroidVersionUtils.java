@@ -22,14 +22,6 @@ public interface AndroidVersionUtils {
 
     void setContext(Context ctx);
 
-    boolean downloadFile(
-        URL url,
-        FileHandle destination,
-        Map<String, String> headers,
-        boolean notification,
-        String title
-    );
-
     void finishOnHomeButton(AppCompatActivity a);
 
     void holographic(AppCompatActivity playActivity);

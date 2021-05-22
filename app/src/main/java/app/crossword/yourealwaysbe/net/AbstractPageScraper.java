@@ -1,7 +1,9 @@
 package app.crossword.yourealwaysbe.net;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,57 +41,51 @@ public class AbstractPageScraper {
         this.supportUrl = supportUrl;
     }
 
-    public String getContent() throws IOException {
+    protected String getContent() throws IOException {
         URL u = new URL(url);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IO.copyStream(u.openStream(), baos);
-
+        try (InputStream is = new BufferedInputStream(u.openStream())) {
+            IO.copyStream(is, baos);
+        }
         return new String(baos.toByteArray());
     }
 
-    public static FileHandle download(String url, String fileName)
-            throws IOException {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
+    public static Puzzle download(String url) throws IOException {
         URL u = new URL(url);
 
-        FileHandle output = fileHandler.createFileHandle(
-            AbstractDownloader.getStandardDownloadDir(),
-            fileName,
-            FileHandler.MIME_TYPE_PUZ
-        );
-        if (output == null)
-            return null;
-
-        boolean success = false;
-
-        try (OutputStream fos = fileHandler.getOutputStream(output)) {
-            IO.copyStream(u.openStream(), fos);
-            success = true;
-            return output;
+        try (InputStream is = new BufferedInputStream(u.openStream())) {
+            return IO.loadNative(is);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (!success)
-                fileHandler.delete(output);
         }
 
         return null;
     }
 
-    public static Map<String, String> mapURLsToFileNames(List<String> urls) {
+    /**
+     * Map URLs to names of file at url, with file extension removed
+     */
+    protected static Map<String, String> mapURLsToFileNames(
+        List<String> urls
+    ) {
         HashMap<String, String> result = new HashMap<String, String>(
                 urls.size());
 
         for (String url : urls) {
-            String fileName = url.substring(url.lastIndexOf("/") + 1);
+            String fileName = url;
+            int lastSlashIdx = fileName.lastIndexOf("/");
+            if (lastSlashIdx > 0)
+                 fileName = fileName.substring(lastSlashIdx + 1);
+            int extensionIdx = fileName.lastIndexOf(".");
+            if (extensionIdx > 0)
+                fileName = fileName.substring(0, extensionIdx);
             result.put(url, fileName);
         }
 
         return result;
     }
 
-    public static List<String> puzzleRelativeURLs(String baseUrl, String input)
+    protected static List<String> puzzleRelativeURLs(String baseUrl, String input)
             throws MalformedURLException {
         URL base = new URL(baseUrl);
         ArrayList<String> result = new ArrayList<String>();
@@ -102,7 +98,7 @@ public class AbstractPageScraper {
         return result;
     }
 
-    public static List<String> puzzleURLs(String input) {
+    protected static List<String> puzzleURLs(String input) {
         ArrayList<String> result = new ArrayList<String>();
         Matcher matcher = PAT.matcher(input);
 
@@ -121,13 +117,16 @@ public class AbstractPageScraper {
         return this.supportUrl;
     }
 
-    private boolean processFile(FileHandle file, String sourceUrl) {
+    /**
+     * Add some meta data to file and save it to the file system
+     */
+    private boolean processPuzzle(
+        Puzzle puz, String fileName, String sourceUrl
+    ) {
         final FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
         try {
-            final Puzzle puz = fileHandler.load(file);
-            // MATT: changed this from true to false
-            // I'm not sure what purpose it has
+            // I'm not sure what purpose this has
             // Doesn't seem to be changeable from UI
             puz.setUpdatable(false);
             puz.setSource(this.sourceName);
@@ -135,24 +134,21 @@ public class AbstractPageScraper {
             puz.setSupportUrl(this.supportUrl);
             puz.setDate(LocalDate.now());
 
-            DirHandle dir = AbstractDownloader.getStandardDownloadDir();
-
-            fileHandler.saveCreateMeta(puz, dir, file);
-
-            return true;
+            return fileHandler.saveNewPuzzle(puz, fileName);
         } catch (Exception e) {
             e.printStackTrace();
-            fileHandler.delete(file);
-
             return false;
         }
     }
 
-    public List<FileHandle> scrape() {
+    /**
+     * Returns a list of file names downloaded
+     */
+    public List<String> scrape() {
         FileHandler fileHandler
             = ForkyzApplication.getInstance().getFileHandler();
 
-        ArrayList<FileHandle> scrapedFiles = new ArrayList<>();
+        ArrayList<String> scrapedFiles = new ArrayList<>();
 
         try {
             String content = this.getContent();
@@ -166,10 +162,7 @@ public class AbstractPageScraper {
 
             Map<String, String> urlsToFilenames = mapURLsToFileNames(urls);
 
-            Set<String> existingFiles = fileHandler.getFileNames(
-                AbstractDownloader.getStandardDownloadDir(),
-                AbstractDownloader.getStandardArchiveDir()
-            );
+            Set<String> existingFiles = fileHandler.getPuzzleNames();
 
             for (String url : urls) {
                 String filename = urlsToFilenames.get(url);
@@ -178,10 +171,10 @@ public class AbstractPageScraper {
 
                 if (!exists && (scrapedFiles.size() < 3)) {
                     try {
-                        FileHandle file = download(url, filename);
-
-                        if (file != null && this.processFile(file, url)) {
-                            scrapedFiles.add(file);
+                        Puzzle puz = download(url);
+                        if (puz != null) {
+                            if (this.processPuzzle(puz, filename, url))
+                                scrapedFiles.add(filename);
                         }
                     } catch (Exception e) {
                         System.err.println("Exception downloading " + url

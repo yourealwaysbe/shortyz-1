@@ -101,12 +101,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public DirHandle getTempDirectory() {
-        return new DirHandle(tempFolderUri);
-    }
-
-    @Override
-    public FileHandle getFileHandle(Uri uri) {
+    protected FileHandle getFileHandle(Uri uri) {
         Meta meta = getMetaFromUri(uri);
         if (meta != null)
             return new FileHandle(uri, meta);
@@ -115,17 +110,17 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public boolean exists(DirHandle dir) {
+    protected boolean exists(DirHandle dir) {
         return exists(getContentResolver(), dir.getUri());
     }
 
     @Override
-    public boolean exists(FileHandle file) {
+    protected boolean exists(FileHandle file) {
         return exists(getContentResolver(), file.getUri());
     }
 
     @Override
-    public Iterable<FileHandle> listFiles(DirHandle dir) {
+    protected Iterable<FileHandle> listFiles(DirHandle dir) {
         ContentResolver resolver = getContentResolver();
         Uri dirUri = dir.getUri();
         String dirTreeId = DocumentsContract.getDocumentId(dirUri);
@@ -172,18 +167,18 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public Uri getUri(DirHandle f) { return f.getUri(); }
+    protected Uri getUri(DirHandle f) { return f.getUri(); }
 
     @Override
-    public Uri getUri(FileHandle f) { return f.getUri(); }
+    protected Uri getUri(FileHandle f) { return f.getUri(); }
 
     @Override
-    public String getName(FileHandle f) {
+    protected String getName(FileHandle f) {
         return f.getSAFMeta().getName();
     }
 
     @Override
-    public long getLastModified(FileHandle file) {
+    protected long getLastModified(FileHandle file) {
         return file.getSAFMeta().getLastModified();
     }
 
@@ -228,7 +223,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public OutputStream getOutputStream(FileHandle fileHandle)
+    protected OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException {
         try {
             return getContentResolver().openOutputStream(
@@ -241,7 +236,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public InputStream getInputStream(FileHandle fileHandle)
+    protected InputStream getInputStream(FileHandle fileHandle)
         throws IOException {
         try {
             return getContentResolver().openInputStream(
@@ -275,7 +270,7 @@ public class FileHandlerSAF extends FileHandler {
     }
 
     @Override
-    public FileHandle createFileHandle(
+    protected FileHandle createFileHandle(
         DirHandle dir, String fileName, String mimeType
     ) {
         try {

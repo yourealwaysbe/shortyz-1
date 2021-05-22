@@ -151,9 +151,9 @@ public class BrowseActivity extends ForkyzActivity {
             if (id == R.id.browse_action_delete) {
                 model.deletePuzzles(toAction);
             } else if (id == R.id.browse_action_archive) {
-                model.movePuzzles(toAction, crosswordsFolder, archiveFolder);
+                model.movePuzzles(toAction, archiveFolder);
             } else if (id == R.id.browse_action_unarchive) {
-                model.movePuzzles(toAction, archiveFolder, crosswordsFolder);
+                model.movePuzzles(toAction, crosswordsFolder);
             }
 
             actionMode.finish();
@@ -325,13 +325,9 @@ public class BrowseActivity extends ForkyzActivity {
                         model.deletePuzzle(puzMeta);
                     } else {
                         if (model.getIsViewArchive()) {
-                            model.movePuzzle(
-                                puzMeta, archiveFolder, crosswordsFolder
-                            );
+                            model.movePuzzle(puzMeta, crosswordsFolder);
                         } else {
-                            model.movePuzzle(
-                                puzMeta, crosswordsFolder, archiveFolder
-                            );
+                            model.movePuzzle(puzMeta, archiveFolder);
                         }
                     }
                 }

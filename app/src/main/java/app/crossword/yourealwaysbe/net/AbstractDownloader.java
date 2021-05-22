@@ -1,76 +1,54 @@
 package app.crossword.yourealwaysbe.net;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map.Entry;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import android.content.Context;
-import android.net.Uri;
-
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
-import app.crossword.yourealwaysbe.util.files.DirHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandler;
-import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
-import app.crossword.yourealwaysbe.versions.DefaultUtil;
+import app.crossword.yourealwaysbe.io.PuzzleParser;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public abstract class AbstractDownloader implements Downloader {
     protected static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
-    public static final DirHandle getStandardDownloadDir() {
-        return ForkyzApplication
-            .getInstance()
-            .getFileHandler()
-            .getCrosswordsDirectory();
-    }
-    public static final DirHandle getStandardArchiveDir() {
-        return ForkyzApplication
-            .getInstance()
-            .getFileHandler()
-            .getArchiveDirectory();
-    }
-
     protected static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
-    protected DirHandle downloadDirectory;
     protected String baseUrl;
-    protected final AndroidVersionUtils utils
-        = AndroidVersionUtils.Factory.getInstance();
     private String downloaderName;
-    protected DirHandle tempFolder;
+    protected PuzzleParser puzzleParser;
     protected LocalDate goodThrough = LocalDate.now();
+    private DayOfWeek[] days;
+    private String supportUrl;
 
     protected AbstractDownloader(
-        String baseUrl, DirHandle downloadDirectory, String downloaderName
+        String baseUrl,
+        String downloaderName,
+        DayOfWeek[] days,
+        String supportUrl,
+        PuzzleParser puzzleParser
     ) {
         this.baseUrl = baseUrl;
-        this.downloadDirectory = downloadDirectory;
         this.downloaderName = downloaderName;
-        this.tempFolder
-            = ForkyzApplication
-                .getInstance()
-                .getFileHandler()
-                .getTempDirectory();
+        this.days = days;
+        this.supportUrl = supportUrl;
+        this.puzzleParser = puzzleParser;
     }
 
     @Override
-    public DirHandle getDownloadDir() {
-        return downloadDirectory;
-    }
-
-    public void setContext(Context ctx) {
-        this.utils.setContext(ctx);
-    }
-
     public String createFileName(LocalDate date) {
         return (
             date.getYear() + "-" +
             date.getMonthValue() + "-" +
             date.getDayOfMonth() + "-" +
-            this.downloaderName.replaceAll(" ", "") + FileHandler.FILE_EXT_PUZ
+            this.downloaderName.replaceAll(" ", "")
         );
     }
 
@@ -78,94 +56,66 @@ public abstract class AbstractDownloader implements Downloader {
         return this.baseUrl + this.createUrlSuffix(date);
     }
 
+    @Override
+    public String getName() {
+        return downloaderName;
+    }
+
+    @Override
     public String toString() {
         return getName();
     }
 
+    @Override
+    public DayOfWeek[] getDownloadDates() {
+        return days;
+    }
+
+    @Override
+    public String getSupportUrl() {
+        return supportUrl;
+    }
+
     protected abstract String createUrlSuffix(LocalDate date);
 
-    protected Downloader.DownloadResult download(
+    @Override
+    public Puzzle download(LocalDate date) {
+        return download(date, this.createUrlSuffix(date));
+    }
+
+    protected Puzzle download(
         LocalDate date,
         String urlSuffix,
         Map<String, String> headers
     ){
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-        FileHandle f = null;
-        boolean success = false;
         try {
             URL url = new URL(this.baseUrl + urlSuffix);
-            System.out.println(url);
+            try (InputStream is = getInputStream(url, headers)) {
+                Puzzle puz = puzzleParser.parseInput(is);
 
-            f = fileHandler.createFileHandle(
-                downloadDirectory,
-                this.createFileName(date),
-                FileHandler.MIME_TYPE_PUZ
-            );
-            if (f == null)
-                return null;
+                if (puz != null) {
+                    puz.setDate(date);
+                    puz.setSource(getName());
+                    puz.setSourceUrl(url.toString());
+                    puz.setSupportUrl(getSupportUrl());
+                    puz.setUpdatable(false);
 
-            PuzzleMeta meta = new PuzzleMeta();
-            meta.date = date;
-            meta.source = getName();
-            meta.sourceUrl = url.toString();
-            meta.updatable = false;
-
-            Uri fileUri = fileHandler.getUri(f);
-
-            if (utils.downloadFile(url, f, headers, true, this.getName())) {
-                success = true;
-                return new Downloader.DownloadResult(f);
-            } else {
-                return null;
+                    return puz;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (!success && f != null)
-                fileHandler.delete(f);
+        } catch (MalformedURLException e) {
+            LOG.severe("Malformed URL in download: " + e);
         }
+
         return null;
     }
 
-    protected Downloader.DownloadResult download(
+    protected Puzzle download(
         LocalDate date, String urlSuffix
     ) {
         return download(date, urlSuffix, EMPTY_MAP);
-    }
-
-
-    protected FileHandle downloadToTempFile(String fullName, LocalDate date) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-        FileHandle downloaded = fileHandler.createFileHandle(
-            tempFolder,
-            "txt-tmp"+System.currentTimeMillis()+".txt",
-            FileHandler.MIME_TYPE_PLAIN_TEXT
-        );
-        boolean success = false;
-
-        if (downloaded != null) {
-            try {
-                URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
-                LOG.log(Level.INFO, fullName +" "+url.toExternalForm());
-                success = utils.downloadFile(
-                    url, downloaded, EMPTY_MAP, false, null
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (!success)
-                    fileHandler.delete(downloaded);
-            }
-        }
-
-        if (!success) {
-            LOG.log(Level.SEVERE, "Unable to download plain text KFS file.");
-            return null;
-        } else {
-            return downloaded;
-        }
     }
 
     @Override
@@ -179,5 +129,18 @@ public abstract class AbstractDownloader implements Downloader {
 
     public LocalDate getGoodFrom(){
         return LocalDate.ofEpochDay(0L);
+    }
+
+    private BufferedInputStream getInputStream(
+        URL url, Map<String, String> headers
+    ) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("Connection", "close");
+
+        for (Entry<String, String> e : headers.entrySet()){
+            conn.setRequestProperty(e.getKey(), e.getValue());
+        }
+
+        return new BufferedInputStream(conn.getInputStream());
     }
 }

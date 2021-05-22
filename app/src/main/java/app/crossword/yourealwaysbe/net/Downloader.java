@@ -5,9 +5,7 @@ import java.time.LocalDate;
 
 import android.content.Context;
 
-import app.crossword.yourealwaysbe.util.files.DirHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public interface Downloader {
     // These lists must be sorted for binary search.
@@ -43,21 +41,7 @@ public interface Downloader {
         DayOfWeek.FRIDAY,
     };
 
-    public static class DownloadResult {
-        private FileHandle fileHandle;
-
-        public DownloadResult(FileHandle fileHandle) {
-            this.fileHandle = fileHandle;
-        }
-
-        public FileHandle getFileHandle() { return fileHandle; }
-    }
-
-    void setContext(Context context);
-
     DayOfWeek[] getDownloadDates();
-
-    DirHandle getDownloadDir();
 
     String getName();
 
@@ -70,7 +54,7 @@ public interface Downloader {
 
     String createFileName(LocalDate date);
 
-    DownloadResult download(LocalDate date);
+    Puzzle download(LocalDate date);
 
     String sourceUrl(LocalDate date);
 

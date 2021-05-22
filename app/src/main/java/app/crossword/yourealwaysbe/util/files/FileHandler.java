@@ -38,8 +38,12 @@ public abstract class FileHandler {
     private static final Logger LOGGER
         = Logger.getLogger(FileHandler.class.getCanonicalName());
 
-    public static final String MIME_TYPE_PUZ = "application/x-crossword";
-    public static final String MIME_TYPE_META = "application/octet-stream";
+    // private for now because downloaders shouldn't be directly
+    // creating puzzle files but instead saving Puzzle objects with
+    // names
+    private static final String MIME_TYPE_PUZ = "application/x-crossword";
+    private static final String MIME_TYPE_META = "application/octet-stream";
+
     public static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
     public static final String MIME_TYPE_GENERIC = "application/octet-stream";
     public static final String MIME_TYPE_GENERIC_XML = "text/xml";
@@ -63,66 +67,28 @@ public abstract class FileHandler {
 
     public abstract DirHandle getCrosswordsDirectory();
     public abstract DirHandle getArchiveDirectory();
-    public abstract DirHandle getTempDirectory();
-    public abstract FileHandle getFileHandle(Uri uri);
-    public abstract boolean exists(DirHandle dir);
-    public abstract boolean exists(FileHandle file);
-    public abstract Iterable<FileHandle> listFiles(final DirHandle dir);
-    public abstract Uri getUri(DirHandle f);
-    public abstract Uri getUri(FileHandle f);
-    public abstract String getName(FileHandle f);
-    public abstract long getLastModified(FileHandle file);
-    public abstract OutputStream getOutputStream(FileHandle fileHandle)
-        throws IOException;
-    public abstract InputStream getInputStream(FileHandle fileHandle)
-        throws IOException;
     public abstract boolean isStorageMounted();
     public abstract boolean isStorageFull();
 
-    /**
-     * Create a new file in the directory with the given display name
-     *
-     * Return null if could not be created. E.g. if the file already
-     * exists.
-     */
-    public abstract FileHandle createFileHandle(
-        DirHandle dir, String fileName, String mimeType
-    );
+    protected abstract FileHandle getFileHandle(Uri uri);
+    protected abstract boolean exists(DirHandle dir);
+    protected abstract boolean exists(FileHandle file);
+    protected abstract Iterable<FileHandle> listFiles(final DirHandle dir);
+    protected abstract Uri getUri(DirHandle f);
+    protected abstract Uri getUri(FileHandle f);
+    protected abstract String getName(FileHandle f);
+    protected abstract long getLastModified(FileHandle file);
+    protected abstract OutputStream getOutputStream(FileHandle fileHandle)
+        throws IOException;
+    protected abstract InputStream getInputStream(FileHandle fileHandle)
+        throws IOException;
 
-    /**
-     * Provide a moveTo implementation
-     *
-     * Assume in a synced class
-     */
-    protected abstract void moveToUnsync(
-        FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
-    );
-
-    /**
-     * Provide a delete implementation
-     *
-     * Assume in a synced class
-     */
-    protected abstract void deleteUnsync(FileHandle fileHandle);
-
-    public BufferedOutputStream getBufferedOutputStream(FileHandle fileHandle)
-        throws IOException {
-        return new BufferedOutputStream(getOutputStream(fileHandle));
+    public Uri getUri(PuzHandle puzHandle) {
+        return getUri(puzHandle.getPuzFileHandle());
     }
 
-    public BufferedInputStream getBufferedInputStream(FileHandle fileHandle)
-        throws IOException {
-        return new BufferedInputStream(getInputStream(fileHandle));
-    }
-
-    public synchronized void delete(FileHandle fileHandle) {
-        deleteUnsync(fileHandle);
-    }
-
-    public synchronized void moveTo(
-        FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
-    ) {
-        moveToUnsync(fileHandle, srcDirHandle, destDirHandle);
+    public String getName(PuzHandle puzHandle) {
+        return getName(puzHandle.getPuzFileHandle());
     }
 
     public boolean exists(PuzMetaFile pm) {
@@ -152,14 +118,15 @@ public abstract class FileHandler {
     }
 
     public synchronized void moveTo(
-        PuzMetaFile pm, DirHandle srcDirHandle, DirHandle destDirHandle
+        PuzMetaFile pm, DirHandle destDirHandle
     ) {
-        moveTo(pm.getPuzHandle(), srcDirHandle, destDirHandle);
+        moveTo(pm.getPuzHandle(), destDirHandle);
     }
 
     public synchronized void moveTo(
-        PuzHandle ph, DirHandle srcDirHandle, DirHandle destDirHandle
+        PuzHandle ph, DirHandle destDirHandle
     ) {
+        DirHandle srcDirHandle = ph.getDirHandle();
         moveTo(ph.getPuzFileHandle(), srcDirHandle, destDirHandle);
         FileHandle metaHandle = ph.getMetaFileHandle();
         if (metaHandle != null)
@@ -231,18 +198,23 @@ public abstract class FileHandler {
     }
 
     /**
-     * Gets the set of file names in the two directories
+     * Gets the set of puzzle names stored by Forkyz
      *
-     * Slightly odd method, but useful in various places. dir1 and dir2
-     * are usually the crosswords and archive folders.
+     * File names are names without the file extension or directories
      */
-    public Set<String> getFileNames(DirHandle dir1, DirHandle dir2) {
-        Set<String> fileNames = new HashSet<>();
-        for (FileHandle fh : listFiles(dir1))
-            fileNames.add(getName(fh));
-        for (FileHandle fh : listFiles(dir2))
-            fileNames.add(getName(fh));
-        return fileNames;
+    public Set<String> getPuzzleNames() {
+        Set<String> puzzleNames = new HashSet<>();
+        for (FileHandle fh : listFiles(getCrosswordsDirectory())) {
+            String puzzleName = getPuzzleFileName(getName(fh));
+            if (puzzleName != null)
+                puzzleNames.add(puzzleName);
+        }
+        for (FileHandle fh : listFiles(getArchiveDirectory())) {
+            String puzzleName = getPuzzleFileName(getName(fh));
+            if (puzzleName != null)
+                puzzleNames.add(puzzleName);
+        }
+        return puzzleNames;
     }
 
     /**
@@ -389,24 +361,92 @@ public abstract class FileHandler {
     }
 
     /**
-     * Save the puz file to the file handle and create a meta file
+     * Save a (new) puzzle to the given directory
      *
-     * Assumed that a meta file does not exist already. Synchronized to avoid
-     * reading/writing from the same file at the same time.
+     * Use this instead of createFile to save puzzles -- let the file
+     * handler decide the backend file format.
      *
-     * @param puzDir the directory containing puzFile (and where the
-     * metta will be created)
+     * @param puz the puzzle to save
+     * @param dirHandle the directory to save under
+     * @param fileNameBody the name to give the file without file
+     * extension
+     * @return false if the save failed
      */
-    public synchronized void saveCreateMeta(
-        Puzzle puz, DirHandle puzDir, FileHandle puzFile
+    public synchronized boolean saveNewPuzzle(
+        Puzzle puz, String fileNameBody
     ) throws IOException {
-        save(puz, new PuzHandle(puzDir, puzFile, null));
+        DirHandle dirHandle = getCrosswordsDirectory();
+
+        FileHandle mainFile = createFileHandle(
+            dirHandle, fileNameBody + FILE_EXT_PUZ, MIME_TYPE_PUZ
+        );
+
+        if (mainFile == null)
+            return false;
+
+        try {
+            save(puz, new PuzHandle(dirHandle, mainFile, null));
+            return true;
+        } catch (Exception e) {
+            delete(mainFile);
+            throw e;
+        }
     }
 
-    public LocalDate getModifiedDate(FileHandle file) {
+    protected LocalDate getModifiedDate(FileHandle file) {
         return Instant.ofEpochMilli(getLastModified(file))
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();
+    }
+
+    /**
+     * Create a new file in the directory with the given display name
+     *
+     * Do not save puzzles using these file handles, instead go via
+     * save(Puzzle, DirHandle, String) that will use the preferred
+     * backend file format for puzzles.
+     *
+     * Return null if could not be created. E.g. if the file already
+     * exists.
+     */
+    protected abstract FileHandle createFileHandle(
+        DirHandle dir, String fileName, String mimeType
+    );
+
+    /**
+     * Provide a moveTo implementation
+     *
+     * Assume in a synced class
+     */
+    protected abstract void moveToUnsync(
+        FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
+    );
+
+    /**
+     * Provide a delete implementation
+     *
+     * Assume in a synced class
+     */
+    protected abstract void deleteUnsync(FileHandle fileHandle);
+
+    protected BufferedOutputStream getBufferedOutputStream(FileHandle fileHandle)
+        throws IOException {
+        return new BufferedOutputStream(getOutputStream(fileHandle));
+    }
+
+    protected BufferedInputStream getBufferedInputStream(FileHandle fileHandle)
+        throws IOException {
+        return new BufferedInputStream(getInputStream(fileHandle));
+    }
+
+    protected synchronized void delete(FileHandle fileHandle) {
+        deleteUnsync(fileHandle);
+    }
+
+    protected synchronized void moveTo(
+        FileHandle fileHandle, DirHandle srcDirHandle, DirHandle destDirHandle
+    ) {
+        moveToUnsync(fileHandle, srcDirHandle, destDirHandle);
     }
 
     protected String getMetaFileName(FileHandle puzFile) {
@@ -416,5 +456,23 @@ public abstract class FileHandler {
 
     protected Context getApplicationContext() {
         return applicationContext;
+    }
+
+    /**
+     * Extract puzzle file name from fileName
+     *
+     * Checks whether the file name is a backend puzzle file (by
+     * extension), and returns the name without the extension if so.
+     *
+     * @return puzzle file name or null if not a puzzle file
+     */
+    private String getPuzzleFileName(String fileName) {
+        if (fileName.endsWith(FILE_EXT_PUZ)) {
+            return fileName.substring(
+                0, fileName.length() - FILE_EXT_PUZ.length()
+            );
+        } else {
+            return null;
+        }
     }
 }

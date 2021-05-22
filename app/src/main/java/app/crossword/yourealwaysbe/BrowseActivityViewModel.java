@@ -129,20 +129,18 @@ public class BrowseActivityViewModel extends ViewModel {
         });
     }
 
-    public void movePuzzle(
-        PuzMetaFile puzMeta, DirHandle srcDir, DirHandle destDir
-    ) {
-        movePuzzles(Collections.singleton(puzMeta), srcDir, destDir);
+    public void movePuzzle(PuzMetaFile puzMeta, DirHandle destDir) {
+        movePuzzles(Collections.singleton(puzMeta), destDir);
     }
 
     public void movePuzzles(
-        Collection<PuzMetaFile> puzMetas, DirHandle srcDir, DirHandle destDir
+        Collection<PuzMetaFile> puzMetas, DirHandle destDir
     ) {
         threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
             for (PuzMetaFile puzMeta : puzMetas)
-                fileHandler.moveTo(puzMeta, srcDir, destDir);
+                fileHandler.moveTo(puzMeta, destDir);
 
             startLoadFiles();
         });
@@ -198,7 +196,7 @@ public class BrowseActivityViewModel extends ViewModel {
                 fileHandler.delete(puzMeta);
 
             for (PuzMetaFile puzMeta : toArchive)
-                fileHandler.moveTo(puzMeta, crosswords, archive);
+                fileHandler.moveTo(puzMeta, archive);
 
             startLoadFiles();
         });
@@ -265,9 +263,7 @@ public class BrowseActivityViewModel extends ViewModel {
                 handler.post(() -> {
                     String filename = null;
                     try {
-                        filename = fileHandler.getName(
-                            puzMeta.getPuzHandle().getPuzFileHandle()
-                        );
+                        filename = fileHandler.getName(puzMeta.getPuzHandle());
                     } catch (Exception ee) {
                         e.printStackTrace();
                     }
