@@ -52,46 +52,24 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
     public GuardianDailyCrypticDownloader() {
         super(
             "https://www.theguardian.com/crosswords/cryptic/",
-            getStandardDownloadDir(),
-            NAME
+            NAME,
+            DATE_WEEKDAY,
+            SUPPORT_URL,
+            null
         );
     }
 
     @Override
-    public DayOfWeek[] getDownloadDates() {
-        return DATE_WEEKDAY;
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public String getSupportUrl() {
-        return SUPPORT_URL;
-    }
-
-    @Override
-    public Downloader.DownloadResult download(LocalDate date) {
+    public Puzzle download(LocalDate date) {
         return download(date, this.createUrlSuffix(date), EMPTY_MAP);
     }
 
     @Override
-    protected Downloader.DownloadResult download(
+    protected Puzzle download(
         LocalDate date,
         String urlSuffix,
         Map<String, String> headers
     ) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-
-
-        String fileName = createFileName(date);
-
-        FileHandle f = null;
-        boolean success = false;
-
         try {
             URL url = new URL(this.baseUrl + urlSuffix);
             JSONObject cw = getCrosswordJSON(url);
@@ -99,30 +77,11 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             if (cw == null)
                 return null;
 
-            Puzzle puz = readPuzzleFromJSON(cw, date);
-
-            f = fileHandler.createFileHandle(
-                downloadDirectory, fileName, FileHandler.MIME_TYPE_PUZ
-            );
-            if (f == null)
-                return null;
-
-            try (
-                DataOutputStream dos = new DataOutputStream(
-                    fileHandler.getBufferedOutputStream(f)
-                )
-            ) {
-                IO.saveNative(puz, dos);
-                success = true;
-                return new Downloader.DownloadResult(f);
-            }
+            return readPuzzleFromJSON(cw, date);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
-        } finally {
-            if (!success && f != null)
-                fileHandler.delete(f);
         }
 
         return null;

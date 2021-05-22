@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
@@ -17,26 +19,15 @@ public class JonesinDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
 
     public JonesinDownloader() {
-        super("https://herbach.dnsalias.com/Jonesin/", getStandardDownloadDir(), NAME);
+        super(
+            "https://herbach.dnsalias.com/Jonesin/",
+            NAME,
+            DATE_THURSDAY,
+            SUPPORT_URL,
+            new IO()
+        );
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
-    }
-
-    public DayOfWeek[] getDownloadDates() {
-        return DATE_THURSDAY;
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public String getSupportUrl() {
-        return SUPPORT_URL;
-    }
-
-    public Downloader.DownloadResult download(LocalDate date) {
-        return super.download(date, this.createUrlSuffix(date));
     }
 
     @Override

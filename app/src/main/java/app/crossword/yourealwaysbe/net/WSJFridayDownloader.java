@@ -1,9 +1,10 @@
 package app.crossword.yourealwaysbe.net;
 
 import java.text.NumberFormat;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
@@ -17,26 +18,15 @@ public class WSJFridayDownloader extends AbstractDownloader {
     NumberFormat nf = NumberFormat.getInstance();
 
     public WSJFridayDownloader() {
-        super("https://herbach.dnsalias.com/wsj/", getStandardDownloadDir(), NAME);
+        super(
+            "https://herbach.dnsalias.com/wsj/",
+            NAME,
+            DATE_FRIDAY,
+            SUPPORT_URL,
+            new IO()
+        );
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
-    }
-
-    public DayOfWeek[] getDownloadDates() {
-        return DATE_FRIDAY;
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public String getSupportUrl() {
-        return SUPPORT_URL;
-    }
-
-    public Downloader.DownloadResult download(LocalDate date) {
-        return super.download(date, this.createUrlSuffix(date));
     }
 
     @Override
@@ -44,6 +34,4 @@ public class WSJFridayDownloader extends AbstractDownloader {
         return "wsj" + nf.format(date.getYear() % 100) + nf.format(date.getMonthValue()) + nf.format(date.getDayOfMonth()) +
         FileHandler.FILE_EXT_PUZ;
     }
-
-
 }

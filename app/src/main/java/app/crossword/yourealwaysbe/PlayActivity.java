@@ -1043,9 +1043,7 @@ public class PlayActivity extends PuzzleActivity
                 FileHandler fileHandler
                     = ForkyzApplication.getInstance().getFileHandler();
                 filename.setText(
-                    fileHandler.getUri(
-                        activity.getPuzHandle().getPuzFileHandle()
-                    ).toString()
+                    fileHandler.getUri(activity.getPuzHandle()).toString()
                 );
 
                 addNotes(view);

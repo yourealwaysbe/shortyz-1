@@ -1,9 +1,7 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -11,12 +9,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.logging.Level;
 
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.io.UclickXMLIO;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandler;
-import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
-import app.crossword.yourealwaysbe.versions.DefaultUtil;
+import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
  * Uclick XML Puzzles
@@ -29,22 +23,22 @@ public class UclickDownloader extends AbstractDownloader {
     DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
     NumberFormat nf = NumberFormat.getInstance();
     private String copyright;
-    private String fullName;
     private String shortName;
-    private String supportUrl;
-    private DayOfWeek[] days;
 
     public UclickDownloader(
         String prefix,
         String shortName, String fullName, String copyright, String supportUrl,
         DayOfWeek[] days
     ){
-        super(prefix+shortName+"/data/", getStandardDownloadDir(), fullName);
+        super(
+            prefix+shortName+"/data/",
+            fullName,
+            days,
+            supportUrl,
+            new UclickXMLIO()
+        );
         this.shortName = shortName;
-        this.fullName = fullName;
         this.copyright = copyright;
-        this.supportUrl = supportUrl;
-        this.days = days;
         nf.setMinimumIntegerDigits(2);
         nf.setMaximumFractionDigits(0);
     }
@@ -60,115 +54,20 @@ public class UclickDownloader extends AbstractDownloader {
         );
     }
 
-    public DayOfWeek[] getDownloadDates() {
-        return days;
-    }
-
-    public String getName() {
-        return fullName;
-    }
-
     @Override
-    public String getSupportUrl() {
-        return supportUrl;
-    }
-
-    public Downloader.DownloadResult download(LocalDate date) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-
-        FileHandle plainText = null;
-        FileHandle downloadTo = null;
-        boolean success = true;
-
-        try {
-            plainText = downloadToTempFile(date);
-            if (plainText == null)
-                return null;
-
-            String fileName = this.createFileName(date);
-
-            downloadTo = fileHandler.createFileHandle(
-                this.downloadDirectory,
-                this.createFileName(date),
-                FileHandler.MIME_TYPE_PUZ
+    public Puzzle download(LocalDate date) {
+        Puzzle puz = super.download(date);
+        if (puz != null) {
+            puz.setCopyright(
+                "\u00a9 " + date.getYear() + " " + copyright
             );
-            if (downloadTo == null)
-                return null;
-
-            boolean converted = false;
-
-            try (
-                InputStream is = fileHandler.getBufferedInputStream(plainText);
-                DataOutputStream os = new DataOutputStream(
-                    fileHandler.getBufferedOutputStream(downloadTo)
-                );
-            ) {
-                converted = UclickXMLIO.convertUclickPuzzle(
-                    is, os, "\u00a9 " + date.getYear() + " " + copyright, date
-                );
-            } catch (IOException ioe) {
-                LOG.log(
-                    Level.SEVERE,
-                    "Exception converting uclick XML puzzle into Across Lite format.",
-                    ioe
-                );
-            }
-
-            if (!converted) {
-                LOG.log(
-                    Level.SEVERE,
-                    "Unable to convert uclick XML puzzle into Across Lite format."
-                );
-            } else {
-                success = true;
-            }
-        } finally {
-            if (plainText != null)
-                fileHandler.delete(plainText);
-            if (!success && downloadTo != null)
-                fileHandler.delete(downloadTo);
         }
-
-        return success ? new Downloader.DownloadResult(downloadTo) : null;
+        return puz;
     }
 
     @Override
     protected String createUrlSuffix(LocalDate date) {
         return this.shortName + nf.format(date.getYear() % 100) + nf.format(date.getMonthValue()) +
         nf.format(date.getDayOfMonth()) + "-data.xml";
-    }
-
-    private FileHandle downloadToTempFile(LocalDate date) {
-        FileHandler fileHandler
-            = ForkyzApplication.getInstance().getFileHandler();
-
-        FileHandle tmpFile = null;
-        boolean success = false;
-
-        try {
-            tmpFile = fileHandler.createFileHandle(
-                this.tempFolder,
-                "uclick-temp"+System.currentTimeMillis()+".xml",
-                FileHandler.MIME_TYPE_GENERIC_XML
-            );
-            if (tmpFile == null) {
-                LOG.log(Level.SEVERE, "Unable to download uclick XML file.");
-                return null;
-            }
-
-            URL url = new URL(this.baseUrl + this.createUrlSuffix(date));
-            success = AndroidVersionUtils.Factory.getInstance().downloadFile(
-                url, tmpFile, EMPTY_MAP, false, null
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOG.log(Level.SEVERE, "Unable to download uclick XML file.");
-        } finally {
-            if (!success && tmpFile != null)
-                fileHandler.delete(tmpFile);
-        }
-
-        return success ? tmpFile : null;
     }
 }

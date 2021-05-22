@@ -5,15 +5,13 @@ import java.time.LocalDate;
 
 import android.content.Context;
 
+import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
 
 /**
  * Does not actually download any puzzles; just adds an "All Available" option to the dropdown.
  */
 public class DummyDownloader implements Downloader {
-    @Override
-    public void setContext(Context context) {}
-
     @Override
     public DayOfWeek[] getDownloadDates() {
         return null;
@@ -30,17 +28,12 @@ public class DummyDownloader implements Downloader {
     }
 
     @Override
-    public DirHandle getDownloadDir() {
-        return null;
-    }
-
-    @Override
     public String createFileName(LocalDate date) {
         return null;
     }
 
     @Override
-    public Downloader.DownloadResult download(LocalDate date) {
+    public Puzzle download(LocalDate date) {
         return null;
     }
 
