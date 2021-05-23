@@ -4,7 +4,6 @@ import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 public interface MovementStrategy extends Serializable {
 

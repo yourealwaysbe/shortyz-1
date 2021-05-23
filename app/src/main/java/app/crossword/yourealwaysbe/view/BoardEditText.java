@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.view;
 
-import java.lang.StringBuilder;
 import java.util.logging.Logger;
 
 import android.content.Context;
@@ -8,14 +7,11 @@ import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import android.view.View;
 import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
-import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 import app.crossword.yourealwaysbe.puz.Box;
-import app.crossword.yourealwaysbe.PlayActivity;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
 public class BoardEditText extends ScrollingImageView {

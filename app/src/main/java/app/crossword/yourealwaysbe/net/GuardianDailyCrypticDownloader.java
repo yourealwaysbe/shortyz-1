@@ -1,19 +1,12 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.Period;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-
-import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,17 +15,10 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandler;
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 
 /**
  * Guardian Daily Cryptic downloader

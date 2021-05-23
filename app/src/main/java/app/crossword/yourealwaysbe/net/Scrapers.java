@@ -6,15 +6,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 
 import app.crossword.yourealwaysbe.PlayActivity;
 import app.crossword.yourealwaysbe.BrowseActivity;
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 import java.util.ArrayList;
 import java.util.List;

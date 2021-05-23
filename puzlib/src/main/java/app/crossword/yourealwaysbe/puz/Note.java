@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import app.crossword.yourealwaysbe.io.charset.Surrogate;
-
 public class Note implements Serializable {
     private static final Logger LOG = Logger.getLogger(Note.class.getCanonicalName());
     private String scratch;

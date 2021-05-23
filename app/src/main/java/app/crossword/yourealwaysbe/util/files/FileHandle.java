@@ -1,13 +1,9 @@
 package app.crossword.yourealwaysbe.util.files;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 import android.net.Uri;
-
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 public class FileHandle {
     // common to all implementations

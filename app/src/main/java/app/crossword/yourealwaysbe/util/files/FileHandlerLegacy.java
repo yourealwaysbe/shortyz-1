@@ -1,8 +1,6 @@
 
 package app.crossword.yourealwaysbe.util.files;
 
-import java.io.File;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import android.annotation.TargetApi;

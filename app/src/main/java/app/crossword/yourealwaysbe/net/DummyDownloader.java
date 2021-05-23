@@ -3,10 +3,7 @@ package app.crossword.yourealwaysbe.net;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-import android.content.Context;
-
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.util.files.DirHandle;
 
 /**
  * Does not actually download any puzzles; just adds an "All Available" option to the dropdown.

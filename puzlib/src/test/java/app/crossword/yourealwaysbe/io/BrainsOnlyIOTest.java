@@ -1,7 +1,5 @@
 package app.crossword.yourealwaysbe.io;
 
-import app.crossword.yourealwaysbe.puz.Playboard;
-import app.crossword.yourealwaysbe.puz.Puzzle;
 import junit.framework.TestCase;
 
 import java.io.IOException;

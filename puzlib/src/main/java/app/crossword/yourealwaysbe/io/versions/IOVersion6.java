@@ -1,8 +1,6 @@
 package app.crossword.yourealwaysbe.io.versions;
 
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Clue;
-import app.crossword.yourealwaysbe.puz.ClueList;
 import app.crossword.yourealwaysbe.puz.Note;
 import app.crossword.yourealwaysbe.puz.Puzzle.ClueNumDir;
 import app.crossword.yourealwaysbe.puz.Puzzle;
@@ -11,10 +9,7 @@ import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.SortedMap;
 
 // Moves clue notes out of the puz file and into meta
 // i don't really think they were allowed in the puz file format

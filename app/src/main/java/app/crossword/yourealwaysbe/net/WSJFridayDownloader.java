@@ -4,7 +4,6 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 
 import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
