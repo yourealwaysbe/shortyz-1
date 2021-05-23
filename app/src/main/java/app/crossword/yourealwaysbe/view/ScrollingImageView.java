@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe.view;
 
-import java.util.Timer;
 import java.util.logging.Logger;
 
 import android.content.Context;

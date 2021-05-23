@@ -1,6 +1,5 @@
 package app.crossword.yourealwaysbe;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -8,7 +7,6 @@ import androidx.appcompat.app.ActionBar;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 

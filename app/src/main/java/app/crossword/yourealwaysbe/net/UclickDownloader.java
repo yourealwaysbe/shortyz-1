@@ -1,13 +1,9 @@
 package app.crossword.yourealwaysbe.net;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.util.logging.Level;
 
 import app.crossword.yourealwaysbe.io.UclickXMLIO;
 import app.crossword.yourealwaysbe.puz.Puzzle;

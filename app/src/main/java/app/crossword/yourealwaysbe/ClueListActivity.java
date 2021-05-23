@@ -1,24 +1,15 @@
 package app.crossword.yourealwaysbe;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import androidx.core.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
-import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Clue;
 import app.crossword.yourealwaysbe.puz.Playboard.Position;
 import app.crossword.yourealwaysbe.puz.Playboard.Word;
@@ -31,8 +22,6 @@ import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
-
-import java.io.IOException;
 
 public class ClueListActivity extends PuzzleActivity
                               implements ClueTabs.ClueTabsListener {

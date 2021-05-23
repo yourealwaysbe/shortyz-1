@@ -1,10 +1,8 @@
 package app.crossword.yourealwaysbe.versions;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View.OnClickListener;
@@ -14,9 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import app.crossword.yourealwaysbe.ForkyzActivity;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 import app.crossword.yourealwaysbe.util.NightModeHelper;
-import app.crossword.yourealwaysbe.util.files.DirHandle;
 
 public class HoneycombUtil extends DefaultUtil {
 

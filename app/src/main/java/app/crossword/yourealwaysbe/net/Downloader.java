@@ -3,8 +3,6 @@ package app.crossword.yourealwaysbe.net;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-import android.content.Context;
-
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 public interface Downloader {

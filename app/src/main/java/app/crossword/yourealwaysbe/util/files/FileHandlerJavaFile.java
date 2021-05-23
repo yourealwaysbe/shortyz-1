@@ -7,19 +7,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.Iterable;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import android.content.Context;
 import android.net.Uri;
-
-import app.crossword.yourealwaysbe.io.IO;
-import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 /**
  * Base implementation of java.io.File-based file access from a given

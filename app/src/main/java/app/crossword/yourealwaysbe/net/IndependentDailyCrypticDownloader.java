@@ -3,8 +3,6 @@ package app.crossword.yourealwaysbe.net;
 import java.time.LocalDate;
 import java.util.Locale;
 
-import android.net.Uri;
-
 /**
  * Independent Daily Cryptic downloader
  * https://puzzles.independent.co.uk/games/webgl-cryptic-crossword-independent

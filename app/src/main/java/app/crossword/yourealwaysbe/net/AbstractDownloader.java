@@ -11,10 +11,8 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.io.PuzzleParser;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 

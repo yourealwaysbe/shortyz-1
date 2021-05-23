@@ -16,7 +16,6 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class PuzzleFinishedActivity extends ForkyzActivity {
     private static final long SECONDS = 1000;

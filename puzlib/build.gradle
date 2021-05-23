@@ -1,6 +1,9 @@
+apply plugin: 'checkstyle'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+
 group 'app.crossword.yourealwaysbe'
+
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '3.+'
 

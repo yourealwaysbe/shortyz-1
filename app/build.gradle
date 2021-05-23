@@ -1,4 +1,16 @@
 apply plugin: 'com.android.application'
+apply plugin: 'checkstyle'
+
+check.dependsOn 'checkstyle'
+
+task checkstyle(type: Checkstyle) {
+    configFile file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    source 'src'
+    include '**/*.java'
+    exclude '**/build/**'
+
+    classpath = files()
+}
 
 repositories {
     maven { url "https://jitpack.io" }

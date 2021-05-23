@@ -1,11 +1,10 @@
 package app.crossword.yourealwaysbe.view.recycler;
 
-        import android.content.Context;
-        import android.os.Build;
-        import android.view.GestureDetector;
-        import android.view.MotionEvent;
-        import android.view.View;
-        import android.view.ViewConfiguration;
+import android.content.Context;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
 
 public abstract class ScrollDetector extends GestureDetector.SimpleOnGestureListener implements View.OnTouchListener {
     private final GestureDetector mDetector;
