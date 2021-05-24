@@ -24,7 +24,6 @@ import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 public class MetaCache {
 
@@ -174,28 +173,16 @@ public class MetaCache {
     /**
      * Cache meta for a file URI, returns new record
      */
-    public MetaRecord addRecord(PuzHandle puzHandle, PuzzleMeta meta) {
-        CachedMeta cm = new CachedMeta();
-        cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
-        cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
-        cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
-        cm.isUpdatable = meta.updatable;
-        cm.date = meta.date;
-        cm.percentComplete = meta.percentComplete;
-        cm.percentFilled = meta.percentFilled;
-        cm.source = meta.source;
-        cm.title = meta.title;
-        getDao().insertAll(cm);
-        return new MetaRecord(cm);
-    }
-
-    /**
-     * Cache meta for a file URI, returns new record
-     */
     public MetaRecord addRecord(PuzHandle puzHandle, Puzzle puz) {
         CachedMeta cm = new CachedMeta();
         cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
-        cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
+
+        FileHandle metaHandle = puzHandle.getMetaFileHandle();
+        if (metaHandle == null)
+            cm.metaFileUri = null;
+        else
+            cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
+
         cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
         cm.isUpdatable = puz.isUpdatable();
         cm.date = puz.getDate();
@@ -203,7 +190,9 @@ public class MetaCache {
         cm.percentFilled = puz.getPercentFilled();
         cm.source = puz.getSource();
         cm.title = puz.getTitle();
+
         getDao().insertAll(cm);
+
         return new MetaRecord(cm);
     }
 

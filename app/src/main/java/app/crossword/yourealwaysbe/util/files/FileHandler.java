@@ -26,7 +26,6 @@ import android.net.Uri;
 
 import app.crossword.yourealwaysbe.io.IO;
 import app.crossword.yourealwaysbe.puz.Puzzle;
-import app.crossword.yourealwaysbe.puz.PuzzleMeta;
 
 /**
  * Abstraction layer for file operations
@@ -219,24 +218,16 @@ public abstract class FileHandler {
     /**
      * Synchronized to avoid reading/writing from the same file at the same
      * time.
+     *
+     * @return null if could not be loaded
      */
     public PuzMetaFile loadPuzMetaFile(PuzHandle puzHandle) throws IOException {
-        FileHandle metaHandle = puzHandle.getMetaFileHandle();
-        PuzzleMeta meta = null;
+        Puzzle puz = load(puzHandle);
 
-        if (metaHandle != null) {
-            try (
-                DataInputStream is = new DataInputStream(
-                    getBufferedInputStream(metaHandle)
-                )
-            ) {
-                meta = IO.readMeta(is);
-            }
-        }
+        if (puz == null)
+            return null;
 
-        MetaCache.MetaRecord metaRecord = null;
-        if (meta != null)
-            metaRecord = metaCache.addRecord(puzHandle, meta);
+        MetaCache.MetaRecord metaRecord = metaCache.addRecord(puzHandle, puz);
 
         return new PuzMetaFile(puzHandle, metaRecord);
     }
