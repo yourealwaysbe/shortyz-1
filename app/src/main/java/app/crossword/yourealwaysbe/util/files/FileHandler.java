@@ -25,6 +25,7 @@ import android.content.Context;
 import android.net.Uri;
 
 import app.crossword.yourealwaysbe.io.IO;
+import app.crossword.yourealwaysbe.io.IPuzIO;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 
 /**
@@ -41,6 +42,8 @@ public abstract class FileHandler {
     // names
     private static final String MIME_TYPE_PUZ = "application/x-crossword";
     private static final String MIME_TYPE_META = "application/octet-stream";
+    // Android messes with application/json by adding .json extension :(
+    private static final String MIME_TYPE_IPUZ = "application/octet-stream";
 
     public static final String MIME_TYPE_PLAIN_TEXT = "text/plain";
     public static final String MIME_TYPE_GENERIC = "application/octet-stream";
@@ -48,6 +51,7 @@ public abstract class FileHandler {
 
     public static final String FILE_EXT_PUZ = ".puz";
     public static final String FILE_EXT_FORKYZ = ".forkyz";
+    public static final String FILE_EXT_IPUZ = ".ipuz";
 
     // used for saving meta cache to DB since we currently save puzzles
     // on the main thread (can be removed if/when a better save solution
@@ -82,11 +86,11 @@ public abstract class FileHandler {
         throws IOException;
 
     public Uri getUri(PuzHandle puzHandle) {
-        return getUri(puzHandle.getPuzFileHandle());
+        return getUri(puzHandle.getMainFileHandle());
     }
 
     public String getName(PuzHandle puzHandle) {
-        return getName(puzHandle.getPuzFileHandle());
+        return getName(puzHandle.getMainFileHandle());
     }
 
     public boolean exists(PuzMetaFile pm) {
@@ -94,13 +98,29 @@ public abstract class FileHandler {
     }
 
     public boolean exists(PuzHandle ph) {
-        FileHandle metaHandle = ph.getMetaFileHandle();
-        if (metaHandle != null) {
-            return exists(ph.getPuzFileHandle())
-                && exists(ph.getMetaFileHandle());
-        } else {
-            return exists(ph.getPuzFileHandle());
-        }
+
+        if (!exists(ph.getMainFileHandle()))
+            return false;
+
+        boolean exists = true;
+
+        exists &= ph.accept(new PuzHandle.Visitor<Boolean>() {
+            @Override
+            public Boolean visit(PuzHandle.Puz puzHandle) {
+                FileHandle metaHandle = puzHandle.getMetaFileHandle();
+                boolean exists = true;
+                if (metaHandle != null) {
+                    exists = exists(metaHandle);
+                }
+                return exists;
+            }
+            @Override
+            public Boolean visit(PuzHandle.IPuz ipuzHandle) {
+                return true;
+            }
+        });
+
+        return exists;
     }
 
     public synchronized void delete(PuzMetaFile pm) {
@@ -108,10 +128,22 @@ public abstract class FileHandler {
     }
 
     public synchronized void delete(PuzHandle ph) {
-        delete(ph.getPuzFileHandle());
-        FileHandle metaHandle = ph.getMetaFileHandle();
-        if (metaHandle != null)
-            delete(metaHandle);
+        delete(ph.getMainFileHandle());
+
+        ph.accept(new PuzHandle.Visitor<Void>() {
+            @Override
+            public Void visit(PuzHandle.Puz puzHandle) {
+                FileHandle metaHandle = puzHandle.getMetaFileHandle();
+                if (metaHandle != null)
+                    delete(metaHandle);
+                return null;
+            }
+            @Override
+            public Void visit(PuzHandle.IPuz ipuzHandle) {
+                return null;
+            }
+        });
+
         metaCache.deleteRecord(ph);
     }
 
@@ -125,10 +157,22 @@ public abstract class FileHandler {
         PuzHandle ph, DirHandle destDirHandle
     ) {
         DirHandle srcDirHandle = ph.getDirHandle();
-        moveTo(ph.getPuzFileHandle(), srcDirHandle, destDirHandle);
-        FileHandle metaHandle = ph.getMetaFileHandle();
-        if (metaHandle != null)
-            moveTo(metaHandle, srcDirHandle, destDirHandle);
+        moveTo(ph.getMainFileHandle(), srcDirHandle, destDirHandle);
+
+        ph.accept(new PuzHandle.Visitor<Void>() {
+            @Override
+            public Void visit(PuzHandle.Puz puzHandle) {
+                FileHandle metaHandle = puzHandle.getMetaFileHandle();
+                if (metaHandle != null)
+                    moveTo(metaHandle, srcDirHandle, destDirHandle);
+                return null;
+            }
+            @Override
+            public Void visit(PuzHandle.IPuz ipuzHandle) {
+                return null;
+            }
+        });
+
         // TODO: can we move record instead? What is new Uri?
         metaCache.deleteRecord(ph);
     }
@@ -136,63 +180,20 @@ public abstract class FileHandler {
     /**
      * Get puz files in directory, will create meta files when missing
      */
-    public List<PuzMetaFile> getPuzFiles(DirHandle dirHandle) {
-        long start = System.currentTimeMillis();
+    public List<PuzMetaFile> getPuzMetas(DirHandle dirHandle) {
+        ArrayList<PuzMetaFile> metas = new ArrayList<>();
 
-        ArrayList<PuzMetaFile> files = new ArrayList<>();
-
-        // Load files into data structures to avoid repeated interaction
-        // with filesystem (which is good for content resolver)
-        Set<FileHandle> puzFiles = new HashSet<>();
-        Map<String, FileHandle> metaFiles = new HashMap<>();
-
-        for (FileHandle f : listFiles(dirHandle)) {
-            String fileName = getName(f);
-            if (fileName.endsWith(FILE_EXT_PUZ)) {
-                puzFiles.add(f);
-            } else if (fileName.endsWith(FILE_EXT_FORKYZ)) {
-                metaFiles.put(fileName, f);
-            } else {
-                // ignore
-            }
-        }
+        Iterable<FileHandle> rawFileList = listFiles(dirHandle);
 
         Map<Uri, MetaCache.MetaRecord> cachedMetas
             = metaCache.getDirCache(dirHandle);
 
-        for (FileHandle puzFile : puzFiles) {
-            String metaName = getMetaFileName(puzFile);
-            FileHandle metaFile = null;
+        loadMetasFromPuzFiles(dirHandle, rawFileList, cachedMetas, metas);
+        loadMetasFromIPuzFiles(dirHandle, rawFileList, cachedMetas, metas);
 
-            if (metaFiles.containsKey(metaName)) {
-                metaFile = metaFiles.get(metaName);
-            }
+        metaCache.cleanupCache(dirHandle, metas);
 
-            PuzHandle ph = new PuzHandle(dirHandle, puzFile, metaFile);
-
-            Uri puzFileUri = getUri(puzFile);
-            MetaCache.MetaRecord metaRecord = cachedMetas.get(puzFileUri);
-
-            PuzMetaFile pm = null;
-            if (metaRecord != null) {
-                pm = new PuzMetaFile(ph, metaRecord);
-            } else {
-                try {
-                    pm = loadPuzMetaFile(ph);
-                } catch (IOException e) {
-                    LOGGER.warning("Could not load puz meta for " + ph +": " + e);
-                    pm = new PuzMetaFile(ph, null);
-                }
-            }
-
-            files.add(pm);
-        }
-
-        metaCache.cleanupCache(dirHandle, files);
-
-        long end = System.currentTimeMillis();
-
-        return files;
+        return metas;
     }
 
     /**
@@ -249,49 +250,21 @@ public abstract class FileHandler {
      * time.
      */
     public synchronized Puzzle load(PuzHandle ph) throws IOException {
-        FileHandle metaFile = ph.getMetaFileHandle();
+        Puzzle puz = ph.accept(new PuzHandle.VisitorIO<Puzzle>() {
+            @Override
+            public Puzzle visit(PuzHandle.Puz puzHandle) throws IOException {
+                return load(puzHandle);
+            }
+            @Override
+            public Puzzle visit(PuzHandle.IPuz ipuzHandle) throws IOException {
+                return load(ipuzHandle);
+            }
+        });
 
-        if (metaFile == null)
-            return load(ph.getPuzFileHandle());
-
-        Puzzle puz = null;
-
-        try (
-            DataInputStream pis
-                = new DataInputStream(
-                    getBufferedInputStream(ph.getPuzFileHandle())
-                );
-            DataInputStream mis
-                = new DataInputStream(
-                    getBufferedInputStream(ph.getMetaFileHandle())
-                )
-        ) {
-            puz = IO.load(pis, mis);
-        }
-
-        // puz will only be null if there was an exception thrown, but
-        // check anyway
         if (puz != null)
             metaCache.addRecord(ph, puz);
 
         return puz;
-    }
-
-    /**
-     * Loads without any meta data
-     *
-     * Synchronized to avoid reading/writing from the same file at the same
-     * time.
-     */
-    public synchronized Puzzle load(FileHandle fileHandle) throws IOException {
-        // don't update meta cache here as we don't know the dir handle
-        // or really have any meta to cache
-        try (
-            DataInputStream fis
-                = new DataInputStream(getBufferedInputStream(fileHandle))
-        ) {
-            return IO.loadNative(fis);
-        }
     }
 
     public synchronized void save(Puzzle puz, PuzMetaFile puzMeta)
@@ -307,45 +280,25 @@ public abstract class FileHandler {
      * Synchronized to avoid reading/writing from the same file at the same
      * time.
      */
-    public synchronized void save(Puzzle puz, PuzHandle puzHandle)
+    public synchronized void save(Puzzle puz, PuzHandle ph)
             throws IOException {
-        FileHandle puzFile = puzHandle.getPuzFileHandle();
-        FileHandle metaFile = puzHandle.getMetaFileHandle();
-        DirHandle puzDir = puzHandle.getDirHandle();
 
-        boolean success = false;
-        boolean metaCreated = false;
-
-        if (metaFile == null) {
-            String metaName = getMetaFileName(puzFile);
-            metaFile = createFileHandle(
-                puzHandle.getDirHandle(), metaName, MIME_TYPE_META
-            );
-            if (metaFile == null)
-                throw new IOException("Could not create meta file");
-            metaCreated = true;
-        }
-
-        try (
-            DataOutputStream puzzle
-                = new DataOutputStream(getBufferedOutputStream(puzFile));
-            DataOutputStream meta
-                = new DataOutputStream(getBufferedOutputStream(metaFile));
-        ) {
-            IO.save(puz, puzzle, meta);
-            success = true;
-        } finally {
-            if (!success && metaCreated)
-                delete(metaFile);
-            else
-                puzHandle.setMetaFileHandle(metaFile);
-        }
+        boolean success = ph.accept(new PuzHandle.VisitorIO<Boolean>() {
+            @Override
+            public Boolean visit(PuzHandle.Puz puzHandle) throws IOException {
+                return save(puz, puzHandle);
+            }
+            @Override
+            public Boolean visit(PuzHandle.IPuz ipuzHandle) throws IOException {
+                return save(puz, ipuzHandle);
+            }
+        });
 
         // Cannot be done on main thread (and you save puzzles on
         // the main thread).
         if (success) {
             executorService.execute(() -> {
-                metaCache.addRecord(puzHandle, puz);
+                metaCache.addRecord(ph, puz);
             });
         }
     }
@@ -368,14 +321,14 @@ public abstract class FileHandler {
         DirHandle dirHandle = getCrosswordsDirectory();
 
         FileHandle mainFile = createFileHandle(
-            dirHandle, fileNameBody + FILE_EXT_PUZ, MIME_TYPE_PUZ
+            dirHandle, fileNameBody + FILE_EXT_IPUZ, MIME_TYPE_IPUZ
         );
 
         if (mainFile == null)
             return false;
 
         try {
-            save(puz, new PuzHandle(dirHandle, mainFile, null));
+            save(puz, new PuzHandle.IPuz(dirHandle, mainFile));
             return true;
         } catch (Exception e) {
             delete(mainFile);
@@ -463,6 +416,185 @@ public abstract class FileHandler {
             );
         } else {
             return null;
+        }
+    }
+
+    private synchronized Puzzle load(PuzHandle.Puz ph) throws IOException {
+        FileHandle metaFile = ph.getMetaFileHandle();
+        if (metaFile == null) {
+            try (
+                DataInputStream fis
+                    = new DataInputStream(
+                        getBufferedInputStream(
+                            ph.getMainFileHandle()))
+            ) {
+                return IO.loadNative(fis);
+            }
+        } else {
+            try (
+                DataInputStream pis
+                    = new DataInputStream(
+                        getBufferedInputStream(
+                            ph.getMainFileHandle()));
+                DataInputStream mis
+                    = new DataInputStream(
+                        getBufferedInputStream(
+                            ph.getMetaFileHandle()))
+            ) {
+                return IO.load(pis, mis);
+            }
+        }
+    }
+
+    private synchronized Puzzle load(PuzHandle.IPuz ph) throws IOException {
+        try (
+            InputStream is = getBufferedInputStream(ph.getMainFileHandle())
+        ) {
+            return IPuzIO.readPuzzle(is);
+        }
+    }
+
+    private synchronized boolean save(Puzzle puz, PuzHandle.Puz ph)
+            throws IOException {
+        FileHandle puzFile = ph.getMainFileHandle();
+        FileHandle metaFile = ph.getMetaFileHandle();
+        DirHandle puzDir = ph.getDirHandle();
+
+        boolean metaCreated = false;
+        boolean success = false;
+
+        if (metaFile == null) {
+            String metaName = getMetaFileName(puzFile);
+            metaFile = createFileHandle(
+                ph.getDirHandle(), metaName, MIME_TYPE_META
+            );
+            if (metaFile == null)
+                throw new IOException("Could not create meta file");
+            metaCreated = true;
+        }
+
+        try (
+            DataOutputStream puzzle
+                = new DataOutputStream(getBufferedOutputStream(puzFile));
+            DataOutputStream meta
+                = new DataOutputStream(getBufferedOutputStream(metaFile));
+        ) {
+            IO.save(puz, puzzle, meta);
+            success = true;
+        } finally {
+            if (!success && metaCreated)
+                delete(metaFile);
+            else
+                ph.setMetaFileHandle(metaFile);
+        }
+
+        return success;
+    }
+
+    private synchronized boolean save(Puzzle puz, PuzHandle.IPuz ph)
+            throws IOException {
+        FileHandle ipuzFile = ph.getMainFileHandle();
+        DirHandle puzDir = ph.getDirHandle();
+
+        try (
+            OutputStream os = getBufferedOutputStream(ipuzFile)
+        ) {
+            IPuzIO.writePuzzle(puz, os);
+            return true;
+        }
+    }
+
+    /**
+     * Load .puz/.forkyz file data into the loadedPuzMetas array
+     *
+     * @param dirHandle the directory the files are in
+     * @param files the list of files in the directory
+     * @param cachedMetas cached meta data for the file URIs
+     * @param loadedPuzMetas the list into which to store the metas
+     */
+    private void loadMetasFromPuzFiles(
+        DirHandle dirHandle,
+        Iterable<FileHandle> files,
+        Map<Uri, MetaCache.MetaRecord> cachedMetas,
+        List<PuzMetaFile> loadedPuzMetas
+    ) {
+        // Load files into data structures to avoid repeated interaction
+        // with filesystem (which is good for content resolver)
+        Set<FileHandle> puzFiles = new HashSet<>();
+        Map<String, FileHandle> metaFiles = new HashMap<>();
+
+        for (FileHandle f : files) {
+            String fileName = getName(f);
+            if (fileName.endsWith(FILE_EXT_PUZ)) {
+                puzFiles.add(f);
+            } else if (fileName.endsWith(FILE_EXT_FORKYZ)) {
+                metaFiles.put(fileName, f);
+            } else {
+                // ignore
+            }
+        }
+
+        for (FileHandle puzFile : puzFiles) {
+            String metaName = getMetaFileName(puzFile);
+            FileHandle metaFile = null;
+
+            if (metaFiles.containsKey(metaName)) {
+                metaFile = metaFiles.get(metaName);
+            }
+
+            PuzHandle ph = new PuzHandle.Puz(dirHandle, puzFile, metaFile);
+
+            PuzMetaFile pm = getPuzMetaFile(ph, cachedMetas);
+            if (pm != null)
+                loadedPuzMetas.add(pm);
+        }
+    }
+
+    /**
+     * Load .puz/.forkyz file data into the loadedPuzMetas array
+     *
+     * @param dirHandle the directory the files are in
+     * @param files the list of files in the directory
+     * @param cachedMetas cached meta data for the file URIs
+     * @param loadedPuzMetas the list into which to store the metas
+     */
+    private void loadMetasFromIPuzFiles(
+        DirHandle dirHandle,
+        Iterable<FileHandle> files,
+        Map<Uri, MetaCache.MetaRecord> cachedMetas,
+        List<PuzMetaFile> loadedPuzMetas
+    ) {
+        for (FileHandle f : files) {
+            String fileName = getName(f);
+            if (fileName.endsWith(FILE_EXT_IPUZ)) {
+                PuzHandle ph = new PuzHandle.IPuz(dirHandle, f);
+                PuzMetaFile pm = getPuzMetaFile(ph, cachedMetas);
+                if (pm != null)
+                    loadedPuzMetas.add(pm);
+            }
+        }
+    }
+
+    /**
+     * Get the PuzMetaFile from the handle
+     *
+     * Uses cache if possible, else loads data from file
+     */
+    private PuzMetaFile getPuzMetaFile(
+        PuzHandle ph, Map<Uri, MetaCache.MetaRecord> cachedMetas
+    ) {
+        Uri puzFileUri = getUri(ph);
+        MetaCache.MetaRecord metaRecord = cachedMetas.get(puzFileUri);
+
+        if (metaRecord != null) {
+            return new PuzMetaFile(ph, metaRecord);
+        } else {
+            try {
+                return loadPuzMetaFile(ph);
+            } catch (IOException e) {
+                LOGGER.warning("Could not load puz meta for " + ph +": " + e);
+                return new PuzMetaFile(ph, null);
+            }
         }
     }
 }

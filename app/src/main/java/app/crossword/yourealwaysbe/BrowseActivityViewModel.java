@@ -100,7 +100,7 @@ public class BrowseActivityViewModel extends ViewModel {
                     : fileHandler.getCrosswordsDirectory();
 
             List<PuzMetaFile> puzFiles
-                = fileHandler.getPuzFiles(directory);
+                = fileHandler.getPuzMetas(directory);
 
             // use handler for this so viewArchive changes when
             // puzzleFiles does
@@ -164,7 +164,7 @@ public class BrowseActivityViewModel extends ViewModel {
 
             if (maxAge != null) {
                 List<PuzMetaFile> puzFiles
-                    = fileHandler.getPuzFiles(crosswords);
+                    = fileHandler.getPuzMetas(crosswords);
                 Collections.sort(puzFiles);
                 for (PuzMetaFile pm : puzFiles) {
                     if ((pm.getComplete() == 100)
@@ -180,7 +180,7 @@ public class BrowseActivityViewModel extends ViewModel {
 
             if (archiveMaxAge != null) {
                 List<PuzMetaFile> puzFiles
-                    = fileHandler.getPuzFiles(archive);
+                    = fileHandler.getPuzMetas(archive);
                 Collections.sort(puzFiles);
                 for (PuzMetaFile pm : puzFiles) {
                     if (pm.getDate().isBefore(archiveMaxAge)) {
@@ -288,7 +288,7 @@ public class BrowseActivityViewModel extends ViewModel {
             boolean changed = false;
 
             FileHandle refreshedPuzFileHandle
-                = refreshHandle.getPuzFileHandle();
+                = refreshHandle.getMainFileHandle();
 
             try {
                 PuzMetaFile refreshedMeta
@@ -304,7 +304,7 @@ public class BrowseActivityViewModel extends ViewModel {
                     for (PuzMetaFile pm : pmList) {
                         index += 1;
                         FileHandle pmPuzFileHandle
-                            = pm.getPuzHandle().getPuzFileHandle();
+                            = pm.getPuzHandle().getMainFileHandle();
                         if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
                             pmList.set(index, refreshedMeta);
                             changed = true;

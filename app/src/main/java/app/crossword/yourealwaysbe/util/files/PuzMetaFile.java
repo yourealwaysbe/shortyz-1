@@ -24,10 +24,10 @@ public class PuzMetaFile
             if (dateCmp != 0)
                 return dateCmp;
             return getHandler().getName(
-                this.handle.getPuzFileHandle()
+                this.handle.getMainFileHandle()
             ).compareTo(
                 getHandler().getName(
-                    other.handle.getPuzFileHandle()
+                    other.handle.getMainFileHandle()
                 )
             );
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class PuzMetaFile
 
     public LocalDate getDate() {
         if (meta == null) {
-            return getHandler().getModifiedDate(handle.getPuzFileHandle());
+            return getHandler().getModifiedDate(handle.getMainFileHandle());
         } else {
             return meta.getDate();
         }
@@ -73,7 +73,7 @@ public class PuzMetaFile
         if ((meta == null)
                 || (meta.getSource() == null)
                 || (meta.getSource().length() == 0)) {
-            String fileName = getHandler().getName(handle.getPuzFileHandle());
+            String fileName = getHandler().getName(handle.getMainFileHandle());
             return fileName.substring(0, fileName.lastIndexOf("."));
         } else {
             return meta.getSource();
@@ -82,7 +82,7 @@ public class PuzMetaFile
 
     @Override
     public String toString(){
-        return getHandler().getUri(handle.getPuzFileHandle()).toString();
+        return getHandler().getUri(handle.getMainFileHandle()).toString();
     }
 
     private FileHandler getHandler() {

@@ -175,13 +175,21 @@ public class MetaCache {
      */
     public MetaRecord addRecord(PuzHandle puzHandle, Puzzle puz) {
         CachedMeta cm = new CachedMeta();
-        cm.mainFileUri = fileHandler.getUri(puzHandle.getPuzFileHandle());
+        cm.mainFileUri = fileHandler.getUri(puzHandle.getMainFileHandle());
 
-        FileHandle metaHandle = puzHandle.getMetaFileHandle();
-        if (metaHandle == null)
-            cm.metaFileUri = null;
-        else
-            cm.metaFileUri = fileHandler.getUri(puzHandle.getMetaFileHandle());
+        FileHandle metaHandle
+            = puzHandle.accept(new PuzHandle.Visitor<FileHandle>() {
+                public FileHandle visit(PuzHandle.Puz puzPH) {
+                    return puzPH.getMetaFileHandle();
+                }
+                public FileHandle visit(PuzHandle.IPuz ipuzPH) {
+                    return null;
+                }
+            });
+
+        cm.metaFileUri = (metaHandle == null)
+            ? null
+            : fileHandler.getUri(metaHandle);
 
         cm.directoryUri = fileHandler.getUri(puzHandle.getDirHandle());
         cm.isUpdatable = puz.isUpdatable();
@@ -200,7 +208,7 @@ public class MetaCache {
      * Remove a record from the cache
      */
     public void deleteRecord(PuzHandle puzHandle) {
-        getDao().delete(fileHandler.getUri(puzHandle.getPuzFileHandle()));
+        getDao().delete(fileHandler.getUri(puzHandle.getMainFileHandle()));
     }
 
     /**
@@ -218,7 +226,7 @@ public class MetaCache {
             public Uri get(int i) {
                 PuzMetaFile pm = puzMetaFiles.get(i);
                 return fileHandler.getUri(
-                    pm.getPuzHandle().getPuzFileHandle()
+                    pm.getPuzHandle().getMainFileHandle()
                 );
             }
         });
