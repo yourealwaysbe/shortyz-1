@@ -69,6 +69,26 @@ public class IPuzIOTest extends TestCase {
         );
     }
 
+    /**
+     * Test HTML in various parts of puzzle
+     */
+    public static InputStream getTestPuzzleHTMLInputStream() {
+        return JPZIOTest.class.getResourceAsStream("/html.ipuz");
+    }
+
+    public static void assertIsTestPuzzleHTML(Puzzle puz) throws Exception {
+        assertEquals(puz.getTitle(), "Test & puzzle\nFor testing");
+        assertEquals(puz.getAuthor(), "Test author\nForTest");
+        assertEquals(puz.getSource(), "Test \u00A0\u00A0publisher\ntesttest");
+
+        ClueList acrossClues = puz.getClues(true);
+
+        assertEquals(
+            acrossClues.getClue(1).getHint(),
+            "Test clue 1\nA clue!"
+        );
+    }
+
     public void testIPuz() throws Exception {
         try (InputStream is = getTestPuzzle1InputStream()) {
             Puzzle puz = IPuzIO.readPuzzle(is);
@@ -112,7 +132,7 @@ public class IPuzIOTest extends TestCase {
             );
             puz.setNote(
                 2,
-                new Note("test5", "test6", "test7", "test8"),
+                new Note("test5", "test6\nnew line", "test7", "test8"),
                 false
             );
 
@@ -141,6 +161,7 @@ public class IPuzIOTest extends TestCase {
             assertEquals(puz.getHistory().get(0), new ClueNumDir(1, false));
             assertEquals(puz.getHistory().get(1), new ClueNumDir(3, true));
             assertEquals(puz.getNote(1, true).getText(), "test2");
+            assertEquals(puz.getNote(2, false).getText(), "test6\nnew line");
             assertEquals(puz.getNote(2, false).getAnagramSource(), "test7");
             assertEquals(boxes2[0][1].getResponse(), 'X');
             assertEquals(boxes2[1][2].getResponse(), 'Y');
@@ -152,5 +173,28 @@ public class IPuzIOTest extends TestCase {
         }
     }
 
+    public void testIPuzHTML() throws Exception {
+        try (InputStream is = getTestPuzzleHTMLInputStream()) {
+            Puzzle puz = IPuzIO.readPuzzle(is);
+            assertIsTestPuzzleHTML(puz);
+        }
+    }
+
+    public void testIPuzWriteReadHTML() throws Exception {
+        try (InputStream is = getTestPuzzleHTMLInputStream()) {
+            Puzzle puz = IPuzIO.readPuzzle(is);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IPuzIO.writePuzzle(puz, baos);
+            baos.close();
+
+            ByteArrayInputStream bais
+                = new ByteArrayInputStream(baos.toByteArray());
+
+            Puzzle puz2 = IPuzIO.readPuzzle(bais);
+
+            assertEquals(puz, puz2);
+        }
+    }
 }
 

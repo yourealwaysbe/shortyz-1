@@ -15,10 +15,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
@@ -166,6 +168,13 @@ public class IPuzIO implements PuzzleParser {
     private static final DateTimeFormatter DATE_FORMATTER
         = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.US);
 
+    private static final String NULL_CLUE = "-";
+    // IPuz tags not to strip from HTML (preserve line breaks)
+    private static final Whitelist JSOUP_CLEAN_WHITELIST = new Whitelist();
+    static {
+        JSOUP_CLEAN_WHITELIST.addTags("br");
+    }
+
     /**
      * An unfancy exception indicating error while parsing
      */
@@ -279,7 +288,33 @@ public class IPuzIO implements PuzzleParser {
         if (value == null || value.length() == 0)
             return null;
 
-        return Jsoup.parse(value).text();
+        return unHtmlString(value);
+    }
+
+    /**
+     * Remove IPuz HTML from a string
+     */
+    private static String unHtmlString(String value) {
+        if (value == null)
+            return null;
+
+        // this is a bit hacky: any break tag is normalised to "\r?\n<br>"
+        // by the clean method, we remove the \r\ns and turn <br> into \n
+        return StringEscapeUtils.unescapeHtml4(
+            Jsoup.clean(value, JSOUP_CLEAN_WHITELIST)
+                .replace("\r", "")
+                .replace("\n", "")
+                .replace("<br>", "\n")
+        );
+    }
+
+    /**
+     * Return IPuz HTML encoding of string
+     */
+    private static String htmlString(String value) {
+        return StringEscapeUtils.escapeHtml4(value)
+            .replace("\r", "")
+            .replace("\n", "<br/>");
     }
 
     /**
@@ -609,7 +644,7 @@ public class IPuzIO implements PuzzleParser {
                 );
             }
             Object clueNumObj = clueArray.get(0);
-            String hint = clueArray.getString(1);
+            String hint = unHtmlString(clueArray.getString(1));
 
             return buildClue(clueNumObj, across, hint, null);
         } else if (clueObj instanceof JSONObject) {
@@ -631,7 +666,7 @@ public class IPuzIO implements PuzzleParser {
             // build hint, bake in additional info
             StringBuilder hint = new StringBuilder();
 
-            hint.append(clueJson.getString(FIELD_CLUE_HINT));
+            hint.append(getHtmlOptString(clueJson, FIELD_CLUE_HINT));
 
             JSONArray conts = clueJson.optJSONArray(FIELD_CLUE_CONTINUED);
             if (conts != null && conts.length() > 0) {
@@ -942,7 +977,7 @@ public class IPuzIO implements PuzzleParser {
                 String scratch
                     = noteJson.optString(FIELD_CLUE_NOTE_SCRATCH, null);
                 String text
-                    = noteJson.optString(FIELD_CLUE_NOTE_TEXT, null);
+                    = getHtmlOptString(noteJson, FIELD_CLUE_NOTE_TEXT);
                 String anagramSrc
                     = noteJson.optString(FIELD_CLUE_NOTE_ANAGRAM_SRC, null);
                 String anagramSol
@@ -1013,12 +1048,12 @@ public class IPuzIO implements PuzzleParser {
      * Add basic puzzle metadata (title, author, etc).
      */
     private static void addMetaData(Puzzle puz, JSONObject puzJson) {
-        safePut(puzJson, FIELD_TITLE, puz.getTitle());
-        safePut(puzJson, FIELD_AUTHOR, puz.getAuthor());
+        safePutHTML(puzJson, FIELD_TITLE, puz.getTitle());
+        safePutHTML(puzJson, FIELD_AUTHOR, puz.getAuthor());
         safePut(puzJson, FIELD_COPYRIGHT, puz.getCopyright());
-        safePut(puzJson, FIELD_NOTES, puz.getNotes());
+        safePutHTML(puzJson, FIELD_NOTES, puz.getNotes());
         safePut(puzJson, FIELD_URL, puz.getSourceUrl());
-        safePut(puzJson, FIELD_PUBLISHER, puz.getSource());
+        safePutHTML(puzJson, FIELD_PUBLISHER, puz.getSource());
 
         LocalDate date = puz.getDate();
         if (date != null)
@@ -1174,7 +1209,8 @@ public class IPuzIO implements PuzzleParser {
         for (Clue clue : clues) {
             JSONArray clueJson = new JSONArray();
             clueJson.put(clue.getNumber());
-            clueJson.put(clue.getHint());
+            String hint = clue.getHint();
+            clueJson.put(hint == null ? NULL_CLUE : htmlString(hint));
 
             cluesJson.put(clueJson);
         }
@@ -1224,7 +1260,7 @@ public class IPuzIO implements PuzzleParser {
                     FIELD_CLUE_NOTE_SCRATCH,
                     note.getCompressedScratch()
                 );
-                safePut(
+                safePutHTML(
                     noteJson,
                     FIELD_CLUE_NOTE_TEXT,
                     note.getText()
@@ -1350,6 +1386,15 @@ public class IPuzIO implements PuzzleParser {
     private static void safePut(JSONObject json, String field, Object value) {
         if (value != null)
             json.put(field, value);
+    }
+
+    /**
+     * Puts the String with HTML encoding if it is not null
+     */
+    private static void safePutHTML(JSONObject json, String field, String value) {
+        if (value != null) {
+            json.put(field, htmlString(value));
+        }
     }
 
     /**
