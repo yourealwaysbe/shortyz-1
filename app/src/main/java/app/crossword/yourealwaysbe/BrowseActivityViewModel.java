@@ -33,7 +33,6 @@ import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.SingleLiveEvent;
 import app.crossword.yourealwaysbe.util.files.DirHandle;
-import app.crossword.yourealwaysbe.util.files.FileHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.PuzMetaFile;
@@ -55,7 +54,7 @@ public class BrowseActivityViewModel extends ViewModel {
 
     private boolean isViewArchive = false;
 
-    private MutableLiveData<List<PuzMetaFile>> puzzleFiles
+    private MutableLiveData<List<MutableLiveData<PuzMetaFile>>> puzzleFiles
         = new MutableLiveData<>();
     // busy with something that isn't downloading
     private MutableLiveData<Boolean> isUIBusy
@@ -70,7 +69,19 @@ public class BrowseActivityViewModel extends ViewModel {
         );
     }
 
-    public MutableLiveData<List<PuzMetaFile>> getPuzzleFiles() {
+    /**
+     * Get list of puzzle files in currently viewed directory
+     *
+     * List of mutable live data. Each live data is for one puzzle --
+     * the base puzzle may change, but it might get updated with new
+     * meta data (e.g. new % completed). If it gets set to null, it
+     * means the puzzle was removed from the puzzle list.
+     *
+     * The puzzle list might have items added to it, a new value will be
+     * posted, containing the same list with the new item at the end.
+     */
+    public MutableLiveData<List<MutableLiveData<PuzMetaFile>>>
+    getPuzzleFiles() {
         return puzzleFiles;
     }
 
@@ -94,13 +105,16 @@ public class BrowseActivityViewModel extends ViewModel {
         threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
-            DirHandle directory
-                = archive
-                    ? fileHandler.getArchiveDirectory()
-                    : fileHandler.getCrosswordsDirectory();
+            DirHandle directory = archive
+                ? fileHandler.getArchiveDirectory()
+                : fileHandler.getCrosswordsDirectory();
 
-            List<PuzMetaFile> puzFiles
-                = fileHandler.getPuzMetas(directory);
+            List<MutableLiveData<PuzMetaFile>> puzFiles
+                = new ArrayList<>();
+
+            for (PuzMetaFile pm : fileHandler.getPuzMetas(directory)) {
+                puzFiles.add(new MutableLiveData<>(pm));
+            }
 
             // use handler for this so viewArchive changes when
             // puzzleFiles does
@@ -119,10 +133,14 @@ public class BrowseActivityViewModel extends ViewModel {
         threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
 
-            for (PuzMetaFile puzMeta : puzMetas)
+            DirHandle viewedDir = getViewedDirectory();
+
+            for (PuzMetaFile puzMeta : puzMetas) {
                 fileHandler.delete(puzMeta);
 
-            startLoadFiles();
+                if (puzMeta.isInDirectory(viewedDir))
+                    removeFromPuzzleList(puzMeta);
+            }
         });
     }
 
@@ -134,12 +152,20 @@ public class BrowseActivityViewModel extends ViewModel {
         Collection<PuzMetaFile> puzMetas, DirHandle destDir
     ) {
         threadWithUILock(() -> {
+            DirHandle directory = getViewedDirectory();
             FileHandler fileHandler = getFileHandler();
 
-            for (PuzMetaFile puzMeta : puzMetas)
+            for (PuzMetaFile puzMeta : puzMetas) {
+                boolean addToList = destDir.equals(directory);
+                boolean removeFromList = puzMeta.isInDirectory(directory);
+
                 fileHandler.moveTo(puzMeta, destDir);
 
-            startLoadFiles();
+                if (addToList && !removeFromList)
+                    addPuzzleToList(puzMeta);
+                else if (removeFromList && !addToList)
+                    removeFromPuzzleList(puzMeta);
+            }
         });
     }
 
@@ -285,10 +311,6 @@ public class BrowseActivityViewModel extends ViewModel {
     public void refreshPuzzleMeta(PuzHandle refreshHandle) {
         threadWithUILock(() -> {
             FileHandler fileHandler = getFileHandler();
-            boolean changed = false;
-
-            FileHandle refreshedPuzFileHandle
-                = refreshHandle.getMainFileHandle();
 
             try {
                 PuzMetaFile refreshedMeta
@@ -298,25 +320,16 @@ public class BrowseActivityViewModel extends ViewModel {
                     return;
 
                 if (refreshedMeta != null) {
-                    List<PuzMetaFile> pmList = puzzleFiles.getValue();
+                    List<MutableLiveData<PuzMetaFile>> pmList
+                        = puzzleFiles.getValue();
 
                     int index = -1;
-                    for (PuzMetaFile pm : pmList) {
+                    for (MutableLiveData<PuzMetaFile> pm : pmList) {
                         index += 1;
-                        FileHandle pmPuzFileHandle
-                            = pm.getPuzHandle().getMainFileHandle();
-                        if (pmPuzFileHandle.equals(refreshedPuzFileHandle)) {
-                            pmList.set(index, refreshedMeta);
-                            changed = true;
+                        if (pm.getValue().isSameMainFile(refreshHandle)) {
+                            pm.postValue(refreshedMeta);
                         }
                     }
-
-                    final boolean updateArray = changed;
-
-                    handler.post(() -> {
-                        if (updateArray)
-                            puzzleFiles.setValue(pmList);
-                    });
                 }
             } catch (IOException e) {
                 LOGGER.warning("Could not refresh puz meta " + e);
@@ -335,14 +348,25 @@ public class BrowseActivityViewModel extends ViewModel {
             ForkyzApplication application = ForkyzApplication.getInstance();
             ContentResolver resolver = application.getContentResolver();
 
-            boolean success = PuzzleImporter.importUri(resolver, uri);
+            final PuzHandle ph = PuzzleImporter.importUri(resolver, uri);
 
-            if ((success || forceReload) && !getIsViewArchive())
-                startLoadFiles();
+            if (!getIsViewArchive()) {
+                if (forceReload) {
+                    startLoadFiles();
+                } else if (ph != null) {
+                    try {
+                        PuzMetaFile pm = getFileHandler().loadPuzMetaFile(ph);
+                        addPuzzleToList(pm);
+                    } catch (IOException e) {
+                        // fall back to full reload
+                        startLoadFiles();
+                    }
+                }
+            }
 
             handler.post(() -> {
                 String msg = application.getString(
-                    success ? R.string.import_success : R.string.import_failure
+                    ph != null ? R.string.import_success : R.string.import_failure
                 );
                 Toast t = Toast.makeText(application, msg, Toast.LENGTH_SHORT);
                 t.show();
@@ -360,6 +384,16 @@ public class BrowseActivityViewModel extends ViewModel {
 
     private void setIsViewArchive(boolean isViewArchive) {
         this.isViewArchive = isViewArchive;
+    }
+
+    /**
+     * crosswords if not viewing archive, else archive
+     */
+    private DirHandle getViewedDirectory() {
+        FileHandler fileHandler = getFileHandler();
+        return getIsViewArchive()
+            ? fileHandler.getArchiveDirectory()
+            : fileHandler.getCrosswordsDirectory();
     }
 
     @Override
@@ -383,5 +417,41 @@ public class BrowseActivityViewModel extends ViewModel {
                 isUIBusy.postValue(false);
             }
         });
+    }
+
+    /**
+     * Don't add the same file twice!
+     */
+    private void addPuzzleToList(PuzMetaFile puzMeta) {
+        puzzleFiles.getValue().add(new MutableLiveData<>(puzMeta));
+        puzzleFiles.postValue(puzzleFiles.getValue());
+    }
+
+    /**
+     * Assumes files only appear once in list
+     */
+    private void removeFromPuzzleList(PuzMetaFile delPuzMeta) {
+        List<MutableLiveData<PuzMetaFile>> puzList = puzzleFiles.getValue();
+
+        if (puzList == null)
+            return;
+
+        int index = 0;
+        int delIndex = -1;
+
+        while (index < puzList.size() && delIndex < 0) {
+            PuzMetaFile pm = puzList.get(index).getValue();
+
+            if (pm.isSameMainFile(delPuzMeta))
+                delIndex = index;
+
+            index += 1;
+        }
+
+        if (delIndex >= 0) {
+            puzList
+                .remove(delIndex)
+                .postValue(null);
+        }
     }
 }

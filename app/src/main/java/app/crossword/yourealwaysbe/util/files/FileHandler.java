@@ -157,7 +157,10 @@ public abstract class FileHandler {
         PuzHandle ph, DirHandle destDirHandle
     ) {
         DirHandle srcDirHandle = ph.getDirHandle();
+
         moveTo(ph.getMainFileHandle(), srcDirHandle, destDirHandle);
+
+        ph.setDirectory(destDirHandle);
 
         ph.accept(new PuzHandle.Visitor<Void>() {
             @Override
@@ -313,9 +316,9 @@ public abstract class FileHandler {
      * @param dirHandle the directory to save under
      * @param fileNameBody the name to give the file without file
      * extension
-     * @return false if the save failed
+     * @return new puzzle handle if saved success
      */
-    public synchronized boolean saveNewPuzzle(
+    public synchronized PuzHandle saveNewPuzzle(
         Puzzle puz, String fileNameBody
     ) throws IOException {
         DirHandle dirHandle = getCrosswordsDirectory();
@@ -325,11 +328,12 @@ public abstract class FileHandler {
         );
 
         if (mainFile == null)
-            return false;
+            return null;
 
         try {
-            save(puz, new PuzHandle.IPuz(dirHandle, mainFile));
-            return true;
+            PuzHandle ph = new PuzHandle.IPuz(dirHandle, mainFile);
+            save(puz, ph);
+            return ph;
         } catch (Exception e) {
             delete(mainFile);
             throw e;

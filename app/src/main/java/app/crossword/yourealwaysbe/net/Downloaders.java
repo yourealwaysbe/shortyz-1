@@ -210,9 +210,8 @@ public class Downloaders {
             if (puz == null)
                 return false;
 
-            boolean saved = fileHandler.saveNewPuzzle(
-                puz, d.createFileName(date)
-            );
+            boolean saved =
+                fileHandler.saveNewPuzzle(puz, d.createFileName(date)) != null;
 
             if (saved) {
                 if (!this.supressMessages) {

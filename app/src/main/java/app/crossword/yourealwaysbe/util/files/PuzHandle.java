@@ -17,8 +17,32 @@ public abstract class PuzHandle {
     public DirHandle getDirHandle() { return dirHandle; }
     public FileHandle getMainFileHandle() { return mainHandle; }
 
+    /**
+     * True if the objects refer to the same underlying puzzle file
+     */
+    public boolean isSameMainFile(PuzHandle other) {
+        return getMainFileHandle().equals(other.getMainFileHandle());
+    }
+
+    /**
+     * True if the puzzle is in the given directory
+     */
+    public boolean isInDirectory(DirHandle dirHandle) {
+        return dirHandle.equals(this.dirHandle);
+    }
+
     public abstract <Ret> Ret accept(Visitor<Ret> v);
     public abstract <Ret> Ret accept(VisitorIO<Ret> v) throws IOException;
+
+    /**
+     * To update directory if puzzle moves
+     *
+     * Deliberately package level only
+     */
+    void setDirectory(DirHandle dirHandle) {
+        this.dirHandle = dirHandle;
+    }
+
 
     static class Puz extends PuzHandle {
         private FileHandle metaHandle;

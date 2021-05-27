@@ -35,6 +35,24 @@ public class PuzMetaFile
         }
     }
 
+    /**
+     * True if the objects refer to the same underlying puzzle file
+     */
+    public boolean isSameMainFile(PuzHandle other) {
+        return getPuzHandle().isSameMainFile(other);
+    }
+
+    /**
+     * True if the objects refer to the same underlying puzzle file
+     */
+    public boolean isSameMainFile(PuzMetaFile other) {
+        return isSameMainFile(other.getPuzHandle());
+    }
+
+    public boolean isInDirectory(DirHandle dirHandle) {
+        return getPuzHandle().isInDirectory(dirHandle);
+    }
+
     public boolean isUpdatable() {
         return (meta == null) ? false : meta.isUpdatable();
     }
