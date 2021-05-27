@@ -1,10 +1,11 @@
 
 package app.crossword.yourealwaysbe.io;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -16,11 +17,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
+
+import app.crossword.yourealwaysbe.org.json.JSONArray;
+import app.crossword.yourealwaysbe.org.json.JSONException;
+import app.crossword.yourealwaysbe.org.json.JSONObject;
+import app.crossword.yourealwaysbe.org.json.JSONTokener;
+import app.crossword.yourealwaysbe.org.json.JSONWriter;
 
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
@@ -99,7 +103,8 @@ public class IPuzIO implements PuzzleParser {
     private static final String FIELD_EMPTY = "empty";
 
     private static final String DEFAULT_BLOCK = "#";
-    private static final String DEFAULT_EMPTY = "0";
+    private static final String DEFAULT_EMPTY_READ = "0";
+    private static final int DEFAULT_EMPTY_WRITE = 0;
 
     private static final String WRITE_VERSION = "http://ipuz.org/v2";
     private static final String WRITE_KIND = "http://ipuz.org/crossword#1";
@@ -188,17 +193,9 @@ public class IPuzIO implements PuzzleParser {
     }
 
     public static Puzzle readPuzzle(InputStream is) throws IOException {
-        VisibleByteArrayOutputStream baos = new VisibleByteArrayOutputStream();
-        IO.copyStream(is, baos);
-
-        String charset = getCharsetName(baos);
-
-        if (charset == null)
-            return null;
-
-        JSONObject json = new JSONObject(baos.toString(charset));
-
         try {
+            JSONObject json = new JSONObject(new JSONTokener(is));
+
             checkIPuzVersion(json);
             checkIPuzKind(json);
 
@@ -293,6 +290,7 @@ public class IPuzIO implements PuzzleParser {
 
     /**
      * Remove IPuz HTML from a string
+     * @return decoded string or null if value was null
      */
     private static String unHtmlString(String value) {
         if (value == null)
@@ -310,8 +308,12 @@ public class IPuzIO implements PuzzleParser {
 
     /**
      * Return IPuz HTML encoding of string
+     * @return encoded string or null if value was null
      */
     private static String htmlString(String value) {
+        if (value == null)
+            return null;
+
         return StringEscapeUtils.escapeHtml4(value)
             .replace("\r", "")
             .replace("\n", "<br/>");
@@ -382,7 +384,7 @@ public class IPuzIO implements PuzzleParser {
     }
 
     private static String getEmptyCellString(JSONObject puzJson) {
-        return puzJson.optString(FIELD_EMPTY, DEFAULT_EMPTY);
+        return puzJson.optString(FIELD_EMPTY, DEFAULT_EMPTY_READ);
     }
 
     /**
@@ -1021,323 +1023,389 @@ public class IPuzIO implements PuzzleParser {
      */
     public static void writePuzzle(Puzzle puz, OutputStream os)
             throws IOException {
-        JSONObject json = new JSONObject();
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(
+                new OutputStreamWriter(os, WRITE_CHARSET)
+            );
 
-        addIPuzHeader(json);
-        addMetaData(puz, json);
-        addBoxes(puz, json);
-        addClues(puz, json);
-        addExtensions(puz, json);
+            FormatableJSONWriter jsonWriter = new FormatableJSONWriter(writer);
 
-        byte[] encoded = WRITE_CHARSET.encode(json.toString()).array();
-        os.write(encoded);
+            jsonWriter.object();
+            jsonWriter.newLine();
+
+            writeIPuzHeader(jsonWriter);
+            writeMetaData(puz, jsonWriter);
+            writeBoxes(puz, jsonWriter);
+            writeClues(puz, jsonWriter);
+            writeExtensions(puz, jsonWriter);
+
+            jsonWriter.endObject();
+            jsonWriter.newLine();
+        } finally {
+            // don't close original output stream, it's the caller's job
+            if (writer != null)
+                writer.flush();
+        };
     }
 
     /**
-     * Add IPuz version and kind
+     * Write IPuz version and kind
      */
-    private static void addIPuzHeader(JSONObject puzJson) {
-        puzJson.put(FIELD_VERSION, WRITE_VERSION);
-
-        JSONArray kinds = new JSONArray();
-        kinds.put(WRITE_KIND);
-        puzJson.put(FIELD_KIND, kinds);
+    private static void writeIPuzHeader(FormatableJSONWriter writer)
+            throws IOException {
+        writer.keyValueNonNull(FIELD_VERSION, WRITE_VERSION)
+            .key(FIELD_KIND)
+            .array()
+            .value(WRITE_KIND)
+            .endArray();
+        writer.newLine();
     }
 
     /**
      * Add basic puzzle metadata (title, author, etc).
      */
-    private static void addMetaData(Puzzle puz, JSONObject puzJson) {
-        safePutHTML(puzJson, FIELD_TITLE, puz.getTitle());
-        safePutHTML(puzJson, FIELD_AUTHOR, puz.getAuthor());
-        safePut(puzJson, FIELD_COPYRIGHT, puz.getCopyright());
-        safePutHTML(puzJson, FIELD_NOTES, puz.getNotes());
-        safePut(puzJson, FIELD_URL, puz.getSourceUrl());
-        safePutHTML(puzJson, FIELD_PUBLISHER, puz.getSource());
+    private static void writeMetaData(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer
+            .keyValueNonNull(FIELD_TITLE, htmlString(puz.getTitle()))
+            .keyValueNonNull(FIELD_AUTHOR, htmlString(puz.getAuthor()))
+            .keyValueNonNull(FIELD_COPYRIGHT, puz.getCopyright())
+            .keyValueNonNull(FIELD_NOTES, htmlString(puz.getNotes()))
+            .keyValueNonNull(FIELD_URL, puz.getSourceUrl())
+            .keyValueNonNull(FIELD_PUBLISHER, htmlString(puz.getSource()));
 
         LocalDate date = puz.getDate();
         if (date != null)
-            puzJson.put(FIELD_DATE, DATE_FORMATTER.format(date));
+            writer.keyValueNonNull(FIELD_DATE, DATE_FORMATTER.format(date));
     }
 
     /**
      * Read all IPuz supported box information to json
      */
-    private static void addBoxes(Puzzle puz, JSONObject puzJson) {
-        addDimensions(puz, puzJson);
-        addPuzzleCells(puz, puzJson);
-        addSaved(puz, puzJson);
-        addSolution(puz, puzJson);
+    private static void writeBoxes(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writeDimensions(puz, writer);
+        writePuzzleCells(puz, writer);
+        writeSaved(puz, writer);
+        writeSolution(puz, writer);
     }
 
     /**
      * Add puzzle dimensions to json
      */
-    private static void addDimensions(Puzzle puz, JSONObject puzJson) {
-        JSONObject dimensions = new JSONObject();
-        dimensions.put(FIELD_WIDTH, puz.getWidth());
-        dimensions.put(FIELD_HEIGHT, puz.getHeight());
-        puzJson.put(FIELD_DIMENSIONS, dimensions);
+    private static void writeDimensions(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer.key(FIELD_DIMENSIONS)
+            .object()
+                .key(FIELD_WIDTH).value(puz.getWidth())
+                .key(FIELD_HEIGHT).value(puz.getHeight())
+            .endObject();
+        writer.newLine();
     }
 
     /**
      * Add the puzzle field to json
      */
-    private static void addPuzzleCells(Puzzle puz, JSONObject puzJson) {
-        JSONArray cellsJson = new JSONArray();
+    private static void writePuzzleCells(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer.key(FIELD_PUZZLE)
+            .array();
+        writer.newLine();
 
         Box[][] boxes = puz.getBoxes();
 
         for (int row = 0; row < boxes.length; row++) {
-            JSONArray rowJson = new JSONArray();
+            writer.indent(1)
+                .array();
 
             for (int col = 0; col < boxes[row].length; col++) {
                 Box box = boxes[row][col];
 
                 if (box == null) {
-                    rowJson.put(DEFAULT_BLOCK);
+                    writer.value(DEFAULT_BLOCK);
                 } else {
                     int clueNumber = box.getClueNumber();
 
                     if (box.isCircled()) {
-                        JSONObject styleJson = new JSONObject();
-                        styleJson.put(FIELD_SHAPE_BG, SHAPE_BG_CIRCLE);
-
-                        JSONObject cellJson = new JSONObject();
-
-                        cellJson.put(FIELD_STYLE, styleJson);
+                        writer.object()
+                            .key(FIELD_STYLE)
+                            .object()
+                            .key(FIELD_SHAPE_BG).value(SHAPE_BG_CIRCLE)
+                            .endObject();
 
                         if (clueNumber > 0)
-                            cellJson.put(FIELD_CELL, clueNumber);
+                            writer.key(FIELD_CELL).value(clueNumber);
+                        else
+                            writer.key(FIELD_CELL).value(DEFAULT_EMPTY_WRITE);
 
-                        rowJson.put(cellJson);
+                        writer.endObject();
                     } else if (clueNumber > 0) {
-                        rowJson.put(clueNumber);
+                        writer.value(clueNumber);
                     } else {
-                        rowJson.put(DEFAULT_EMPTY);
+                        writer.value(DEFAULT_EMPTY_WRITE);
                     }
                 }
             }
 
-            cellsJson.put(rowJson);
+            writer.endArray();
+            writer.newLine();
         }
 
-        puzJson.put(FIELD_PUZZLE, cellsJson);
+        writer.endArray();
+        writer.newLine();
     }
 
     /**
      * Add the saved field to json
      */
-    private static void addSaved(Puzzle puz, JSONObject puzJson) {
-        JSONArray cellsJson = new JSONArray();
+    private static void writeSaved(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer.key(FIELD_SAVED)
+            .array();
+        writer.newLine();
 
         Box[][] boxes = puz.getBoxes();
 
         for (int row = 0; row < boxes.length; row++) {
-            JSONArray rowJson = new JSONArray();
+            writer.indent(1)
+                .array();
 
             for (int col = 0; col < boxes[row].length; col++) {
                 Box box = boxes[row][col];
 
                 if (box == null)
-                    rowJson.put(DEFAULT_BLOCK);
+                    writer.value(DEFAULT_BLOCK);
                 else if (box.isBlank())
-                    rowJson.put(DEFAULT_EMPTY);
+                    writer.value(DEFAULT_EMPTY_WRITE);
                 else
-                    rowJson.put(String.valueOf(box.getResponse()));
+                    writer.value(String.valueOf(box.getResponse()));
             }
 
-            cellsJson.put(rowJson);
+            writer.endArray();
+            writer.newLine();
         }
 
-        puzJson.put(FIELD_SAVED, cellsJson);
+        writer.endArray();
+        writer.newLine();
     }
 
     /**
      * Add the solution field to json if the puzzle has one
      */
-    private static void addSolution(Puzzle puz, JSONObject puzJson) {
+    private static void writeSolution(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
         if (!puz.hasSolution())
             return;
 
-        JSONArray cellsJson = new JSONArray();
+        writer.key(FIELD_SOLUTION)
+            .array();
+        writer.newLine();
 
         Box[][] boxes = puz.getBoxes();
 
         for (int row = 0; row < boxes.length; row++) {
-            JSONArray rowJson = new JSONArray();
+            writer.indent(1)
+                .array();
 
             for (int col = 0; col < boxes[row].length; col++) {
                 Box box = boxes[row][col];
 
                 if (box == null) {
-                    rowJson.put(DEFAULT_BLOCK);
+                    writer.value(DEFAULT_BLOCK);
                 } else if (box.hasSolution()) {
-                    rowJson.put(String.valueOf(box.getSolution()));
+                    writer.value(String.valueOf(box.getSolution()));
                 } else {
-                    rowJson.put(JSONObject.NULL);
+                    writer.value(JSONObject.NULL);
                 }
             }
 
-            cellsJson.put(rowJson);
+            writer.endArray();
+            writer.newLine();
         }
 
-        puzJson.put(FIELD_SOLUTION, cellsJson);
+        writer.endArray();
+        writer.newLine();
     }
 
     /**
      * Add the clues lists to the json
      */
-    private static void addClues(Puzzle puz, JSONObject puzJson) {
-        JSONObject cluesJson = new JSONObject();
+    private static void writeClues(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer.key(FIELD_CLUES)
+            .object();
+        writer.newLine();
 
-        JSONArray acrossJson = getClueListJsonArray(puz.getClues(true));
-        JSONArray downJson = getClueListJsonArray(puz.getClues(false));
+        writeClueList(FIELD_CLUES_ACROSS, puz.getClues(true), writer);
+        writeClueList(FIELD_CLUES_DOWN, puz.getClues(false), writer);
 
-        cluesJson.put(FIELD_CLUES_ACROSS, acrossJson);
-        cluesJson.put(FIELD_CLUES_DOWN, downJson);
-
-        puzJson.put(FIELD_CLUES, cluesJson);
+        writer.endObject();
+        writer.newLine();
     }
 
     /**
      * Convert a clues list into a json array and return it
      */
-    private static JSONArray getClueListJsonArray(ClueList clues) {
-        JSONArray cluesJson = new JSONArray();
+    private static void writeClueList(
+        String fieldName, ClueList clues, FormatableJSONWriter writer
+    ) throws IOException {
+        writer.indent(1)
+            .key(fieldName)
+            .array();
+        writer.newLine();
 
         for (Clue clue : clues) {
-            JSONArray clueJson = new JSONArray();
-            clueJson.put(clue.getNumber());
             String hint = clue.getHint();
-            clueJson.put(hint == null ? NULL_CLUE : htmlString(hint));
-
-            cluesJson.put(clueJson);
+            writer.indent(2)
+                .array()
+                .value(clue.getNumber())
+                .value(hint == null ? NULL_CLUE : htmlString(hint))
+                .endArray();
+            writer.newLine();
         }
 
-        return cluesJson;
+        writer.indent(1)
+            .endArray();
+        writer.newLine();
     }
 
     /**
      * Write Puzzle features not natively supported by IPuz
      */
-    private static void addExtensions(Puzzle puz, JSONObject puzJson) {
-        addExtensionVolatility(puzJson);
+    private static void writeExtensions(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writeExtensionVolatility(writer);
 
-        safePut(puzJson, FIELD_EXT_SUPPORT_URL, puz.getSupportUrl());
+        writer.keyValueNonNull(FIELD_EXT_SUPPORT_URL, puz.getSupportUrl());
 
-        JSONObject playData = new JSONObject();
+        writer.key(FIELD_EXT_PLAY_DATA)
+            .object();
+        writer.newLine();
 
-        addBoxExtras(puz, playData);
-        addPosition(puz, playData);
-        addClueHistory(puz, playData);
-        addClueNotes(puz, playData);
+        writeBoxExtras(puz, writer);
+        writePosition(puz, writer);
+        writeClueHistory(puz, writer);
+        writeClueNotes(puz, writer);
 
-        playData.put(FIELD_COMPLETION_TIME, puz.getTime());
-        playData.put(FIELD_PCNT_FILLED, puz.getPercentFilled());
-        playData.put(FIELD_PCNT_COMPLETE, puz.getPercentComplete());
-        playData.put(FIELD_UPDATABLE, puz.isUpdatable());
+        writer.keyValueNonNull(1, FIELD_COMPLETION_TIME, puz.getTime())
+            .keyValueNonNull(1, FIELD_PCNT_FILLED, puz.getPercentFilled())
+            .keyValueNonNull(1, FIELD_PCNT_COMPLETE, puz.getPercentComplete())
+            .keyValueNonNull(1, FIELD_UPDATABLE, puz.isUpdatable());
 
-        puzJson.put(FIELD_EXT_PLAY_DATA, playData);
+        writer.endObject();
+        writer.newLine();
     }
 
     /**
-     * Add Note objects about individual clues to playData
-     *
-     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     * Add Note objects about individual clues to json
      */
-    private static void addClueNotes(Puzzle puz, JSONObject playData) {
-        JSONArray notesJson = new JSONArray();
+    private static void writeClueNotes(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
+        writer.indent(1)
+            .key(FIELD_CLUE_NOTES)
+            .array();
+        writer.newLine();
 
         for (ClueNumDir cnd : puz.getClueNumDirs()) {
             Note note = puz.getNote(cnd.getClueNumber(), cnd.getAcross());
             if (note != null && !note.isEmpty()) {
-                JSONObject noteJson = new JSONObject();
-
-                noteJson.put(FIELD_CLUE_NOTE_CLUE, encodeClueNumDir(cnd));
-                safePut(
-                    noteJson,
-                    FIELD_CLUE_NOTE_SCRATCH,
-                    note.getCompressedScratch()
-                );
-                safePutHTML(
-                    noteJson,
-                    FIELD_CLUE_NOTE_TEXT,
-                    note.getText()
-                );
-                safePut(
-                    noteJson,
-                    FIELD_CLUE_NOTE_ANAGRAM_SRC,
-                    note.getCompressedAnagramSource()
-                );
-                safePut(
-                    noteJson,
-                    FIELD_CLUE_NOTE_ANAGRAM_SOL,
-                    note.getCompressedAnagramSolution()
-                );
-
-                notesJson.put(noteJson);
+                writer.indent(2)
+                    .object();
+                writer.newLine()
+                    .indent(3)
+                    .key(FIELD_CLUE_NOTE_CLUE);
+                writeClueNumDir(cnd, writer);
+                writer.newLine()
+                    .keyValueNonNull(
+                        3,
+                        FIELD_CLUE_NOTE_SCRATCH,
+                        note.getCompressedScratch()
+                    ).keyValueNonNull(
+                        3,
+                        FIELD_CLUE_NOTE_TEXT,
+                        htmlString(note.getText())
+                    ).keyValueNonNull(
+                        3,
+                        FIELD_CLUE_NOTE_ANAGRAM_SRC,
+                        note.getCompressedAnagramSource()
+                    ).keyValueNonNull(
+                        3,
+                        FIELD_CLUE_NOTE_ANAGRAM_SOL,
+                        note.getCompressedAnagramSolution()
+                    );
+                writer.indent(2)
+                    .endObject();
+                writer.newLine();
             }
         }
 
-        if (notesJson.length() > 0)
-            playData.put(FIELD_CLUE_NOTES, notesJson);
+        writer.indent(1)
+            .endArray();
+        writer.newLine();
     }
 
     /**
-     * Encode a ClueNumDir as a JSONObject
+     * Write a ClueNumDir on one line as a JSONObject
      */
-    private static JSONObject encodeClueNumDir(ClueNumDir cnd) {
-        JSONObject cndJson = new JSONObject();
-        cndJson.put(FIELD_CLUE_NUMBER, cnd.getClueNumber());
-        cndJson.put(FIELD_CLUE_ACROSS, cnd.getAcross());
-        return cndJson;
+    private static void writeClueNumDir(
+        ClueNumDir cnd, FormatableJSONWriter writer
+    ) throws IOException {
+        writer.object()
+            .key(FIELD_CLUE_NUMBER).value(cnd.getClueNumber())
+            .key(FIELD_CLUE_ACROSS).value(cnd.getAcross())
+            .endObject();
     }
 
     /**
-     * Add clue history list to playData
-     *
-     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     * Write clue history list
      */
-    private static void addClueHistory(Puzzle puz, JSONObject playData) {
+    private static void writeClueHistory(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
         List<ClueNumDir> history = puz.getHistory();
         if (history.isEmpty())
             return;
 
-        JSONArray historyJson = new JSONArray();
+        writer.indent(1)
+            .key(FIELD_CLUE_HISTORY)
+            .array();
+        writer.newLine();
+
         for (ClueNumDir item : puz.getHistory()) {
-            historyJson.put(encodeClueNumDir(item));
+            writer.indent(2);
+            writeClueNumDir(item, writer);
+            writer.newLine();
         }
 
-        playData.put(FIELD_CLUE_HISTORY, historyJson);
+        writer.indent(1)
+            .endArray();
+        writer.newLine();
     }
 
     /**
-     * Add current highlight position to playData
-     *
-     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     * Write current highlight position
      */
-    private static void addPosition(Puzzle puz, JSONObject playData) {
+    private static void writePosition(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
         Position pos = puz.getPosition();
         if (pos == null)
             return;
 
-        JSONObject positionJson = new JSONObject();
-
-        positionJson.put(FIELD_POSITION_ROW, pos.down);
-        positionJson.put(FIELD_POSITION_COL, pos.across);
-        positionJson.put(FIELD_POSITION_ACROSS, puz.getAcross());
-
-        playData.put(FIELD_POSITION, positionJson);
+        writer.indent(1)
+            .key(FIELD_POSITION)
+            .object()
+            .key(FIELD_POSITION_ROW).value(pos.down)
+            .key(FIELD_POSITION_COL).value(pos.across)
+            .key(FIELD_POSITION_ACROSS).value(puz.getAcross())
+            .endObject();
+        writer.newLine();
     }
 
     /**
-     * Add additional info about boxes (cheated, responder) to playData
-     * if there is any
-     *
-     * @param playData the FIELD_EXT_PLAY_DATA object to add to
+     * Write additional info about boxes (cheated, responder) if any
      */
-    private static void addBoxExtras(Puzzle puz, JSONObject playData) {
+    private static void writeBoxExtras(Puzzle puz, FormatableJSONWriter writer)
+            throws IOException {
         if (!puz.hasCheated() && !puz.hasResponders())
             return;
 
@@ -1345,88 +1413,55 @@ public class IPuzIO implements PuzzleParser {
         if (boxes == null)
             return;
 
-        JSONArray cellsJson = new JSONArray();
+        writer.indent(1)
+            .key(FIELD_BOX_EXTRAS)
+            .array();
+        writer.newLine();
 
         for (int row = 0; row < boxes.length; row++) {
-            JSONArray rowJson = new JSONArray();
+            writer.indent(2)
+                .array();
             for (int col = 0; col < boxes[row].length; col++) {
-                Box box = boxes[row][col];
-                JSONObject boxJson = new JSONObject();
+                writer.object();
 
+                Box box = boxes[row][col];
                 if (box != null) {
                     if (box.isCheated())
-                        boxJson.put(FIELD_BOX_CHEATED, true);
-                    safePut(boxJson, FIELD_BOX_RESPONDER, box.getResponder());
+                        writer.key(FIELD_BOX_CHEATED).value(true);
+                    String responder = box.getResponder();
+                    if (responder != null)
+                        writer.key(FIELD_BOX_RESPONDER).value(responder);
                 }
 
-                rowJson.put(boxJson);
+                writer.endObject();
             }
-            cellsJson.put(rowJson);
+
+            writer.endArray();
+            writer.newLine();
         }
 
-        playData.put(FIELD_BOX_EXTRAS, cellsJson);
+        writer.indent(1)
+            .endArray();
+        writer.newLine();
     }
 
     /**
      * Write volatility info about our extensions to json
      */
-    private static void addExtensionVolatility(JSONObject puzJson) {
-        JSONObject volatileJson = new JSONObject();
+    private static void writeExtensionVolatility(FormatableJSONWriter writer)
+            throws IOException {
+        writer.key(FIELD_VOLATILE)
+            .object();
+        writer.newLine();
 
         for (String field : VOLATILE_EXTENSIONS)
-            volatileJson.put(field, FIELD_IS_VOLATILE);
+            writer.keyValueNonNull(1, field, FIELD_IS_VOLATILE);
 
         for (String field : NON_VOLATILE_EXTENSIONS)
-            volatileJson.put(field, FIELD_IS_NOT_VOLATILE);
-    }
+            writer.keyValueNonNull(1, field, FIELD_IS_NOT_VOLATILE);
 
-    /**
-     * Puts the object if it is not null
-     */
-    private static void safePut(JSONObject json, String field, Object value) {
-        if (value != null)
-            json.put(field, value);
-    }
-
-    /**
-     * Puts the String with HTML encoding if it is not null
-     */
-    private static void safePutHTML(JSONObject json, String field, String value) {
-        if (value != null) {
-            json.put(field, htmlString(value));
-        }
-    }
-
-    /**
-     * Determine character encoding of JSON from first byte
-     *
-     * Ala RFC 4627.
-     *
-     * @return null if baos does not contain enough bytes
-     */
-    private static String getCharsetName(VisibleByteArrayOutputStream baos) {
-        // 00 00 00 xx  UTF-32BE
-        // 00 xx 00 xx  UTF-16BE
-        // xx 00 00 00  UTF-32LE
-        // xx 00 xx 00  UTF-16LE
-        // xx xx xx xx  UTF-8
-
-        if (baos.size() < 4)
-            return null;
-
-        if (baos.view(0) == 0 && baos.view(1) == 0 && baos.view(2) == 0)
-            return "UTF-32BE";
-
-        if (baos.view(0) == 0 && baos.view(2) == 0)
-            return "UTF-16BE";
-
-        if (baos.view(1) == 0 && baos.view(2) == 0 && baos.view(3) == 0)
-            return "UTF-32LE";
-
-        if (baos.view(1) == 0 && baos.view(3) == 0)
-            return "UTF-16LE";
-
-        return "UTF-8";
+        writer.endObject();
+        writer.newLine();
     }
 
     /**
@@ -1437,18 +1472,48 @@ public class IPuzIO implements PuzzleParser {
     }
 
     /**
-     * ByteArrayOutputStream where you can check bytes written
-     *
-     * Avoids having to create a copy of the byte buffer just to read
-     * the first four bytes when determining JSON charset.
+     * Extend JSONWriter with a write method to add custom formatting
      */
-    private static class VisibleByteArrayOutputStream
-        extends ByteArrayOutputStream {
+    private static class FormatableJSONWriter extends JSONWriter {
+        public FormatableJSONWriter(Appendable writer) {
+            super(writer);
+        }
+
         /**
-         * See what's at character position
+         * Writes the field if it is not null with trailing new line
+         * @return self for chaining
          */
-        public byte view(int pos) {
-            return buf[pos];
+        public FormatableJSONWriter keyValueNonNull(String field, Object value)
+                throws IOException {
+            keyValueNonNull(0, field, value);
+            return this;
+        }
+
+        /**
+         * Writes the field if not null with trailing new line and indent
+         * @return self for chaining
+         */
+        public FormatableJSONWriter keyValueNonNull(
+            int indentSteps, String field, Object value
+        ) throws IOException {
+            if (value != null) {
+                indent(indentSteps);
+                key(field);
+                value(value);
+                newLine();
+            }
+            return this;
+        }
+
+        public FormatableJSONWriter newLine() throws IOException {
+            writer.append("\n");
+            return this;
+        }
+
+        public FormatableJSONWriter indent(int count) throws IOException {
+            for (int i = 0; i < count; i++)
+                writer.append("\t");
+            return this;
         }
     }
 }

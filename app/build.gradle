@@ -109,7 +109,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.room:room-runtime:$room_version"
-    implementation 'com.github.leinardi:FloatingActionButtonSpeedDial:3.1.1'
     implementation 'androidx.activity:activity:1.2.3'
     implementation 'androidx.appcompat:appcompat:1.4.0-alpha01'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0-beta02'
@@ -119,6 +118,7 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.webkit:webkit:1.4.0'
+    implementation 'com.github.leinardi:FloatingActionButtonSpeedDial:3.1.1'
     implementation 'com.google.android.material:material:1.4.0-beta01'
     implementation 'org.jsoup:jsoup:1.13.1'
 
