@@ -26,6 +26,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,9 +54,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -487,9 +491,16 @@ public class BrowseActivity extends ForkyzActivity {
     }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
-    buildList(List<PuzMetaFile> puzFiles, Accessor accessor) {
+    buildList(
+        List<MutableLiveData<PuzMetaFile>> puzFiles, Accessor accessor
+    ) {
         try {
-            Collections.sort(puzFiles, accessor);
+            Collections.sort(
+                puzFiles,
+                (pm1, pm2) -> {
+                    return accessor.compare(pm1.getValue(), pm2.getValue());
+                }
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -500,25 +511,26 @@ public class BrowseActivity extends ForkyzActivity {
                 FileViewHolder.class
             );
         String lastHeader = null;
-        ArrayList<PuzMetaFile> current = new ArrayList<PuzMetaFile>();
+        ArrayList<MutableLiveData<PuzMetaFile>> current = new ArrayList<>();
 
-        for (PuzMetaFile puzMeta : puzFiles) {
+        for (MutableLiveData<PuzMetaFile> pmData: puzFiles) {
+            PuzMetaFile puzMeta = pmData.getValue();
+
             String check = accessor.getLabel(puzMeta);
 
             if (!((lastHeader == null) || lastHeader.equals(check))) {
                 FileAdapter fa = new FileAdapter(current);
                 adapter.addSection(lastHeader, fa);
-                current = new ArrayList<PuzMetaFile>();
+                current = new ArrayList<>();
             }
 
             lastHeader = check;
-            current.add(puzMeta);
+            current.add(pmData);
         }
 
         if (lastHeader != null) {
             FileAdapter fa = new FileAdapter(current);
             adapter.addSection(lastHeader, fa);
-            current = new ArrayList<PuzMetaFile>();
         }
 
         return adapter;
@@ -551,11 +563,24 @@ public class BrowseActivity extends ForkyzActivity {
     }
 
     private void loadPuzzleAdapter() {
-        List<PuzMetaFile> puzList = model.getPuzzleFiles().getValue();
+        cleanUpCurrentAdapter();
+        List<MutableLiveData<PuzMetaFile>> puzList
+            = model.getPuzzleFiles().getValue();
         if (puzList != null) {
             setPuzzleListAdapter(buildList(puzList, accessor), true);
         } else {
             setPuzzleListAdapter(buildEmptyList(), true);
+        }
+    }
+
+    /**
+     * Before changing adapter, clear up the old one
+     */
+    private void cleanUpCurrentAdapter() {
+        if (currentAdapter != null) {
+            for (FileAdapter adapter : currentAdapter.sectionAdapters()) {
+                adapter.cleanUpForRemoval();
+            }
         }
     }
 
@@ -713,21 +738,19 @@ public class BrowseActivity extends ForkyzActivity {
         pendingImport = uri;
     }
 
-    private class FileAdapter extends RemovableRecyclerViewAdapter<FileViewHolder> {
+    private class FileAdapter
+            extends RemovableRecyclerViewAdapter<FileViewHolder> {
         final DateTimeFormatter df
             = DateTimeFormatter.ofPattern("EEEE\n MMM dd, yyyy");
-        final ArrayList<PuzMetaFile> objects;
+        final ArrayList<MutableLiveData<PuzMetaFile>> objects;
+        final Map<MutableLiveData<PuzMetaFile>, Observer<PuzMetaFile>>
+            objectObservers = new HashMap<>();
 
-        public FileAdapter(ArrayList<PuzMetaFile> objects) {
+        public FileAdapter(ArrayList<MutableLiveData<PuzMetaFile>> objects) {
             this.objects = objects;
-        }
-
-        public PuzMetaFile getPuzMetaFile(int index) {
-            return objects.get(index);
-        }
-
-        public void setPuzMetaFile(int index, PuzMetaFile puzMeta) {
-            objects.set(index, puzMeta);
+            for (MutableLiveData<PuzMetaFile> pmData : objects) {
+                addObserver(pmData);
+            }
         }
 
         @Override
@@ -740,7 +763,8 @@ public class BrowseActivity extends ForkyzActivity {
         @Override
         public void onBindViewHolder(FileViewHolder holder, int position) {
             View view = holder.itemView;
-            PuzMetaFile pm = objects.get(position);
+            MutableLiveData<PuzMetaFile> pmData = objects.get(position);
+            PuzMetaFile pm = pmData.getValue();
 
             holder.setPuzMetaFile(pm);
 
@@ -752,7 +776,7 @@ public class BrowseActivity extends ForkyzActivity {
 
             view.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public boolean onLongClick(View view) {notifyDataSetChanged();
+                public boolean onLongClick(View view) {
                     BrowseActivity.this.onItemLongClick(view, pm);
                     return true;
                 }
@@ -792,6 +816,48 @@ public class BrowseActivity extends ForkyzActivity {
         @Override
         public void remove(int position) {
             objects.remove(position);
+        }
+
+        /**
+         * Call when adapter is about to be replaced
+         *
+         * Removes observers from all live data.
+         */
+        public void cleanUpForRemoval() {
+            for (MutableLiveData<PuzMetaFile> pmData : objects)
+                removeObserver(pmData);
+        }
+
+        /**
+         * Only one observer per pmData, removes old if exists
+         */
+        private void addObserver(MutableLiveData<PuzMetaFile> pmData) {
+            if (objectObservers.containsKey(pmData))
+                removeObserver(pmData);
+
+            Observer<PuzMetaFile> observer = (v) -> {
+                // need to search each time since position may change
+                // throughout lifecycle
+                int idx = objects.indexOf(pmData);
+                if (v == null) {
+                    objects.remove(idx);
+                    removeObserver(pmData);
+                    FileAdapter.this.notifyItemRemoved(idx);
+                } else {
+                    FileAdapter.this.notifyItemChanged(idx);
+                }
+            };
+
+            pmData.observe(BrowseActivity.this, observer);
+            objectObservers.put(pmData, observer);
+        }
+
+        private void removeObserver(MutableLiveData<PuzMetaFile> pmData) {
+            Observer<PuzMetaFile> observer = objectObservers.get(pmData);
+            if (observer != null) {
+                pmData.removeObserver(observer);
+                objectObservers.remove(pmData);
+            }
         }
     }
 

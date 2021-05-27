@@ -131,7 +131,7 @@ public class AbstractPageScraper {
             puz.setSupportUrl(this.supportUrl);
             puz.setDate(LocalDate.now());
 
-            return fileHandler.saveNewPuzzle(puz, fileName);
+            return fileHandler.saveNewPuzzle(puz, fileName) != null;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

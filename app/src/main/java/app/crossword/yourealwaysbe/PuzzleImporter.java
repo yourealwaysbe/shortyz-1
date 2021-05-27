@@ -13,6 +13,7 @@ import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.io.PuzzleStreamReader;
 import app.crossword.yourealwaysbe.puz.Puzzle;
+import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
 
 /**
@@ -35,11 +36,12 @@ public class PuzzleImporter {
      * that tries each known format in turn until one succeeds. Clunky, but
      * hopefully robust.
      *
-     * @return true if succeeded (will return false if uri is null)
+     * @return new puz handle if succeeded (will return null if failed
+     * or uri is null)
      */
-    public static boolean importUri(ContentResolver resolver, Uri uri) {
+    public static PuzHandle importUri(ContentResolver resolver, Uri uri) {
         if (uri == null)
-            return false;
+            return null;
 
         FileHandler fileHandler =
             ForkyzApplication.getInstance().getFileHandler();
@@ -49,7 +51,7 @@ public class PuzzleImporter {
         });
 
         if (puz == null)
-            return false;
+            return null;
 
         if (puz.getSource() == null)
             puz.setSource(puz.getAuthor());
@@ -60,7 +62,7 @@ public class PuzzleImporter {
             return fileHandler.saveNewPuzzle(puz, getNewFileName());
         } catch (IOException e) {
             LOGGER.severe("Failed to save imported puzzle: " + e);
-            return false;
+            return null;
         }
     }
 

@@ -11,6 +11,20 @@ public class DirHandle {
     Uri getUri() { return uri; }
 
     @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof DirHandle))
+            return false;
+
+        DirHandle otherDir = (DirHandle) other;
+        return getUri().equals(otherDir.getUri());
+    }
+
+    @Override
+    public int hashCode() {
+        return getUri().hashCode();
+    }
+
+    @Override
     public String toString() { return uri.toString(); }
 
     //////////////////////////////////////////////////////////////

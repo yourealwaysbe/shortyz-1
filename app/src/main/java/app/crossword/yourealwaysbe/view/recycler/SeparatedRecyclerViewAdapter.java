@@ -32,7 +32,6 @@ public class SeparatedRecyclerViewAdapter<
         this.bodyHolderClass = bodyHolderClass;
     }
 
-
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         if(viewType == HEADER){
@@ -112,12 +111,77 @@ public class SeparatedRecyclerViewAdapter<
 
     public void addSection(String header, SectionAdapter adapter) {
         this.sections.put(header, adapter);
+        adapter.registerAdapterDataObserver(
+            new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    notifyDataSetChanged();
+                }
+                @Override
+                public void onItemRangeChanged(
+                    int positionStart, int itemCount, Object payload
+                ) {
+                    int offset = getSectionOffset(header) + 1;
+                    notifyItemRangeChanged(
+                        offset + positionStart, itemCount, payload
+                    );
+                }
+                @Override
+                public void onItemRangeChanged(
+                    int positionStart, int itemCount
+                ) {
+                    int offset = getSectionOffset(header) + 1;
+                    notifyItemRangeChanged(
+                        offset + positionStart, itemCount
+                    );
+                }
+                @Override
+                public void onItemRangeInserted(
+                    int positionStart, int itemCount
+                ) {
+                    int offset = getSectionOffset(header) + 1;
+                    notifyItemRangeInserted(
+                        offset + positionStart, itemCount
+                    );
+                }
+                @Override
+                public void onItemRangeMoved(
+                    int fromPosition, int toPosition, int itemCount
+                ) {
+                    int offset = getSectionOffset(header) + 1;
+                    for (int i = 0; i < itemCount; i++) {
+                        notifyItemMoved(
+                            offset + fromPosition + i,
+                            offset + toPosition + i
+                        );
+                    }
+                }
+                @Override
+                public void onItemRangeRemoved(
+                    int positionStart, int itemCount
+                ) {
+                    int offset = getSectionOffset(header) + 1;
+                    notifyItemRangeRemoved(
+                        offset + positionStart, itemCount
+                    );
+                }
+                @Override
+                public void onStateRestorationPolicyChanged() {
+                    // TODO: don't know what to do with this news
+                    // It is not currently important for Forkyz
+                }
+            }
+        );
+    }
+
+    public Iterable<SectionAdapter> sectionAdapters() {
+        return this.sections.values();
     }
 
     @Override
     public void onItemDismiss(int position) {
        int sectionPosition = 0;
-        for (Map.Entry<String, SectionAdapter> entry : new LinkedList<>(this.sections.entrySet())) {
+       for (Map.Entry<String, SectionAdapter> entry : new LinkedList<>(this.sections.entrySet())) {
             int size = entry.getValue().getItemCount() + 1;
             if (position < sectionPosition + size) {
                 int index = position - sectionPosition;
@@ -142,5 +206,19 @@ public class SeparatedRecyclerViewAdapter<
         public SimpleTextViewHolder(TextView itemView) {
             super(itemView);
         }
+    }
+
+    private int getSectionOffset(String header) {
+        int offset = 0;
+        for (
+            Map.Entry<String, SectionAdapter> entry
+                : this.sections.entrySet()
+        ) {
+            if (entry.getKey().equals(header))
+                return offset;
+            // +1 for header
+            offset += entry.getValue().getItemCount() + 1;
+        }
+        throw new IllegalArgumentException("Section " + header + " unknown.");
     }
 }
