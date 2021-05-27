@@ -1,15 +1,20 @@
 apply plugin: 'checkstyle'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'org.anarres.jarjar'
 
 group 'app.crossword.yourealwaysbe'
 
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '3.+'
 
-    implementation 'org.json:json:20210307'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'org.apache.commons:commons-text:1.9'
+
+    implementation jarjar.repackage {
+        from 'org.json:json:20210307'
+        classRename "org.json.**", "app.crossword.yourealwaysbe.org.json.@1"
+    }
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
