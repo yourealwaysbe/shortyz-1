@@ -80,8 +80,13 @@ public abstract class FileHandler {
     protected abstract Uri getUri(FileHandle f);
     protected abstract String getName(FileHandle f);
     protected abstract long getLastModified(FileHandle file);
+
+    /**
+     * Get output stream to file, erasing previous contents
+     */
     protected abstract OutputStream getOutputStream(FileHandle fileHandle)
         throws IOException;
+
     protected abstract InputStream getInputStream(FileHandle fileHandle)
         throws IOException;
 
