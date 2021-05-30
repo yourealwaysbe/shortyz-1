@@ -189,9 +189,7 @@ public abstract class PuzzleActivity
         ForkyzApplication.getInstance().saveBoard();
     }
 
-    protected String getLongClueText(
-        int number, boolean across, Clue clue, int wordLen
-    ) {
+    protected String getLongClueText(Clue clue, int wordLen) {
         boolean showCount = prefs.getBoolean("showCount", false);
 
         String hint = (clue == null)
@@ -199,14 +197,14 @@ public abstract class PuzzleActivity
             : clue.getHint();
 
         if (showCount) {
-            int clueFormat = across
+            int clueFormat = clue.getIsAcross()
                 ? R.string.clue_format_across_long_with_length
                 : R.string.clue_format_down_long_with_length;
             return getString(
-                clueFormat, number, clue.getHint(), wordLen
+                clueFormat, clue.getNumber(), clue.getHint(), wordLen
             );
         } else {
-            int clueFormat = across
+            int clueFormat = clue.getIsAcross()
                 ? R.string.clue_format_across_long
                 : R.string.clue_format_down_long;
             return getString(

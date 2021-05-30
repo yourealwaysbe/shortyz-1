@@ -1,5 +1,7 @@
 package app.crossword.yourealwaysbe;
 
+import java.util.logging.Logger;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -7,7 +9,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Clue;
@@ -25,6 +26,10 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
 public class ClueListActivity extends PuzzleActivity
                               implements ClueTabs.ClueTabsListener {
+    private static final Logger LOG = Logger.getLogger(
+        ClueListActivity.class.getCanonicalName()
+    );
+
     private KeyboardManager keyboardManager;
     private ScrollingImageView imageView;
     private CharSequence imageViewDescriptionBase;
@@ -44,19 +49,30 @@ public class ClueListActivity extends PuzzleActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Create the activity
+     *
+     * This only sets up the UI widgets. The set up for the current
+     * puzzle/board is done in onResume as these are held by the
+     * application and may change while paused!
+     */
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         utils.holographic(this);
         utils.finishOnHomeButton(this);
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         Playboard board = getBoard();
         Puzzle puz = getBoard().getPuzzle();
 
-        this.renderer = new PlayboardRenderer(board, metrics.densityDpi, metrics.widthPixels, !prefs.getBoolean("supressHints", false), this);
-
-        scaleRendererToCurWord();
+        if (board == null || puz == null) {
+            LOG.info(
+                "ClueListActivity resumed but no Puzzle selected, "
+                    + "finishing."
+            );
+            finish();
+            return;
+        }
 
         setContentView(R.layout.clue_list);
 
@@ -102,31 +118,44 @@ public class ClueListActivity extends PuzzleActivity
         });
 
         this.clueTabs = this.findViewById(R.id.clueListClueTabs);
-        this.clueTabs.setBoard(getBoard());
 
         ForkyzKeyboard keyboard = (ForkyzKeyboard) findViewById(R.id.keyboard);
         keyboardManager = new KeyboardManager(this, keyboard, imageView);
-
-        this.render();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        keyboardManager.onResume();
 
-        if (clueTabs != null) {
-            clueTabs.addListener(this);
-            clueTabs.listenBoard();
-            clueTabs.refresh();
+        Playboard board = getBoard();
+        Puzzle puz = getBoard().getPuzzle();
 
-            if (clueTabs.getBoardDelMeNotReallyNeeded() != getBoard()) {
-                Toast t = Toast.makeText(this,
-                                         "Clue tabs board not match app",
-                                         Toast.LENGTH_SHORT);
-                t.show();
-            }
+        if (board == null || puz == null) {
+            LOG.info(
+                "ClueListActivity resumed but no Puzzle selected, "
+                    + "finishing."
+            );
+            finish();
+            return;
         }
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+
+        this.renderer = new PlayboardRenderer(
+            board,
+            metrics.densityDpi, metrics.widthPixels,
+            !prefs.getBoolean("supressHints", false),
+            this
+        );
+
+        scaleRendererToCurWord();
+
+        clueTabs.setBoard(board);
+        clueTabs.addListener(this);
+        clueTabs.listenBoard();
+        clueTabs.refresh();
+
+        keyboardManager.onResume();
 
         this.render();
     }

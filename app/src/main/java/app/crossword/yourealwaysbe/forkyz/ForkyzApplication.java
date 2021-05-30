@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
 import androidx.core.content.ContextCompat;
@@ -155,7 +156,7 @@ public class ForkyzApplication extends Application {
     }
 
     public static boolean isMiniTabletish(DisplayMetrics metrics) {
-        switch (android.os.Build.VERSION.SDK_INT) {
+        switch (Build.VERSION.SDK_INT) {
         case 12:
         case 11:
         case 13:

@@ -3,11 +3,14 @@ package app.crossword.yourealwaysbe;
 import android.Manifest;
 import android.app.Dialog;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -63,6 +66,28 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class BrowseActivity extends ForkyzActivity {
+
+    /**
+     * Request other browsers close
+     *
+     * An intent to broadcast from BrowseActivity to tell all other
+     * BrowseActivities to close down (avoid multiple instances on same
+     * file system)
+     *
+     * launchMode singleTask is not really what we want here as it
+     * prevents the user from returning to a puzzle from the home screen
+     * (annoying)
+     */
+    private static final String BROWSER_CLOSE_ACTION
+        = "app.crossword.yourealwaysbe.BROWSER_CLOSE_ACTION";
+    /**
+     * The task ID of the BrowseActivity requesting the close
+     *
+     * To avoid closing self
+     */
+    private static final String BROWSER_CLOSE_TASK_ID
+        = "app.crossword.yourealwaysbe.BROWSER_CLOSE_TASK_ID";
+
     private static final int REQUEST_WRITE_STORAGE = 1002;
 
     // allow import of all docs (parser will take care of detecting if it's a
@@ -71,6 +96,28 @@ public class BrowseActivity extends ForkyzActivity {
 
     private static final Logger LOGGER
         = Logger.getLogger(BrowseActivity.class.getCanonicalName());
+
+    /**
+     * See note for BROWSER_CLOSE_ACTION
+     */
+    private BroadcastReceiver closeActionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context arg0, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(BROWSER_CLOSE_ACTION)) {
+                int myTaskId = BrowseActivity.this.getTaskId();
+                int otherTaskId
+                    = intent.getIntExtra(BROWSER_CLOSE_TASK_ID, myTaskId);
+
+                if (myTaskId != otherTaskId) {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        finishAndRemoveTask();
+                    else
+                        finish();
+                }
+            }
+        }
+    };
 
     private BrowseActivityViewModel model;
 
@@ -267,6 +314,18 @@ public class BrowseActivity extends ForkyzActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // ask others to close down
+        sendBroadcast(
+            new Intent(BROWSER_CLOSE_ACTION).putExtra(
+                BROWSER_CLOSE_TASK_ID, getTaskId()
+            )
+        );
+
+        // listen for others closing us down
+        registerReceiver(
+            closeActionReceiver, new IntentFilter(BROWSER_CLOSE_ACTION)
+        );
 
         setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
         this.setContentView(R.layout.browse);
