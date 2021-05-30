@@ -222,7 +222,7 @@ public class FileHandlerSAF extends FileHandler {
         throws IOException {
         try {
             return getContentResolver().openOutputStream(
-                fileHandle.getUri()
+                fileHandle.getUri(), "wt"
             );
         } catch (IllegalArgumentException e) {
             // happens when e.g. file was deleted, so consider as IO
