@@ -108,13 +108,20 @@ public class ClueTabs extends LinearLayout
         LayoutInflater.from(context).inflate(R.layout.clue_tabs, this);
     }
 
-    public Playboard getBoardDelMeNotReallyNeeded() {
-        return board;
-    }
-
+    /**
+     * Does nothing if the same board is already set
+     */
     public void setBoard(Playboard board) {
         if (board == null)
             return;
+
+        // same board, nothing to do (avoid rebuilding adapters and
+        // losing position)
+        if (board == this.board)
+            return;
+
+        // ignore old board if there was one
+        unlistenBoard();
 
         this.board = board;
 

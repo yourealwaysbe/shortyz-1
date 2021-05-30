@@ -13,6 +13,7 @@
     <string name="preview">Preview</string>
     <string name="general_clue_notes">Free-form notes about clue</string>
     <string name="unknown_hint">(No explicit clue)</string>
+    <string name="play_activity_title">%1$s - %2$s -> %3$s</string>
 
     <!-- downloading -->
     <string name="puzzles_downloading">Downloading Puzzles</string>

@@ -86,10 +86,6 @@ public class PlayActivity extends PuzzleActivity
         }
     };
 
-    private PlayboardRenderer getRenderer(){
-        return ForkyzApplication.getInstance().getRenderer();
-    }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -105,7 +101,11 @@ public class PlayActivity extends PuzzleActivity
     DisplayMetrics metrics;
 
     /**
-     * Called when the activity is first created.
+     * Create the activity
+     *
+     * This only sets up the UI widgets. The set up for the current
+     * puzzle/board is done in onResume as these are held by the
+     * application and may change while paused!
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -139,13 +139,15 @@ public class PlayActivity extends PuzzleActivity
         setFullScreenMode();
 
         // board is loaded by BrowseActivity and put into the
-        // Application
+        // Application, onResume sets up PlayActivity for current board
+        // as it may change!
         Playboard board = getBoard();
         Puzzle puz = getPuzzle();
 
         if (board == null || puz == null) {
             LOG.info("PlayActivity started but no Puzzle selected, finishing.");
             finish();
+            return;
         }
 
         setContentView(R.layout.play);
@@ -337,29 +339,9 @@ public class PlayActivity extends PuzzleActivity
             }
         });
 
-        if (puz.isUpdatable()) {
-            this.showErrors = false;
-        }
-
-        if (board.isShowErrors() != this.showErrors) {
-            board.toggleShowErrors();
-        }
-
-        this.clueTabs.setBoard(board);
-        this.clueTabs.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            public void onLayoutChange(View v,
-              int left, int top, int right, int bottom,
-              int leftWas, int topWas, int rightWas, int bottomWas
-            ) {
-                PlayActivity.this.clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
-            }
-        });
-
         int smallClueTextSize
             = getResources().getInteger(R.integer.small_clue_text_size);
         this.setClueSize(prefs.getInt("clueSize", smallClueTextSize));
-        setTitle(neverNull(puz.getTitle()) + " - " + neverNull(puz.getAuthor())
-             + " -	" + neverNull(puz.getCopyright()));
         if (this.prefs.getBoolean("fitToScreen", false) || (ForkyzApplication.isLandscape(metrics)) && (ForkyzApplication.isTabletish(metrics) || ForkyzApplication.isMiniTabletish(metrics))) {
             this.handler.postDelayed(new Runnable() {
                 @Override
@@ -789,8 +771,32 @@ public class PlayActivity extends PuzzleActivity
 
     private void registerBoard() {
         Playboard board = getBoard();
+        Puzzle puz = getPuzzle();
+
+        if (board == null || puz == null) {
+            LOG.info("PlayActivity resumed but no Puzzle selected, finishing.");
+            finish();
+            return;
+        }
+
+        setTitle(getString(
+            R.string.play_activity_title,
+            neverNull(puz.getTitle()),
+            neverNull(puz.getAuthor()),
+            neverNull(puz.getCopyright())
+        ));
+
+        if (puz.isUpdatable()) {
+            this.showErrors = false;
+        }
+
+        if (board.isShowErrors() != this.showErrors) {
+            board.toggleShowErrors();
+        }
 
         if (clueTabs != null) {
+            clueTabs.setBoard(board);
+            clueTabs.setPage(prefs.getInt(CLUE_TABS_PAGE, 0));
             clueTabs.addListener(this);
             clueTabs.listenBoard();
             clueTabs.refresh();
@@ -925,10 +931,7 @@ public class PlayActivity extends PuzzleActivity
         Clue c = getBoard().getClue();
         if (c != null) {
             this.clue.setText(getLongClueText(
-                getBoard().getClueNumber(),
-                getBoard().isAcross(),
-                c,
-                getBoard().getCurrentWord().length
+                c, getBoard().getCurrentWord().length
             ));
         }
 
@@ -1170,5 +1173,9 @@ public class PlayActivity extends PuzzleActivity
                 startActivity(i);
             }
         }
+    }
+
+    private PlayboardRenderer getRenderer(){
+        return ForkyzApplication.getInstance().getRenderer();
     }
 }
