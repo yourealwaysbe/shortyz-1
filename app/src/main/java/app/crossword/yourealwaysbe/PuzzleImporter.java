@@ -2,6 +2,8 @@ package app.crossword.yourealwaysbe;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.text.Normalizer;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -23,12 +25,14 @@ public class PuzzleImporter {
     private static final Logger LOGGER
         = Logger.getLogger(PuzzleImporter.class.getCanonicalName());
 
+    // date, name, uuid
     private static final String IMPORT_FILE_NAME_PATTERN
-        = "import-%d-%s";
+        = "%s-%s-%s";
     private static final String IMPORT_FALLBACK_SOURCE
         = ForkyzApplication.getInstance().getString(
             R.string.import_fallback_source
         );
+    private static final String FILE_NAME_REMOVE_CHARS = "[^A-Za-z0-9]";
 
     /** Import from a URI supported by resolver
      *
@@ -59,18 +63,31 @@ public class PuzzleImporter {
             puz.setSource(IMPORT_FALLBACK_SOURCE);
 
         try {
-            return fileHandler.saveNewPuzzle(puz, getNewFileName());
+            return fileHandler.saveNewPuzzle(puz, getNewFileName(puz));
         } catch (IOException e) {
             LOGGER.severe("Failed to save imported puzzle: " + e);
             return null;
         }
     }
 
-    public static String getNewFileName() {
+    public static String getNewFileName(Puzzle puzzle) {
+        String name = puzzle.getSource();
+        if (name == null || name.length() == 0)
+            name = puzzle.getAuthor();
+        if (name == null || name.length() == 0)
+            name = puzzle.getTitle();
+        if (name == null)
+            name = IMPORT_FALLBACK_SOURCE;
+
+        String normalizedName
+            = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll(FILE_NAME_REMOVE_CHARS, "");
+
         return String.format(
             Locale.US,
             IMPORT_FILE_NAME_PATTERN,
-            System.currentTimeMillis(),
+            LocalDate.now(),
+            normalizedName,
             UUID.randomUUID()
         );
     }
