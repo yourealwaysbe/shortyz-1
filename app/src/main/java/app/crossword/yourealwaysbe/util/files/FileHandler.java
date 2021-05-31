@@ -3,6 +3,8 @@ package app.crossword.yourealwaysbe.util.files;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -470,7 +472,6 @@ public abstract class FileHandler {
         DirHandle puzDir = ph.getDirHandle();
 
         boolean metaCreated = false;
-        boolean success = false;
 
         if (metaFile == null) {
             String metaName = getMetaFileName(puzFile);
@@ -482,22 +483,51 @@ public abstract class FileHandler {
             metaCreated = true;
         }
 
+        // Write to buffers first so that we don't erase old data in
+        // case of a problem encoding puzzle.
+        ByteArrayOutputStream baosPuz = new ByteArrayOutputStream();
+        ByteArrayOutputStream baosMeta = new ByteArrayOutputStream();
+
         try (
-            DataOutputStream puzzle
-                = new DataOutputStream(getBufferedOutputStream(puzFile));
-            DataOutputStream meta
-                = new DataOutputStream(getBufferedOutputStream(metaFile));
+            DataOutputStream dosPuz = new DataOutputStream(baosPuz);
+            DataOutputStream dosMeta = new DataOutputStream(baosMeta);
         ) {
-            IO.save(puz, puzzle, meta);
-            success = true;
+            IO.save(puz, dosPuz, dosMeta);
+        }
+
+        // Write meta first, if doesn't throw, write main puzzle
+
+        boolean metaSuccess = false;
+
+        try (
+            InputStream baisMeta
+                = new ByteArrayInputStream(baosMeta.toByteArray());
+            OutputStream meta = getBufferedOutputStream(metaFile);
+        ) {
+            IO.copyStream(baisMeta, meta);
+            metaSuccess = true;
         } finally {
-            if (!success && metaCreated)
+            if (!metaSuccess && metaCreated)
+                delete(metaFile);
+        }
+
+        boolean puzSuccess = false;
+
+        try (
+            InputStream baisPuz
+                = new ByteArrayInputStream(baosPuz.toByteArray());
+            OutputStream puzzle = getBufferedOutputStream(puzFile);
+        ) {
+            IO.copyStream(baisPuz, puzzle);
+            puzSuccess = true;
+        } finally {
+            if (!puzSuccess && metaCreated)
                 delete(metaFile);
             else
                 ph.setMetaFileHandle(metaFile);
         }
 
-        return success;
+        return true;
     }
 
     private synchronized boolean save(Puzzle puz, PuzHandle.IPuz ph)
@@ -505,10 +535,16 @@ public abstract class FileHandler {
         FileHandle ipuzFile = ph.getMainFileHandle();
         DirHandle puzDir = ph.getDirHandle();
 
+        // Write to buffer first -- get puzzle written to a stream
+        // before truncating the previously saved file
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        IPuzIO.writePuzzle(puz, baos);
+
         try (
+            InputStream bais = new ByteArrayInputStream(baos.toByteArray());
             OutputStream os = getBufferedOutputStream(ipuzFile)
         ) {
-            IPuzIO.writePuzzle(puz, os);
+            IO.copyStream(bais, os);
             return true;
         }
     }
