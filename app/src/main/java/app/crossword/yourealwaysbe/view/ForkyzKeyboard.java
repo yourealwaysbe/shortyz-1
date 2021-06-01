@@ -10,6 +10,8 @@ import java.util.TimerTask;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -37,6 +39,8 @@ public class ForkyzKeyboard
     private static final int KEY_REPEAT_DELAY = 300;
     private static final int KEY_REPEAT_INTERVAL = 75;
 
+    private Handler handler = new Handler(Looper.getMainLooper());
+
     private SparseIntArray keyCodes = new SparseIntArray();
     private SparseArray<Timer> keyTimers = new SparseArray<>();
     private InputConnection inputConnection;
@@ -61,7 +65,7 @@ public class ForkyzKeyboard
     /**
      * Call when activity paused to cancel unfinished key repeats
      */
-    public void onPause() {
+    public synchronized void onPause() {
         for (int i = 0; i < keyTimers.size(); i++) {
             Timer timer = keyTimers.valueAt(i);
             if (timer != null)
@@ -70,7 +74,7 @@ public class ForkyzKeyboard
     }
 
     @Override
-    public boolean onTouch(View view, MotionEvent event) {
+    public synchronized boolean onTouch(View view, MotionEvent event) {
         if (inputConnection == null)
             return false;
 
@@ -89,7 +93,7 @@ public class ForkyzKeyboard
     }
 
     @Override
-    public void onClick(View view) {
+    public synchronized void onClick(View view) {
         int id = view.getId();
         onKeyDown(id);
         onKeyUp(id);
@@ -98,17 +102,17 @@ public class ForkyzKeyboard
     /**
      * Attach the keyboard to send events to the view
      */
-    public void attachToView(View view) {
+    public synchronized void attachToView(View view) {
         inputConnection = view.onCreateInputConnection(new EditorInfo());
     }
 
     /**
      * Check if at least one key is currently pressed
      */
-    public boolean hasKeysDown() { return countKeysDown > 0; }
+    public synchronized boolean hasKeysDown() { return countKeysDown > 0; }
 
-    private void countKeyDown() { countKeysDown++; }
-    private void countKeyUp() { countKeysDown--; }
+    private synchronized void countKeyDown() { countKeysDown++; }
+    private synchronized void countKeyUp() { countKeysDown--; }
 
     private void init(Context context, AttributeSet attrs) {
         LayoutInflater inflater
@@ -125,20 +129,22 @@ public class ForkyzKeyboard
         return keyCodes.get(keyId);
     }
 
-    private void onKeyUp(int keyId) {
+    private synchronized void onKeyUp(int keyId) {
         countKeyUp();
         sendKeyUp(keyId);
         cancelKeyTimer(keyId);
     }
 
-    private void sendKeyUp(int keyId) {
+    private synchronized void sendKeyUp(int keyId) {
         int keyCode = getKeyCode(keyId);
-        inputConnection.sendKeyEvent(
-            new KeyEvent(KeyEvent.ACTION_UP, keyCode)
-        );
+        if (inputConnection != null) {
+            inputConnection.sendKeyEvent(
+                new KeyEvent(KeyEvent.ACTION_UP, keyCode)
+            );
+        }
     }
 
-    private void onKeyDown(final int keyId) {
+    private synchronized void onKeyDown(final int keyId) {
         countKeyDown();
         sendKeyDown(keyId);
 
@@ -146,26 +152,31 @@ public class ForkyzKeyboard
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                sendKeyUp(keyId);
-                sendKeyDown(keyId);
+                // post key events on main thread
+                handler.post(() -> {
+                    sendKeyUp(keyId);
+                    sendKeyDown(keyId);
+                });
             }
         }, KEY_REPEAT_DELAY, KEY_REPEAT_INTERVAL);
         setKeyTimer(keyId, timer);
     }
 
-    private void sendKeyDown(int keyId) {
+    private synchronized void sendKeyDown(int keyId) {
         int keyCode = getKeyCode(keyId);
-        inputConnection.sendKeyEvent(
-            new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
-        );
+        if (inputConnection != null) {
+            inputConnection.sendKeyEvent(
+                new KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
+            );
+        }
     }
 
-    private void setKeyTimer(int keyId, Timer timer) {
+    private synchronized void setKeyTimer(int keyId, Timer timer) {
         cancelKeyTimer(keyId);
         keyTimers.put(keyId, timer);
     }
 
-    private void cancelKeyTimer(int keyId) {
+    private synchronized void cancelKeyTimer(int keyId) {
         Timer timer = keyTimers.get(keyId);
         if (timer != null) {
             timer.cancel();
