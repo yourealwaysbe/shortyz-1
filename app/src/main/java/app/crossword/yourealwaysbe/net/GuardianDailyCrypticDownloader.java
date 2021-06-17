@@ -63,7 +63,14 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
             if (cw == null)
                 return null;
 
-            return readPuzzleFromJSON(cw, date);
+            Puzzle puz = readPuzzleFromJSON(cw, date);
+
+            if (puz != null) {
+                puz.setSource(getName());
+                puz.setSupportUrl(getSupportUrl());
+            }
+
+            return puz;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -121,8 +128,15 @@ public class GuardianDailyCrypticDownloader extends AbstractDownloader {
         return null;
     }
 
-    // take date argument as reading from json date field brings
-    // timezones into play
+    /**
+     * Read puzzle from Guardian JSON format
+     *
+     * Take date argument as reading from json date field brings
+     * timezones into play.
+     *
+     * Does not set source or support url (this method may be moved to
+     * puzlib/io at some point).
+     */
     private static Puzzle readPuzzleFromJSON(
         JSONObject json, LocalDate date
     ) throws JSONException {
