@@ -1,0 +1,1 @@
+Bug fix: set source and support URL properly for Guardian downloads.
