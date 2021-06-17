@@ -12,6 +12,8 @@ implementing my own customisations.
 Additions:
 
 * Updated file handling compatible with Android 11.
+* Import of puzzles as well as download.
+* Backend file format changed to IPuz.
 * Download of daily Guardian and Independent Cryptics.
 * Weeding/updating of downloadable puzzles.
 * Less crazy night mode colors and night mode by system theme.
