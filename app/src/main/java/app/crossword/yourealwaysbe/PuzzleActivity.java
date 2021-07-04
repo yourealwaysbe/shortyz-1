@@ -68,7 +68,7 @@ public abstract class PuzzleActivity
         if (board != null) {
             boolean preserveCorrect = prefs.getBoolean(PRESERVE_CORRECT, true);
             board.setPreserveCorrectLettersInShowErrors(preserveCorrect);
-            boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, true);
+            boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, false);
             board.setDontDeleteCrossing(noDelCrossing);
         }
     }
