@@ -20,11 +20,11 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
-import app.crossword.yourealwaysbe.org.json.JSONArray;
-import app.crossword.yourealwaysbe.org.json.JSONException;
-import app.crossword.yourealwaysbe.org.json.JSONObject;
-import app.crossword.yourealwaysbe.org.json.JSONTokener;
-import app.crossword.yourealwaysbe.org.json.JSONWriter;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.json.JSONWriter;
 
 import app.crossword.yourealwaysbe.puz.Box;
 import app.crossword.yourealwaysbe.puz.Clue;
