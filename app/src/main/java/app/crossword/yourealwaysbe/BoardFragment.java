@@ -36,6 +36,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
@@ -71,6 +72,8 @@ public class BoardFragment extends Fragment
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
 
+    private PlayActivityViewModel model;
+
     private ClueTabs clueTabs;
     private ConstraintLayout constraintLayout;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -78,6 +81,7 @@ public class BoardFragment extends Fragment
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
     private CharSequence boardViewDescriptionBase;
+    private PlayboardRenderer renderer;
 
     private boolean showErrors = false;
     private boolean scratchMode = false;
@@ -108,8 +112,8 @@ public class BoardFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.prefs
-            = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        model = new ViewModelProvider(this).get(PlayActivityViewModel.class);
     }
 
     @Override
@@ -146,28 +150,15 @@ public class BoardFragment extends Fragment
             = new KeyboardManager(getActivity(), keyboardView, null);
 
         // TODO: shouldn't really be here, view model blah blah
-        ForkyzApplication.getInstance().setRenderer(
-            new PlayboardRenderer(
-                board,
-                metrics.densityDpi,
-                metrics.widthPixels,
-                !prefs.getBoolean("supressHints", false),
-                getActivity()
-            )
+        renderer = new PlayboardRenderer(
+            board, getActivity(), !prefs.getBoolean("supressHints", false)
         );
 
         float scale = prefs.getFloat(SCALE, 1.0F);
-
-        if (scale > getRenderer().getDeviceMaxScale()) {
-            scale = getRenderer().getDeviceMaxScale();
-        } else if (scale < getRenderer().getDeviceMinScale()) {
-            scale = getRenderer().getDeviceMinScale();
-        } else if (Float.isNaN(scale)) {
-            scale = 1F;
-        }
+        renderer.setScale(scale);
+        scale = renderer.getScale();
         prefs.edit().putFloat(SCALE, scale).apply();
 
-        getRenderer().setScale(scale);
         board.setSkipCompletedLetters(
             this.prefs.getBoolean("skipFilled", false)
         );
@@ -201,13 +192,10 @@ public class BoardFragment extends Fragment
             public void onContextMenu(final Point e) {
                 handler.post(() -> {
                     try {
-                        Position p = getRenderer().findBox(e);
+                        Position p = renderer.findBox(e);
                         Word w = getBoard().setHighlightLetter(p);
                         boolean displayScratch = prefs.getBoolean("displayScratch", false);
-                        getRenderer().draw(w,
-                                           displayScratch,
-                                           displayScratch);
-
+                        renderer.draw(w, displayScratch, displayScratch);
                         launchNotes();
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -221,7 +209,7 @@ public class BoardFragment extends Fragment
                             && ((System.currentTimeMillis() - lastTap) < 300)) {
                         fitToScreen();
                     } else {
-                        Position p = getRenderer().findBox(e);
+                        Position p = renderer.findBox(e);
                         if (getBoard().isInWord(p)) {
                             Word previous = getBoard().setHighlightLetter(p);
                             displayKeyboard(previous);
@@ -303,7 +291,7 @@ public class BoardFragment extends Fragment
             public void onScale(float newScale, final Point center) {
                 int w = boardView.getImageView().getWidth();
                 int h = boardView.getImageView().getHeight();
-                float scale = getRenderer().fitTo((w < h) ? w : h);
+                float scale = renderer.fitTo((w < h) ? w : h);
                 prefs.edit().putFloat(SCALE, scale).apply();
                 lastTap = System.currentTimeMillis();
             }
@@ -320,7 +308,7 @@ public class BoardFragment extends Fragment
                     if (v == 0) {
                         handler.postDelayed(this, 100);
                     }
-                    float newScale = getRenderer().fitTo(v);
+                    float newScale = renderer.fitTo(v);
                     boardView.setCurrentScale(newScale);
 
                     prefs.edit().putFloat(SCALE, newScale).apply();
@@ -529,7 +517,7 @@ public class BoardFragment extends Fragment
 
         int v = (this.boardView.getWidth() < this.boardView.getHeight()) ? this.boardView
                 .getWidth() : this.boardView.getHeight();
-        float newScale = getRenderer().fitTo(v);
+        float newScale = renderer.fitTo(v);
         this.prefs.edit().putFloat(SCALE, newScale).apply();
         boardView.setCurrentScale(newScale);
         this.render(true);
@@ -678,11 +666,11 @@ public class BoardFragment extends Fragment
 
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
         this.boardView.setBitmap(
-            getRenderer().draw(previous, displayScratch, displayScratch),
+            renderer.draw(previous, displayScratch, displayScratch),
             rescale
         );
         this.boardView.setContentDescription(
-            getRenderer().getContentDescription(this.boardViewDescriptionBase)
+            renderer.getContentDescription(this.boardViewDescriptionBase)
         );
         this.boardView.requestFocus();
         /*
@@ -694,7 +682,6 @@ public class BoardFragment extends Fragment
             Playboard board = getBoard();
             Word currentWord = board.getCurrentWord();
             Position cursorPos = board.getHighlightLetter();
-            PlayboardRenderer renderer = getRenderer();
 
             Point topLeft;
             Point bottomRight;
@@ -719,14 +706,6 @@ public class BoardFragment extends Fragment
             this.boardView.ensureVisible(cursorBottomRight);
             this.boardView.ensureVisible(cursorTopLeft);
         }
-
-        // TODO: to live data in playactivity
-        //Clue c = getBoard().getClue();
-        //if (c != null) {
-        //    this.clue.setText(getLongClueText(
-        //        c, getBoard().getCurrentWord().length
-        //    ));
-        //}
 
         this.boardView.requestFocus();
     }
@@ -799,8 +778,10 @@ public class BoardFragment extends Fragment
             View view = inflater.inflate(R.layout.puzzle_info_dialog, null);
 
             PlayActivity activity = (PlayActivity) getActivity();
+            PlayActivityViewModel model
+                = new ViewModelProvider(this).get(PlayActivityViewModel.class);
 
-            Puzzle puz = activity.getPuzzle();
+            Puzzle puz = model.getPuzzle();
             if (puz != null) {
                 TextView title = view.findViewById(R.id.puzzle_info_title);
                 title.setText(puz.getTitle());
@@ -814,7 +795,7 @@ public class BoardFragment extends Fragment
 
                 TextView time = view.findViewById(R.id.puzzle_info_time);
 
-                ImaginaryTimer timer = activity.getTimer();
+                ImaginaryTimer timer = model.getTimer();
                 if (timer != null) {
                     timer.stop();
                     time.setText(getString(
@@ -837,10 +818,10 @@ public class BoardFragment extends Fragment
                 FileHandler fileHandler
                     = ForkyzApplication.getInstance().getFileHandler();
                 filename.setText(
-                    fileHandler.getUri(activity.getPuzHandle()).toString()
+                    fileHandler.getUri(model.getPuzHandle()).toString()
                 );
 
-                addNotes(view);
+                addNotes(view, model);
             }
 
             builder.setView(view);
@@ -848,10 +829,10 @@ public class BoardFragment extends Fragment
             return builder.create();
         }
 
-        private void addNotes(View dialogView) {
+        private void addNotes(View dialogView, PlayActivityViewModel model) {
             TextView view = dialogView.findViewById(R.id.puzzle_info_notes);
 
-            Puzzle puz = ((PlayActivity) getActivity()).getPuzzle();
+            Puzzle puz = model.getPuzzle();
             if (puz == null)
                 return;
 
@@ -915,8 +896,11 @@ public class BoardFragment extends Fragment
     public static class RevealPuzzleDialog extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder
-                = new AlertDialog.Builder(getActivity());
+            PlayActivity activity = (PlayActivity) getActivity();
+            PlayActivityViewModel model
+                = new ViewModelProvider(this).get(PlayActivityViewModel.class);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
             builder.setTitle(getString(R.string.reveal_puzzle))
                 .setMessage(getString(R.string.are_you_sure))
@@ -925,7 +909,7 @@ public class BoardFragment extends Fragment
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Playboard board
-                                = ((PlayActivity) getActivity()).getBoard();
+                                = model.getBoard();
                             if (board != null)
                                  board.revealPuzzle();
                         }
@@ -956,17 +940,11 @@ public class BoardFragment extends Fragment
         }
     }
 
-    private PlayboardRenderer getRenderer(){
-        return ForkyzApplication.getInstance().getRenderer();
-    }
-
-    // TODO: will be deleted on view model?
     private Playboard getBoard() {
-        return ForkyzApplication.getInstance().getBoard();
+        return model.getBoard();
     }
 
-    // TODO: will be deleted on view model?
     private Puzzle getPuzzle() {
-        return ForkyzApplication.getInstance().getBoard().getPuzzle();
+        return model.getPuzzle();
     }
 }

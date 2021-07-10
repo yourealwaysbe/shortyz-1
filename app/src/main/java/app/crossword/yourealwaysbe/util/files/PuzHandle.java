@@ -3,7 +3,10 @@ package app.crossword.yourealwaysbe.util.files;
 
 import java.io.IOException;
 
-public abstract class PuzHandle {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public abstract class PuzHandle implements Parcelable {
     public DirHandle dirHandle;
     public FileHandle mainHandle;
 
@@ -12,6 +15,20 @@ public abstract class PuzHandle {
     ) {
         this.dirHandle = dirHandle;
         this.mainHandle = mainHandle;
+    }
+
+    public PuzHandle(Parcel in) {
+        this.dirHandle = in.readParcelable(DirHandle.class.getClassLoader());
+        this.mainHandle = in.readParcelable(FileHandle.class.getClassLoader());
+    }
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeParcelable(dirHandle, flags);
+        out.writeParcelable(mainHandle, flags);
     }
 
     public DirHandle getDirHandle() { return dirHandle; }
@@ -43,7 +60,6 @@ public abstract class PuzHandle {
         this.dirHandle = dirHandle;
     }
 
-
     static class Puz extends PuzHandle {
         private FileHandle metaHandle;
 
@@ -52,6 +68,19 @@ public abstract class PuzHandle {
         ) {
             super(dirHandle, mainHandle);
             this.metaHandle = metaHandle;
+        }
+
+        public Puz(Parcel in) {
+            super(in);
+            this.metaHandle = in.readParcelable(
+                FileHandle.class.getClassLoader()
+            );
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeParcelable(metaHandle, flags);
         }
 
         public FileHandle getMetaFileHandle() { return metaHandle; }
@@ -73,6 +102,10 @@ public abstract class PuzHandle {
     static class IPuz extends PuzHandle {
         public IPuz(DirHandle dirHandle, FileHandle mainHandle) {
             super(dirHandle, mainHandle);
+        }
+
+        public IPuz(Parcel in) {
+            super(in);
         }
 
         @Override

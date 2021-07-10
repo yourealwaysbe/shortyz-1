@@ -59,8 +59,6 @@ public class BrowseActivityViewModel extends ViewModel {
     // busy with something that isn't downloading
     private MutableLiveData<Boolean> isUIBusy
         = new MutableLiveData<Boolean>();
-    private SingleLiveEvent<Void> puzzleLoadEvents
-        = new SingleLiveEvent<>();
 
     public BrowseActivityViewModel() {
         isUIBusy.setValue(false);
@@ -87,10 +85,6 @@ public class BrowseActivityViewModel extends ViewModel {
 
     public MutableLiveData<Boolean> getIsUIBusy() {
         return isUIBusy;
-    }
-
-    public SingleLiveEvent<Void> getPuzzleLoadEvents() {
-        return puzzleLoadEvents;
     }
 
     public boolean getIsViewArchive() {
@@ -251,58 +245,6 @@ public class BrowseActivityViewModel extends ViewModel {
             if (!getIsViewArchive()) {
                 handler.post(() -> {
                     startLoadFiles();
-                });
-            }
-        });
-    }
-
-    public void loadPuzzle(PuzMetaFile puzMeta) {
-        threadWithUILock(() -> {
-            FileHandler fileHandler = getFileHandler();
-            try {
-                Puzzle puz = fileHandler.load(puzMeta);
-                if (puz == null || puz.getBoxes() == null) {
-                    throw new IOException(
-                        "Puzzle is null or contains no boxes."
-                    );
-                }
-                handler.post(() -> {
-                    ForkyzApplication application
-                        = ForkyzApplication.getInstance();
-                    application.setBoard(
-                        new Playboard(
-                            puz,
-                            application.getMovementStrategy(),
-                            prefs.getBoolean(
-                                "preserveCorrectLettersInShowErrors", false
-                            ),
-                            prefs.getBoolean("dontDeleteCrossing", true)
-                        ),
-                        puzMeta.getPuzHandle()
-                    );
-                    puzzleLoadEvents.call();
-                });
-            } catch (IOException e) {
-                handler.post(() -> {
-                    String filename = null;
-                    try {
-                        filename = fileHandler.getName(puzMeta.getPuzHandle());
-                    } catch (Exception ee) {
-                        e.printStackTrace();
-                    }
-
-                    ForkyzApplication application
-                        = ForkyzApplication.getInstance();
-
-                    Toast t = Toast.makeText(
-                        application,
-                        application.getString(
-                            R.string.unable_to_read_file,
-                            (filename != null ?  filename : "")
-                        ),
-                        Toast.LENGTH_SHORT
-                    );
-                    t.show();
                 });
             }
         });

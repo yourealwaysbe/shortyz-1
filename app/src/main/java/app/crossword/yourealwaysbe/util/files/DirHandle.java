@@ -3,8 +3,10 @@ package app.crossword.yourealwaysbe.util.files;
 import java.io.File;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class DirHandle {
+public class DirHandle implements Parcelable {
     // common to all implementations
     private Uri uri;
 
@@ -38,7 +40,9 @@ public class DirHandle {
     }
 
     File getFile() {
-        return file != null ? file : new File(uri.getPath());
+        if (file == null)
+            file = new File(uri.getPath());
+        return file;
     }
 
     //////////////////////////////////////////////////////////////
@@ -46,6 +50,22 @@ public class DirHandle {
 
     DirHandle(Uri uri) {
         this.uri = uri;
+    }
+
+    ///////////////////////////////////////////////////////////////
+    // For both
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeParcelable(uri, flags);
+    }
+
+    public DirHandle(Parcel in) {
+        this.uri = in.readParcelable(Uri.class.getClassLoader());
+        // getFile will create the file object if needed
     }
 }
 

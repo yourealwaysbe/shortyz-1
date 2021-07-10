@@ -442,11 +442,6 @@ public class BrowseActivity extends ForkyzActivity {
                 hidePleaseWait();
         });
 
-        model.getPuzzleLoadEvents().observe(this, (v) -> {
-            Intent i = new Intent(BrowseActivity.this, PlayActivity.class);
-            BrowseActivity.this.startActivity(i);
-        });
-
         swipePuzzleReloadView.setOnRefreshListener(
              new SwipeRefreshLayout.OnRefreshListener() {
                  @Override
@@ -524,22 +519,25 @@ public class BrowseActivity extends ForkyzActivity {
                 startLoadPuzzleList();
             }
         } else {
-            refreshLastAccessedPuzzle();
+            // TODO: need a new mechanism for this
+            // refreshLastAccessedPuzzle();
         }
 
+        // TODO: need a new mechanism for this
         // previous game ended for now
-        ForkyzApplication.getInstance().clearBoard();
+        // ForkyzApplication.getInstance().clearBoard();
 
         checkDownload();
     }
 
-    private void refreshLastAccessedPuzzle() {
-        final PuzHandle lastAccessed
-            = ForkyzApplication.getInstance().getPuzHandle();
-        if (lastAccessed == null)
-            return;
-        model.refreshPuzzleMeta(lastAccessed);
-    }
+    // TODO: need a new mechanism for this
+    // private void refreshLastAccessedPuzzle() {
+    //     final PuzHandle lastAccessed
+    //         = ForkyzApplication.getInstance().getPuzHandle();
+    //     if (lastAccessed == null)
+    //         return;
+    //     model.refreshPuzzleMeta(lastAccessed);
+    // }
 
     private SeparatedRecyclerViewAdapter<FileViewHolder, FileAdapter>
     buildEmptyList() {
@@ -658,7 +656,7 @@ public class BrowseActivity extends ForkyzActivity {
         } else {
             if (puzMeta == null)
                 return;
-            model.loadPuzzle(puzMeta);
+            playPuzzle(puzMeta);
         }
     }
 
@@ -795,6 +793,12 @@ public class BrowseActivity extends ForkyzActivity {
 
     private void setPendingImport(Uri uri) {
         pendingImport = uri;
+    }
+
+    private void playPuzzle(PuzMetaFile pmFile) {
+        Intent i = new Intent(BrowseActivity.this, PlayActivity.class);
+        i.putExtra(PlayActivity.PUZ_HANDLE_ARG, pmFile.getPuzHandle());
+        BrowseActivity.this.startActivity(i);
     }
 
     private class FileAdapter

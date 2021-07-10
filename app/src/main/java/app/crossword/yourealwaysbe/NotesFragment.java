@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Box;
@@ -36,7 +37,7 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-public class NotesFragment extends PuzzleActivity {
+public class NotesFragment extends Fragment {
     private static final Logger LOG = Logger.getLogger(
         NotesFragment.class.getCanonicalName()
     );
@@ -403,10 +404,7 @@ public class NotesFragment extends PuzzleActivity {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
         this.renderer = new PlayboardRenderer(
-            getBoard(),
-            metrics.densityDpi, metrics.widthPixels,
-            !prefs.getBoolean("supressHints", false),
-            this
+            board, this, !prefs.getBoolean("supressHints", false)
         );
 
         final int curWordLen = getBoard().getCurrentWord().length;

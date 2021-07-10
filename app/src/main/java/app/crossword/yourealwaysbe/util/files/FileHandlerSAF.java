@@ -16,6 +16,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Parcelable;
+import android.os.Parcel;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract;
 import androidx.preference.PreferenceManager;
@@ -42,7 +44,7 @@ public class FileHandlerSAF extends FileHandler {
     private Uri archiveFolderUri;
     private Uri tempFolderUri;
 
-    public static class Meta {
+    public static class Meta implements Parcelable {
         private String name;
         private long lastModified;
 
@@ -51,8 +53,22 @@ public class FileHandlerSAF extends FileHandler {
             this.lastModified = lastModified;
         }
 
+        public Meta(Parcel in) {
+            this.name = in.readString();
+            this.lastModified = in.readLong();
+        }
+
         public String getName() { return name; }
         public long getLastModified() { return lastModified; }
+
+        @Override
+        public int describeContents() { return 0; }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeString(name);
+            out.writeLong(lastModified);
+        }
     }
 
     public static boolean isSAFSupported() {

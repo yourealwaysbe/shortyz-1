@@ -37,8 +37,7 @@ public class BoardEditText extends ScrollingImageView {
 
     private Position selection = new Position(-1, 0);
     private Box[] boxes;
-    private PlayboardRenderer renderer
-        = ForkyzApplication.getInstance().getRenderer();
+    private PlayboardRenderer renderer;
     // surely a better way...
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -58,6 +57,9 @@ public class BoardEditText extends ScrollingImageView {
      */
     public BoardEditText(Context context, AttributeSet as) {
         super(context, as);
+
+        // could be dangerous passing null here!
+        renderer = new PlayboardRenderer(null, context, false);
 
         setAllowOverScroll(false);
 
@@ -263,7 +265,10 @@ public class BoardEditText extends ScrollingImageView {
 
                     int nextPos = selection.across;
 
-                    while (getBoard().isSkipCompletedLetters() &&
+                    boolean skipCompleted
+                        = prefs.getBoolean("skipFilled", false);
+
+                    while (skipCompleted &&
                            boxes[selection.across].getResponse() != ' ' &&
                            selection.across < boxes.length - 1) {
                         selection.across++;
@@ -326,9 +331,5 @@ public class BoardEditText extends ScrollingImageView {
         }
 
         return newChar;
-    }
-
-    private Playboard getBoard(){
-        return ForkyzApplication.getInstance().getBoard();
     }
 }

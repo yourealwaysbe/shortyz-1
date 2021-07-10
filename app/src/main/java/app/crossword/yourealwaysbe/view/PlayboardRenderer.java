@@ -5,12 +5,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.util.DisplayMetrics;
 
 import androidx.core.content.ContextCompat;
 
@@ -60,12 +61,13 @@ public class PlayboardRenderer {
     private final int boardLetterColor;
     private final int boardNoteColor;
 
-    // colors are gotten from context
-    public PlayboardRenderer(Playboard board,
-                             float dpi, int widthPixels, boolean hintHighlight,
-                             Context context) {
-        this.dpi = dpi;
-        this.widthPixels = widthPixels;
+    public PlayboardRenderer(
+        Playboard board, Context context, boolean hintHighlight
+    ) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+
+        this.dpi = metrics.densityDpi;
+        this.widthPixels = metrics.widthPixels;
         this.board = board;
         this.hintHighlight = hintHighlight;
 

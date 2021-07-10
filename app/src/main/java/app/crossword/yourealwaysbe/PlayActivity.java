@@ -34,6 +34,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -45,6 +46,7 @@ import app.crossword.yourealwaysbe.puz.Playboard;
 import app.crossword.yourealwaysbe.puz.Puzzle;
 import app.crossword.yourealwaysbe.util.KeyboardManager;
 import app.crossword.yourealwaysbe.util.files.FileHandler;
+import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.view.ClueTabs;
 import app.crossword.yourealwaysbe.view.ForkyzKeyboard;
 import app.crossword.yourealwaysbe.view.PlayboardRenderer;
@@ -55,20 +57,36 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
 import java.util.logging.Logger;
 
-public class PlayActivity extends PuzzleActivity {
+public class PlayActivity extends ForkyzActivity {
     private static final Logger LOG = Logger.getLogger(
         PlayActivity.class.getCanonicalName()
     );
 
+    public static final String PUZ_HANDLE_ARG
+        = "app.crossword.yourealwaysbe.PUZ_HANDLE";
+    public static final String SHOW_TIMER = "showTimer";
     // TODO: this needs moving to property of puzzle or application or
     // something
-    static public final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    private PlayActivityViewModel model;
 
     private TextView clue;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        model = new ViewModelProvider(this).get(PlayActivityViewModel.class);
+
+        PuzHandle ph
+            = (PuzHandle) getIntent().getExtras().getParcelable(PUZ_HANDLE_ARG);
+
+        if (ph == null) {
+            LOG.warning("PlayActivity started with no puzzle to load");
+            finish();
+        }
+
         setContentView(R.layout.play);
         setDefaultKeyMode(Activity.DEFAULT_KEYS_DISABLE);
         setFullScreenMode();
@@ -102,8 +120,66 @@ public class PlayActivity extends PuzzleActivity {
             = getResources().getInteger(R.integer.small_clue_text_size);
         this.setClueSize(prefs.getInt("clueSize", smallClueTextSize));
 
+        // TODO: to live data in playactivity
+        //Clue c = getBoard().getClue();
+        //if (c != null) {
+        //    this.clue.setText(getLongClueText(
+        //        c, getBoard().getCurrentWord().length
+        //    ));
+        //}
+
         invalidateOptionsMenu();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        model.pauseTimer();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        model.resumeTimer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        model.pauseTimer();
+        model.savePuzzle();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        model.resumeTimer();
+    }
+
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // TODO: handle this...?
+        //if (prefs.getBoolean(SHOW_TIMER, false)) {
+        //    handler.post(updateTimeTask);
+        //}
+
+        // TODO: don't directly change model!
+        // public static final String PRESERVE_CORRECT
+        //     = "preserveCorrectLettersInShowErrors";
+        // public static final String DONT_DELETE_CROSSING = "dontDeleteCrossing";
+        //Playboard board = getBoard();
+        //if (board != null) {
+        //    boolean preserveCorrect = prefs.getBoolean(PRESERVE_CORRECT, true);
+        //    board.setPreserveCorrectLettersInShowErrors(preserveCorrect);
+        //    boolean noDelCrossing = prefs.getBoolean(DONT_DELETE_CROSSING, false);
+        //    board.setDontDeleteCrossing(noDelCrossing);
+        //}
+    }
+
+
 
     // TODO: something about options menu
     //@Override
@@ -296,6 +372,30 @@ public class PlayActivity extends PuzzleActivity {
             = getResources().getInteger(R.integer.small_clue_text_size);
         if (prefs.getInt("clueSize", smallClueTextSize) != dps) {
             this.prefs.edit().putInt("clueSize", dps).apply();
+        }
+    }
+
+    protected String getLongClueText(Clue clue, int wordLen) {
+        boolean showCount = prefs.getBoolean("showCount", false);
+
+        String hint = (clue == null)
+            ? getString(R.string.unknown_hint)
+            : clue.getHint();
+
+        if (showCount) {
+            int clueFormat = clue.getIsAcross()
+                ? R.string.clue_format_across_long_with_length
+                : R.string.clue_format_down_long_with_length;
+            return getString(
+                clueFormat, clue.getNumber(), clue.getHint(), wordLen
+            );
+        } else {
+            int clueFormat = clue.getIsAcross()
+                ? R.string.clue_format_across_long
+                : R.string.clue_format_down_long;
+            return getString(
+                clueFormat, clue.getNumber(), clue.getHint()
+            );
         }
     }
 }

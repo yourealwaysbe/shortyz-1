@@ -4,8 +4,10 @@ import java.io.File;
 import java.util.Objects;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class FileHandle {
+public class FileHandle implements Parcelable {
     // common to all implementations
     private Uri uri;
 
@@ -39,7 +41,9 @@ public class FileHandle {
     }
 
     File getFile() {
-        return file != null ? file : new File(uri.getPath());
+        if (file == null)
+            file = new File(uri.getPath());
+        return file;
     }
 
     //////////////////////////////////////////////////////////////
@@ -53,4 +57,24 @@ public class FileHandle {
     }
 
     FileHandlerSAF.Meta getSAFMeta() { return safMeta; }
+
+    ///////////////////////////////////////////////////////////////
+    // For both
+
+    @Override
+    public int describeContents() { return 0; }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeParcelable(uri, flags);
+        out.writeParcelable(safMeta, flags);
+    }
+
+    public FileHandle(Parcel in) {
+        this.uri = in.readParcelable(Uri.class.getClassLoader());
+        this.safMeta = in.readParcelable(
+            FileHandlerSAF.Meta.class.getClassLoader()
+        );
+        // getFile will create the file object if needed
+    }
 }

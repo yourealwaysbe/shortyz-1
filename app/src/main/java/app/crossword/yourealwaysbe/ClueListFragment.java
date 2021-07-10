@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import androidx.fragment.app.Fragment;
 
 import app.crossword.yourealwaysbe.forkyz.R;
 import app.crossword.yourealwaysbe.puz.Clue;
@@ -24,7 +25,7 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-public class ClueListFragment extends PuzzleActivity
+public class ClueListFragment extends Fragment
                               implements ClueTabs.ClueTabsListener {
     private static final Logger LOG = Logger.getLogger(
         ClueListFragment.class.getCanonicalName()

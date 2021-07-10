@@ -33,9 +33,6 @@ public class ForkyzApplication extends Application {
     public static final String STORAGE_LOC_PREF = "storageLocation";
 
     private static ForkyzApplication INSTANCE;
-    private Playboard board;
-    private PuzHandle puzHandle;
-    private PlayboardRenderer renderer;
     private SharedPreferences settings;
 
     private FileHandler fileHandler;
@@ -60,68 +57,6 @@ public class ForkyzApplication extends Application {
 
     public FileHandler getFileHandler() {
         return fileHandler;
-    }
-
-    /**
-     * Set the board and base file of the puzzle loaded on it
-     */
-    public void setBoard(Playboard board, PuzHandle puzHandle){
-        this.board = board;
-        this.puzHandle = puzHandle;
-    }
-
-    public void clearBoard() {
-        this.board = null;
-        this.puzHandle = null;
-    }
-
-    public Playboard getBoard() {
-         return board;
-    }
-
-    public PuzHandle getPuzHandle() {
-        return puzHandle;
-    }
-
-    /**
-     * Save the puzzle
-     *
-     * Will block, but saving is quick, so probably safer to let it
-     * block onPause.
-     */
-    public void saveBoard() {
-        PuzHandle puzHandle = getPuzHandle();
-        if (puzHandle == null) {
-            LOGGER.severe("No puz handle to save puzzle to.");
-            return;
-        }
-
-        Playboard board = getBoard();
-        if (board == null) {
-            LOGGER.severe("No board to save.");
-            return;
-        }
-
-        Puzzle puz = board.getPuzzle();
-        if (puz == null) {
-            LOGGER.severe("No puzzle associated to the board to save.");
-            return;
-        }
-
-        try {
-            getFileHandler().save(puz, puzHandle);
-        } catch (IOException e) {
-            LOGGER.severe("Error saving puzzle.");
-            e.printStackTrace();
-        }
-    }
-
-    public void setRenderer(PlayboardRenderer renderer){
-        this.renderer = renderer;
-    }
-
-    public PlayboardRenderer getRenderer() {
-        return renderer;
     }
 
     @Override
