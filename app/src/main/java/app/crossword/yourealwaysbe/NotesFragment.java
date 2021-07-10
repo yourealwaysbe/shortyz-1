@@ -36,9 +36,9 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-public class NotesActivity extends PuzzleActivity {
+public class NotesFragment extends PuzzleActivity {
     private static final Logger LOG = Logger.getLogger(
-        NotesActivity.class.getCanonicalName()
+        NotesFragment.class.getCanonicalName()
     );
 
     private static final String TRANSFER_RESPONSE_REQUEST_KEY
@@ -92,7 +92,7 @@ public class NotesActivity extends PuzzleActivity {
         Puzzle puz = board.getPuzzle();
 
         if (board == null || puz == null) {
-            LOG.info("NotesActivity resumed but no Puzzle selected, finishing.");
+            LOG.info("NotesFragment resumed but no Puzzle selected, finishing.");
             finish();
             return;
         }
@@ -123,18 +123,18 @@ public class NotesActivity extends PuzzleActivity {
                 View focused = getWindow().getCurrentFocus();
                 int id = focused.getId();
                 if (id == R.id.scratchMiniboard) {
-                    NotesActivity.this.executeTransferResponseRequest(
+                    NotesFragment.this.executeTransferResponseRequest(
                         TransferResponseRequest.BOARD_TO_SCRATCH, true
                     );
                 } else if (id == R.id.anagramSolution) {
-                    NotesActivity.this.executeTransferResponseRequest(
+                    NotesFragment.this.executeTransferResponseRequest(
                         TransferResponseRequest.BOARD_TO_ANAGRAM_SOL, true
                     );
                 }
             }
 
             public void onTap(Point e) {
-                NotesActivity.this.keyboardManager.showKeyboard(imageView);
+                NotesFragment.this.keyboardManager.showKeyboard(imageView);
 
                 Word current = getBoard().getCurrentWord();
                 int newAcross = current.start.across;
@@ -160,7 +160,7 @@ public class NotesActivity extends PuzzleActivity {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_UP)
-                    return NotesActivity.this.onMiniboardKeyUp(keyCode, event);
+                    return NotesFragment.this.onMiniboardKeyUp(keyCode, event);
                 else
                     return false;
             }
@@ -171,7 +171,7 @@ public class NotesActivity extends PuzzleActivity {
         notesBox.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                NotesActivity.this.moveScratchToNote();
+                NotesFragment.this.moveScratchToNote();
                 return true;
             }
         });
@@ -179,7 +179,7 @@ public class NotesActivity extends PuzzleActivity {
             new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean gainFocus) {
-                    NotesActivity.this.onNotesBoxFocusChanged(gainFocus);
+                    NotesFragment.this.onNotesBoxFocusChanged(gainFocus);
                 }
             }
         );
@@ -193,8 +193,8 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
-                NotesActivity.this.keyboardManager.showKeyboard(scratchView);
-                NotesActivity.this.render();
+                NotesFragment.this.keyboardManager.showKeyboard(scratchView);
+                NotesFragment.this.render();
             }
         });
 
@@ -212,15 +212,15 @@ public class NotesActivity extends PuzzleActivity {
                     anagramSourceView.setResponse(i, cj);
                     anagramSourceView.setResponse(j, ci);
                 }
-                NotesActivity.this.render();
+                NotesFragment.this.render();
             }
 
             public void onTap(Point e) {
-                NotesActivity
+                NotesFragment
                     .this
                     .keyboardManager
                     .showKeyboard(anagramSourceView);
-                NotesActivity.this.render();
+                NotesFragment.this.render();
             }
         });
 
@@ -232,8 +232,8 @@ public class NotesActivity extends PuzzleActivity {
             }
 
             public void onTap(Point e) {
-                NotesActivity.this.keyboardManager.showKeyboard(anagramSolView);
-                NotesActivity.this.render();
+                NotesFragment.this.keyboardManager.showKeyboard(anagramSolView);
+                NotesFragment.this.render();
             }
         });
 
@@ -394,7 +394,7 @@ public class NotesActivity extends PuzzleActivity {
 
         if (board == null || puz == null) {
             LOG.info(
-                "NotesActivity resumed but no Puzzle or Clue selected, "
+                "NotesFragment resumed but no Puzzle or Clue selected, "
                     + "finishing."
             );
             finish();
@@ -471,7 +471,7 @@ public class NotesActivity extends PuzzleActivity {
 
             public char filter(char oldChar, char newChar, int pos) {
                 boolean changed
-                    = NotesActivity.this.preAnagramSolResponse(pos, newChar);
+                    = NotesFragment.this.preAnagramSolResponse(pos, newChar);
                 return changed ? newChar : '\0';
             }
         };
@@ -690,7 +690,7 @@ public class NotesActivity extends PuzzleActivity {
     public static class TransferResponseRequestDialog extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final NotesActivity activity = (NotesActivity) getActivity();
+            final NotesFragment activity = (NotesFragment) getActivity();
 
             Bundle args = getArguments();
             TransferResponseRequest request
@@ -707,7 +707,7 @@ public class NotesActivity extends PuzzleActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        NotesActivity activity = ((NotesActivity) getActivity());
+                        NotesFragment activity = ((NotesFragment) getActivity());
                         activity.executeTransferResponseRequest(request, false);
                     }
                 })

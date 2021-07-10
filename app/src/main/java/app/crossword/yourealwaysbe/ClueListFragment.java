@@ -24,10 +24,10 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView.ClickListener;
 import app.crossword.yourealwaysbe.view.ScrollingImageView.Point;
 import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
-public class ClueListActivity extends PuzzleActivity
+public class ClueListFragment extends PuzzleActivity
                               implements ClueTabs.ClueTabsListener {
     private static final Logger LOG = Logger.getLogger(
-        ClueListActivity.class.getCanonicalName()
+        ClueListFragment.class.getCanonicalName()
     );
 
     private KeyboardManager keyboardManager;
@@ -386,8 +386,9 @@ public class ClueListActivity extends PuzzleActivity
     }
 
     private void launchNotes() {
-        Intent i = new Intent(this, NotesActivity.class);
-        ClueListActivity.this.startActivity(i);
+        // TODO
+        //Intent i = new Intent(this, NotesActivity.class);
+        //ClueListActivity.this.startActivity(i);
     }
 
     private void selectFirstClue() {

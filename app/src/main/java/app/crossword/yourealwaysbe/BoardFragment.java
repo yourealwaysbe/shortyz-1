@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -34,6 +35,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 
 import app.crossword.yourealwaysbe.forkyz.ForkyzApplication;
 import app.crossword.yourealwaysbe.forkyz.R;
@@ -55,14 +58,16 @@ import app.crossword.yourealwaysbe.view.ScrollingImageView;
 
 import java.util.logging.Logger;
 
-public class PlayActivity extends PuzzleActivity
+public class BoardFragment extends Fragment
                           implements Playboard.PlayboardListener,
                                      ClueTabs.ClueTabsListener {
-    private static final Logger LOG = Logger.getLogger("app.crossword.yourealwaysbe");
+    private static final Logger LOG = Logger.getLogger(
+        BoardFragment.class.getCanonicalName()
+    );
+
     private static final double BOARD_DIM_RATIO = 1.0;
     private static final String SHOW_CLUES_TAB = "showCluesOnPlayScreen";
     private static final String CLUE_TABS_PAGE = "playActivityClueTabsPage";
-    static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String SHOW_TIMER = "showTimer";
     public static final String SCALE = "scale";
 
@@ -73,7 +78,6 @@ public class PlayActivity extends PuzzleActivity
     private MovementStrategy movement = null;
     private ScrollingImageView boardView;
     private CharSequence boardViewDescriptionBase;
-    private TextView clue;
 
     private boolean showErrors = false;
     private boolean scratchMode = false;
@@ -85,6 +89,9 @@ public class PlayActivity extends PuzzleActivity
             fitToScreen();
         }
     };
+
+    private DisplayMetrics metrics;
+    private SharedPreferences prefs;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -98,92 +105,54 @@ public class PlayActivity extends PuzzleActivity
         }
     }
 
-    DisplayMetrics metrics;
-
-    /**
-     * Create the activity
-     *
-     * This only sets up the UI widgets. The set up for the current
-     * puzzle/board is done in onResume as these are held by the
-     * application and may change while paused!
-     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.prefs
+            = PreferenceManager.getDefaultSharedPreferences(getActivity());
+    }
 
-        setContentView(R.layout.play);
+    @Override
+    public View onCreateView(
+        LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState
+    ) {
+        View view = inflater.inflate(R.layout.board, container, false);
 
         metrics = getResources().getDisplayMetrics();
         this.screenWidthInInches = (metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels) / Math.round(160 * metrics.density);
 
-        try {
-            if (!prefs.getBoolean(SHOW_TIMER, false)) {
-                if (ForkyzApplication.isLandscape(metrics)) {
-                    if (ForkyzApplication.isMiniTabletish(metrics)) {
-                        utils.hideWindowTitle(this);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        utils.holographic(this);
-        utils.finishOnHomeButton(this);
-
         this.showErrors = this.prefs.getBoolean("showErrors", false);
         this.scratchMode = this.prefs.getBoolean("scratchMode", false);
-        setDefaultKeyMode(Activity.DEFAULT_KEYS_DISABLE);
 
         MovementStrategy movement = getMovementStrategy();
 
-        setFullScreenMode();
-
+        // TODO: delete below with proper view model
         // board is loaded by BrowseActivity and put into the
-        // Application, onResume sets up PlayActivity for current board
+        // Application, onResume sets up BoardFragment for current board
         // as it may change!
         Playboard board = getBoard();
         Puzzle puz = getPuzzle();
 
-        if (board == null || puz == null) {
-            LOG.info("PlayActivity started but no Puzzle selected, finishing.");
-            finish();
-            return;
-        }
-
-        setContentView(R.layout.play);
-
         this.constraintLayout
-            = (ConstraintLayout) this.findViewById(R.id.playConstraintLayout);
+            = (ConstraintLayout) view.findViewById(R.id.playConstraintLayout);
 
-        this.clue = this.findViewById(R.id.clueLine);
-        if (clue != null && clue.getVisibility() != View.GONE) {
-            ConstraintSet set = new ConstraintSet();
-            set.clone(constraintLayout);
-            set.setVisibility(clue.getId(), ConstraintSet.GONE);
-            set.applyTo(constraintLayout);
-
-            View custom = utils.onActionBarCustom(this, R.layout.clue_line_only);
-            if (custom != null) {
-                clue = custom.findViewById(R.id.clueLine);
-            }
-        }
-
-        this.boardView = (ScrollingImageView) this.findViewById(R.id.board);
+        this.boardView = (ScrollingImageView) view.findViewById(R.id.board);
         this.boardViewDescriptionBase = this.boardView.getContentDescription();
-        this.clueTabs = this.findViewById(R.id.playClueTab);
+        this.clueTabs = view.findViewById(R.id.playClueTab);
 
         ForkyzKeyboard keyboardView
-            = (ForkyzKeyboard) this.findViewById(R.id.keyboard);
+            = (ForkyzKeyboard) view.findViewById(R.id.keyboard);
         keyboardManager
-            = new KeyboardManager(this, keyboardView, null);
+            = new KeyboardManager(getActivity(), keyboardView, null);
 
+        // TODO: shouldn't really be here, view model blah blah
         ForkyzApplication.getInstance().setRenderer(
             new PlayboardRenderer(
                 board,
                 metrics.densityDpi,
                 metrics.widthPixels,
                 !prefs.getBoolean("supressHints", false),
-                this
+                getActivity()
             )
         );
 
@@ -203,26 +172,27 @@ public class PlayActivity extends PuzzleActivity
             this.prefs.getBoolean("skipFilled", false)
         );
 
-        if(this.clue != null) {
-            this.clue.setClickable(true);
-            this.clue.setOnClickListener(new OnClickListener() {
-                public void onClick(View arg0) {
-                    if (PlayActivity.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
-                        PlayActivity.this.hideClueTabs();
-                        PlayActivity.this.render(true);
-                    } else {
-                        PlayActivity.this.showClueTabs();
-                        PlayActivity.this.render(true);
-                    }
-                }
-            });
-            this.clue.setOnLongClickListener(new OnLongClickListener() {
-                public boolean onLongClick(View arg0) {
-                    PlayActivity.this.launchClueList();
-                    return true;
-                }
-            });
-        }
+        // TODO: needs a different mechanism
+        //if(this.clue != null) {
+        //    this.clue.setClickable(true);
+        //    this.clue.setOnClickListener(new OnClickListener() {
+        //        public void onClick(View arg0) {
+        //            if (BoardFragment.this.prefs.getBoolean(SHOW_CLUES_TAB, true)) {
+        //                BoardFragment.this.hideClueTabs();
+        //                BoardFragment.this.render(true);
+        //            } else {
+        //                BoardFragment.this.showClueTabs();
+        //                BoardFragment.this.render(true);
+        //            }
+        //        }
+        //    });
+        //    this.clue.setOnLongClickListener(new OnLongClickListener() {
+        //        public boolean onLongClick(View arg0) {
+        //            BoardFragment.this.launchClueList();
+        //            return true;
+        //        }
+        //    });
+        //}
 
         this.boardView.setCurrentScale(scale);
         this.boardView.setFocusable(true);
@@ -275,7 +245,7 @@ public class PlayActivity extends PuzzleActivity
                 ConstraintSet set = new ConstraintSet();
                 set.clone(constraintLayout);
 
-                boolean showCluesTab = PlayActivity.this.prefs.getBoolean(
+                boolean showCluesTab = BoardFragment.this.prefs.getBoolean(
                     SHOW_CLUES_TAB, true
                 );
 
@@ -284,7 +254,7 @@ public class PlayActivity extends PuzzleActivity
                     int width = right - left;
 
                     int orientation
-                        = PlayActivity.this
+                        = BoardFragment.this
                             .getResources()
                             .getConfiguration()
                             .orientation;
@@ -316,8 +286,8 @@ public class PlayActivity extends PuzzleActivity
                     boardView.getViewTreeObserver()
                              .addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                         public boolean onPreDraw() {
-                            PlayActivity.this.render(true);
-                            PlayActivity.this
+                            BoardFragment.this.render(true);
+                            BoardFragment.this
                                         .boardView
                                         .getViewTreeObserver()
                                         .removeOnPreDrawListener(this);
@@ -339,9 +309,6 @@ public class PlayActivity extends PuzzleActivity
             }
         });
 
-        int smallClueTextSize
-            = getResources().getInteger(R.integer.small_clue_text_size);
-        this.setClueSize(prefs.getInt("clueSize", smallClueTextSize));
         if (this.prefs.getBoolean("fitToScreen", false) || (ForkyzApplication.isLandscape(metrics)) && (ForkyzApplication.isTabletish(metrics) || ForkyzApplication.isMiniTabletish(metrics))) {
             this.handler.postDelayed(new Runnable() {
                 @Override
@@ -365,52 +332,15 @@ public class PlayActivity extends PuzzleActivity
 
         registerBoard();
 
-        invalidateOptionsMenu();
+        return view;
     }
 
     private static String neverNull(String val) {
         return val == null ? "" : val.trim();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.play_menu, menu);
-
-        if (getRenderer() == null || getRenderer().getScale() >= getRenderer().getDeviceMaxScale())
-            menu.removeItem(R.id.play_menu_zoom_in_max);
-
-        Puzzle puz = getPuzzle();
-        if (puz == null || puz.isUpdatable()) {
-            menu.findItem(R.id.play_menu_show_errors).setEnabled(false);
-            menu.findItem(R.id.play_menu_reveal).setEnabled(false);
-        } else {
-            menu.findItem(R.id.play_menu_show_errors).setChecked(this.showErrors);
-
-            if (ForkyzApplication.isTabletish(metrics)) {
-                menu.findItem(R.id.play_menu_show_errors).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-                menu.findItem(R.id.play_menu_reveal).setShowAsAction(MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-            }
-        }
-
-        if (puz == null || puz.getSupportUrl() == null) {
-            MenuItem support = menu.findItem(R.id.play_menu_support_source);
-            support.setVisible(false);
-            support.setEnabled(false);
-        }
-
-        menu.findItem(R.id.play_menu_scratch_mode).setChecked(this.scratchMode);
-
-        return true;
-    }
-
-    private SpannableString createSpannableForMenu(String value){
-        SpannableString s = new SpannableString(value);
-        s.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.textColorPrimary)), 0, s.length(), 0);
-        return s;
-    }
-
-    @Override
+    // TODO: needs to use eventbus or similar
+    // basic solution activity passes on onKeyDown
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
@@ -431,10 +361,11 @@ public class PlayActivity extends PuzzleActivity
         if (PlayActivity.ALPHA.indexOf(c) != -1)
             return true;
 
-        return super.onKeyDown(keyCode, event);
+        return false;
     }
 
-    @Override
+    // TODO: needs to use eventbus or similar
+    // basic solution activity passes on onKeyDown
     public boolean onKeyUp(int keyCode, KeyEvent event) {
 
         boolean handled = false;
@@ -444,7 +375,7 @@ public class PlayActivity extends PuzzleActivity
         if (keyCode == KeyEvent.KEYCODE_BACK
                 || keyCode == KeyEvent.KEYCODE_ESCAPE) {
             if (!keyboardManager.handleBackKey()) {
-                this.finish();
+                getActivity().finish();
             }
             handled = true;
         }
@@ -519,7 +450,7 @@ public class PlayActivity extends PuzzleActivity
 
             char c = Character.toUpperCase(event.getDisplayLabel());
 
-            if (!handled && ALPHA.indexOf(c) != -1) {
+            if (!handled && PlayActivity.ALPHA.indexOf(c) != -1) {
                 if (this.scratchMode) {
                     getBoard().playScratchLetter(c);
                 } else {
@@ -529,130 +460,9 @@ public class PlayActivity extends PuzzleActivity
             }
         }
 
-        if (!handled)
-            handled = super.onKeyUp(keyCode, event);
-
         keyboardManager.popBlockHide();
 
         return handled;
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        return onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == android.R.id.home) {
-            finish();
-            return true;
-        }
-
-        if (getBoard() != null) {
-            if (id == R.id.play_menu_reveal_letter) {
-                getBoard().revealLetter();
-                return true;
-            } else if (id == R.id.play_menu_reveal_word) {
-                getBoard().revealWord();
-                return true;
-            } else if (id == R.id.play_menu_reveal_errors) {
-                getBoard().revealErrors();
-                return true;
-            } else if (id == R.id.play_menu_reveal_puzzle) {
-                showRevealPuzzleDialog();
-                return true;
-            } else if (id == R.id.play_menu_show_errors) {
-                getBoard().toggleShowErrors();
-                item.setChecked(getBoard().isShowErrors());
-                this.prefs.edit().putBoolean(
-                    "showErrors", getBoard().isShowErrors()
-                ).apply();
-                return true;
-            } else if (id == R.id.play_menu_scratch_mode) {
-                this.scratchMode = !this.scratchMode;
-                item.setChecked(this.scratchMode);
-                this.prefs.edit().putBoolean(
-                    "scratchMode", this.scratchMode
-                ).apply();
-                return true;
-            } else if (id == R.id.play_menu_settings) {
-                Intent i = new Intent(this, PreferencesActivity.class);
-                this.startActivity(i);
-                return true;
-            } else if (id == R.id.play_menu_zoom_in) {
-                float newScale = getRenderer().zoomIn();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                boardView.setCurrentScale(newScale);
-                this.render(true);
-
-                return true;
-            } else if (id == R.id.play_menu_zoom_in_max) {
-                float newScale = getRenderer().zoomInMax();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                boardView.setCurrentScale(newScale);
-                this.render(true);
-
-                return true;
-            } else if (id == R.id.play_menu_zoom_out) {
-                float newScale = getRenderer().zoomOut();
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                boardView.setCurrentScale(newScale);
-                this.render(true);
-
-                return true;
-            } else if (id == R.id.play_menu_zoom_fit) {
-                fitToScreen();
-                return true;
-            } else if (id == R.id.play_menu_zoom_reset) {
-                float newScale = getRenderer().zoomReset();
-                boardView.setCurrentScale(newScale);
-                this.prefs.edit().putFloat(SCALE, newScale).apply();
-                this.render(true);
-
-                return true;
-            } else if (id == R.id.play_menu_info) {
-                showInfoDialog();
-                return true;
-            } else if (id == R.id.play_menu_clues) {
-                PlayActivity.this.launchClueList();
-                return true;
-            } else if (id == R.id.play_menu_notes) {
-                launchNotes();
-                return true;
-            } else if (id == R.id.play_menu_help) {
-                Intent helpIntent = new Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("file:///android_asset/playscreen.html"),
-                    this,
-                    HTMLActivity.class
-                );
-                this.startActivity(helpIntent);
-                return true;
-            } else if (id == R.id.play_menu_clue_size_s) {
-                this.setClueSize(
-                    getResources().getInteger(R.integer.small_clue_text_size)
-                );
-                return true;
-            } else if (id == R.id.play_menu_clue_size_m) {
-                this.setClueSize(
-                    getResources().getInteger(R.integer.medium_clue_text_size)
-                );
-                return true;
-            } else if (id == R.id.play_menu_clue_size_l) {
-                this.setClueSize(
-                    getResources().getInteger(R.integer.large_clue_text_size)
-                );
-                return true;
-            } else if (id == R.id.play_menu_support_source) {
-                actionSupportSource();
-                return true;
-            }
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -693,10 +503,13 @@ public class PlayActivity extends PuzzleActivity
         editor.apply();
     }
 
+    // TODO: this shouldn't really be needed, the view model listens to
+    // the board
     public void onPlayboardChange(
         boolean wholeBoard, Word currentWord, Word previousWord
     ) {
-        super.onPlayboardChange(wholeBoard, currentWord, previousWord);
+        // TODO: handle view view model chicanery
+        // super.onPlayboardChange(wholeBoard, currentWord, previousWord);
 
         // hide keyboard when moving to a new word
         Position newPos = getBoard().getHighlightLetter();
@@ -722,20 +535,18 @@ public class PlayActivity extends PuzzleActivity
         this.render(true);
     }
 
-    @Override
-    protected void onTimerUpdate() {
-        super.onTimerUpdate();
+    // TODO: view model should somehow take care of this
+    //protected void onTimerUpdate() {
+    //    Puzzle puz = getPuzzle();
+    //    ImaginaryTimer timer = getTimer();
 
-        Puzzle puz = getPuzzle();
-        ImaginaryTimer timer = getTimer();
-
-        if (puz != null && timer != null) {
-            getWindow().setTitle(timer.time());
-        }
-    }
+    //    if (puz != null && timer != null) {
+    //        getWindow().setTitle(timer.time());
+    //    }
+    //}
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
 
         keyboardManager.onPause();
@@ -751,11 +562,10 @@ public class PlayActivity extends PuzzleActivity
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
 
-        this.onConfigurationChanged(getBaseContext().getResources()
-                                                    .getConfiguration());
+        this.onConfigurationChanged(getResources().getConfiguration());
 
         if (keyboardManager != null)
             keyboardManager.onResume();
@@ -769,22 +579,18 @@ public class PlayActivity extends PuzzleActivity
         registerBoard();
     }
 
+    // TODO: move to view model handling
     private void registerBoard() {
         Playboard board = getBoard();
         Puzzle puz = getPuzzle();
 
-        if (board == null || puz == null) {
-            LOG.info("PlayActivity resumed but no Puzzle selected, finishing.");
-            finish();
-            return;
-        }
-
-        setTitle(getString(
-            R.string.play_activity_title,
-            neverNull(puz.getTitle()),
-            neverNull(puz.getAuthor()),
-            neverNull(puz.getCopyright())
-        ));
+        // TODO: playactivity should monitor puzzle
+        //setTitle(getString(
+        //    R.string.play_activity_title,
+        //    neverNull(puz.getTitle()),
+        //    neverNull(puz.getAuthor()),
+        //    neverNull(puz.getCopyright())
+        //));
 
         if (puz.isUpdatable()) {
             this.showErrors = false;
@@ -814,7 +620,7 @@ public class PlayActivity extends PuzzleActivity
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
 
         if (keyboardManager != null)
@@ -822,24 +628,10 @@ public class PlayActivity extends PuzzleActivity
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         if (keyboardManager != null)
             keyboardManager.onDestroy();
-    }
-
-    private void setClueSize(int dps) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.clue.setAutoSizeTextTypeUniformWithConfiguration(
-                5, dps, 1, TypedValue.COMPLEX_UNIT_SP
-            );
-        }
-
-        int smallClueTextSize
-            = getResources().getInteger(R.integer.small_clue_text_size);
-        if (prefs.getInt("clueSize", smallClueTextSize) != dps) {
-            this.prefs.edit().putInt("clueSize", dps).apply();
-        }
     }
 
     protected MovementStrategy getMovementStrategy() {
@@ -928,24 +720,27 @@ public class PlayActivity extends PuzzleActivity
             this.boardView.ensureVisible(cursorTopLeft);
         }
 
-        Clue c = getBoard().getClue();
-        if (c != null) {
-            this.clue.setText(getLongClueText(
-                c, getBoard().getCurrentWord().length
-            ));
-        }
+        // TODO: to live data in playactivity
+        //Clue c = getBoard().getClue();
+        //if (c != null) {
+        //    this.clue.setText(getLongClueText(
+        //        c, getBoard().getCurrentWord().length
+        //    ));
+        //}
 
         this.boardView.requestFocus();
     }
 
     private void launchNotes() {
-        Intent i = new Intent(this, NotesActivity.class);
-        this.startActivity(i);
+        // TODO
+        // Intent i = new Intent(getActivity(), NotesActivity.class);
+        // startActivity(i);
     }
 
     private void launchClueList() {
-        Intent i = new Intent(this, ClueListActivity.class);
-        PlayActivity.this.startActivity(i);
+        // TODO
+        // Intent i = new Intent(getActivity(), ClueListActivity.class);
+        // startActivity(i);
     }
 
     /**
@@ -984,12 +779,14 @@ public class PlayActivity extends PuzzleActivity
 
     private void showInfoDialog() {
         DialogFragment dialog = new InfoDialog();
-        dialog.show(getSupportFragmentManager(), "InfoDialog");
+        dialog.show(getActivity().getSupportFragmentManager(), "InfoDialog");
     }
 
     private void showRevealPuzzleDialog() {
         DialogFragment dialog = new RevealPuzzleDialog();
-        dialog.show(getSupportFragmentManager(), "RevealPuzzleDialog");
+        dialog.show(
+            getActivity().getSupportFragmentManager(), "RevealPuzzleDialog"
+        );
     }
 
     public static class InfoDialog extends DialogFragment {
@@ -1147,22 +944,6 @@ public class PlayActivity extends PuzzleActivity
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private void setFullScreenMode() {
-        if (prefs.getBoolean("fullScreen", false)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                final WindowInsetsController insetsController
-                    = getWindow().getInsetsController();
-                if (insetsController != null) {
-                    insetsController.hide(WindowInsets.Type.statusBars());
-                }
-            } else {
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-        }
-    }
-
     private void actionSupportSource() {
         Puzzle puz = getPuzzle();
         if (puz != null) {
@@ -1177,5 +958,15 @@ public class PlayActivity extends PuzzleActivity
 
     private PlayboardRenderer getRenderer(){
         return ForkyzApplication.getInstance().getRenderer();
+    }
+
+    // TODO: will be deleted on view model?
+    private Playboard getBoard() {
+        return ForkyzApplication.getInstance().getBoard();
+    }
+
+    // TODO: will be deleted on view model?
+    private Puzzle getPuzzle() {
+        return ForkyzApplication.getInstance().getBoard().getPuzzle();
     }
 }

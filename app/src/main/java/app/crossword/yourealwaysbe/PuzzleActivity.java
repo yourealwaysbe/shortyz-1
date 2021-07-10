@@ -157,6 +157,8 @@ public abstract class PuzzleActivity
      * Override if you want to update your UI based on the timer
      *
      * But still call super. Only called if the showTimer pref is true
+     *
+     * TODO: this is a viewmodel thang
      */
     protected void onTimerUpdate() {
         if (prefs.getBoolean(SHOW_TIMER, false)) {
