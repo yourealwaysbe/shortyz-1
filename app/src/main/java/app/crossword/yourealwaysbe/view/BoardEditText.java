@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import androidx.preference.PreferenceManager;
 
@@ -37,8 +38,7 @@ public class BoardEditText extends ScrollingImageView {
 
     private Position selection = new Position(-1, 0);
     private Box[] boxes;
-    private PlayboardRenderer renderer
-        = ForkyzApplication.getInstance().getRenderer();
+    private PlayboardRenderer renderer;
     // surely a better way...
     static final String ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -58,6 +58,18 @@ public class BoardEditText extends ScrollingImageView {
      */
     public BoardEditText(Context context, AttributeSet as) {
         super(context, as);
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+
+        // We are not giving the renderer a board, so be careful some
+        // method calls may NPE
+        this.renderer = new PlayboardRenderer(
+            null,
+            metrics.densityDpi,
+            metrics.widthPixels,
+            false,
+            context
+        );
 
         setAllowOverScroll(false);
 

@@ -20,7 +20,6 @@ import app.crossword.yourealwaysbe.util.files.FileHandlerLegacy;
 import app.crossword.yourealwaysbe.util.files.FileHandlerSAF;
 import app.crossword.yourealwaysbe.util.files.PuzHandle;
 import app.crossword.yourealwaysbe.versions.AndroidVersionUtils;
-import app.crossword.yourealwaysbe.view.PlayboardRenderer;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -35,7 +34,6 @@ public class ForkyzApplication extends Application {
     private static ForkyzApplication INSTANCE;
     private Playboard board;
     private PuzHandle puzHandle;
-    private PlayboardRenderer renderer;
     private SharedPreferences settings;
 
     private FileHandler fileHandler;
@@ -114,14 +112,6 @@ public class ForkyzApplication extends Application {
             LOGGER.severe("Error saving puzzle.");
             e.printStackTrace();
         }
-    }
-
-    public void setRenderer(PlayboardRenderer renderer){
-        this.renderer = renderer;
-    }
-
-    public PlayboardRenderer getRenderer() {
-        return renderer;
     }
 
     @Override

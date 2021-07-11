@@ -74,6 +74,7 @@ public class PlayActivity extends PuzzleActivity
     private ScrollingImageView boardView;
     private CharSequence boardViewDescriptionBase;
     private TextView clue;
+    private PlayboardRenderer renderer;
 
     private boolean showErrors = false;
     private boolean scratchMode = false;
@@ -177,28 +178,26 @@ public class PlayActivity extends PuzzleActivity
         keyboardManager
             = new KeyboardManager(this, keyboardView, null);
 
-        ForkyzApplication.getInstance().setRenderer(
-            new PlayboardRenderer(
-                board,
-                metrics.densityDpi,
-                metrics.widthPixels,
-                !prefs.getBoolean("supressHints", false),
-                this
-            )
+        this.renderer = new PlayboardRenderer(
+            board,
+            metrics.densityDpi,
+            metrics.widthPixels,
+            !prefs.getBoolean("supressHints", false),
+            this
         );
 
         float scale = prefs.getFloat(SCALE, 1.0F);
 
-        if (scale > getRenderer().getDeviceMaxScale()) {
-            scale = getRenderer().getDeviceMaxScale();
-        } else if (scale < getRenderer().getDeviceMinScale()) {
-            scale = getRenderer().getDeviceMinScale();
+        if (scale > renderer.getDeviceMaxScale()) {
+            scale = renderer.getDeviceMaxScale();
+        } else if (scale < renderer.getDeviceMinScale()) {
+            scale = renderer.getDeviceMinScale();
         } else if (Float.isNaN(scale)) {
             scale = 1F;
         }
         prefs.edit().putFloat(SCALE, scale).apply();
 
-        getRenderer().setScale(scale);
+        renderer.setScale(scale);
         board.setSkipCompletedLetters(
             this.prefs.getBoolean("skipFilled", false)
         );
@@ -231,12 +230,10 @@ public class PlayActivity extends PuzzleActivity
             public void onContextMenu(final Point e) {
                 handler.post(() -> {
                     try {
-                        Position p = getRenderer().findBox(e);
+                        Position p = renderer.findBox(e);
                         Word w = getBoard().setHighlightLetter(p);
                         boolean displayScratch = prefs.getBoolean("displayScratch", false);
-                        getRenderer().draw(w,
-                                           displayScratch,
-                                           displayScratch);
+                        renderer.draw(w, displayScratch, displayScratch);
 
                         launchNotes();
                     } catch (Exception ex) {
@@ -251,7 +248,7 @@ public class PlayActivity extends PuzzleActivity
                             && ((System.currentTimeMillis() - lastTap) < 300)) {
                         fitToScreen();
                     } else {
-                        Position p = getRenderer().findBox(e);
+                        Position p = renderer.findBox(e);
                         if (getBoard().isInWord(p)) {
                             Word previous = getBoard().setHighlightLetter(p);
                             displayKeyboard(previous);
@@ -333,7 +330,7 @@ public class PlayActivity extends PuzzleActivity
             public void onScale(float newScale, final Point center) {
                 int w = boardView.getImageView().getWidth();
                 int h = boardView.getImageView().getHeight();
-                float scale = getRenderer().fitTo((w < h) ? w : h);
+                float scale = renderer.fitTo((w < h) ? w : h);
                 prefs.edit().putFloat(SCALE, scale).apply();
                 lastTap = System.currentTimeMillis();
             }
@@ -353,7 +350,7 @@ public class PlayActivity extends PuzzleActivity
                     if (v == 0) {
                         handler.postDelayed(this, 100);
                     }
-                    float newScale = getRenderer().fitTo(v);
+                    float newScale = renderer.fitTo(v);
                     boardView.setCurrentScale(newScale);
 
                     prefs.edit().putFloat(SCALE, newScale).apply();
@@ -377,7 +374,7 @@ public class PlayActivity extends PuzzleActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.play_menu, menu);
 
-        if (getRenderer() == null || getRenderer().getScale() >= getRenderer().getDeviceMaxScale())
+        if (renderer == null || renderer.getScale() >= renderer.getDeviceMaxScale())
             menu.removeItem(R.id.play_menu_zoom_in_max);
 
         Puzzle puz = getPuzzle();
@@ -583,21 +580,21 @@ public class PlayActivity extends PuzzleActivity
                 this.startActivity(i);
                 return true;
             } else if (id == R.id.play_menu_zoom_in) {
-                float newScale = getRenderer().zoomIn();
+                float newScale = renderer.zoomIn();
                 this.prefs.edit().putFloat(SCALE, newScale).apply();
                 boardView.setCurrentScale(newScale);
                 this.render(true);
 
                 return true;
             } else if (id == R.id.play_menu_zoom_in_max) {
-                float newScale = getRenderer().zoomInMax();
+                float newScale = renderer.zoomInMax();
                 this.prefs.edit().putFloat(SCALE, newScale).apply();
                 boardView.setCurrentScale(newScale);
                 this.render(true);
 
                 return true;
             } else if (id == R.id.play_menu_zoom_out) {
-                float newScale = getRenderer().zoomOut();
+                float newScale = renderer.zoomOut();
                 this.prefs.edit().putFloat(SCALE, newScale).apply();
                 boardView.setCurrentScale(newScale);
                 this.render(true);
@@ -607,7 +604,7 @@ public class PlayActivity extends PuzzleActivity
                 fitToScreen();
                 return true;
             } else if (id == R.id.play_menu_zoom_reset) {
-                float newScale = getRenderer().zoomReset();
+                float newScale = renderer.zoomReset();
                 boardView.setCurrentScale(newScale);
                 this.prefs.edit().putFloat(SCALE, newScale).apply();
                 this.render(true);
@@ -716,7 +713,7 @@ public class PlayActivity extends PuzzleActivity
 
         int v = (this.boardView.getWidth() < this.boardView.getHeight()) ? this.boardView
                 .getWidth() : this.boardView.getHeight();
-        float newScale = getRenderer().fitTo(v);
+        float newScale = renderer.fitTo(v);
         this.prefs.edit().putFloat(SCALE, newScale).apply();
         boardView.setCurrentScale(newScale);
         this.render(true);
@@ -886,11 +883,11 @@ public class PlayActivity extends PuzzleActivity
 
         boolean displayScratch = this.prefs.getBoolean("displayScratch", false);
         this.boardView.setBitmap(
-            getRenderer().draw(previous, displayScratch, displayScratch),
+            renderer.draw(previous, displayScratch, displayScratch),
             rescale
         );
         this.boardView.setContentDescription(
-            getRenderer().getContentDescription(this.boardViewDescriptionBase)
+            renderer.getContentDescription(this.boardViewDescriptionBase)
         );
         this.boardView.requestFocus();
         /*
@@ -902,7 +899,6 @@ public class PlayActivity extends PuzzleActivity
             Playboard board = getBoard();
             Word currentWord = board.getCurrentWord();
             Position cursorPos = board.getHighlightLetter();
-            PlayboardRenderer renderer = getRenderer();
 
             Point topLeft;
             Point bottomRight;
@@ -1173,9 +1169,5 @@ public class PlayActivity extends PuzzleActivity
                 startActivity(i);
             }
         }
-    }
-
-    private PlayboardRenderer getRenderer(){
-        return ForkyzApplication.getInstance().getRenderer();
     }
 }
